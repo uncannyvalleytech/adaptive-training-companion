@@ -107,10 +107,10 @@ class AppShell extends LitElement {
   render() {
     if (!this.userCredential) {
       return this.renderLoginScreen();
-    } else if (!this.userData && this.loadingMessage) {
-      return this.renderLoadingScreen();
     } else if (this.errorMessage) {
       return this.renderErrorScreen();
+    } else if (!this.userData) {
+      return this.renderLoadingScreen();
     } else if (this.isWorkoutActive) {
       return this.renderWorkoutScreen();
     } else {
@@ -182,10 +182,6 @@ class AppShell extends LitElement {
   }
 
   renderHomeScreen() {
-    if (!this.userData) {
-      return this.renderLoadingScreen();
-    }
-
     return html`
       <style>
         .home-container {
