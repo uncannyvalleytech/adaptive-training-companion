@@ -13,4 +13,8 @@ export default defineConfig({
     // It tells Vite to trust the NEW preview window's address.
     allowedHosts: ["wqz6c2-5174.csb.app"],
   },
+  // We're adding a base path for the deployment to GitHub Pages.
+  // This is critical for ensuring that the app's assets (like CSS and JS)
+  // are loaded correctly from the sub-folder where GitHub Pages will host it.
+  base: "./",
 });
