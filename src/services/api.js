@@ -9,7 +9,7 @@
 // --- CONFIGURATION ---
 // Replace this with the Web App URL you got after deploying the script.
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzBPGLUduH9SiCgjTVvb2fNe8Su5n6PSAJFZbF_Ix3nozIDBEYchLTkwypYxU6TwLy2/exec";
+  "Yhttps://script.google.com/macros/s/AKfycbzBPGLUduH9SiCgjTVvb2fNe8Su5n6PSAJFZbF_Ix3nozIDBEYchLTkwypYxU6TwLy2/exec";
 
 /**
  * A generic function to make a secure, authenticated request to our backend.
@@ -19,33 +19,30 @@ const APPS_SCRIPT_URL =
  * @returns {Promise<object>} The JSON response from the backend.
  */
 async function makeApiRequest(action, token, payload = {}) {
-  if (!APPS_SCRIPT_URL) {
-    throw new Error("API URL is not configured.");
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
+    console.error("API URL is not configured in src/services/api.js");
+    return { success: false, error: "API URL is not configured." };
   }
   if (!token) {
-    throw new Error("Authentication token is missing.");
+    return { success: false, error: "Authentication token is missing." };
   }
 
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain;charset=utf-8",
       },
       body: JSON.stringify({
         action: action,
         token: token,
         payload: payload,
       }),
-      // This helps bypass certain CORS issues in development.
-      mode: "no-cors",
+      redirect: "follow",
     });
 
-    // NOTE: Because of 'no-cors', we can't directly read the response here.
-    // The request is "fire-and-forget". We will handle the real response
-    // later when we refine this. For now, we assume it succeeds.
-    console.log(`API request sent for action: ${action}`);
-    return { success: true, message: "Request sent." };
+    // Now we can properly read the JSON response from the Apps Script.
+    return await response.json();
   } catch (error) {
     console.error("API Request Failed:", error);
     return { success: false, error: error.message };
@@ -66,5 +63,5 @@ export async function getData(authToken) {
  * @param {string} authToken - The user's secure ID token.
  */
 export async function saveData(data, authToken) {
-  return makeApiRequest("saveData", data, authToken);
+  return makeApiRequest("saveData", authToken, { data });
 }
