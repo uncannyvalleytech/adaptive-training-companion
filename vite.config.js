@@ -9,8 +9,8 @@ export default defineConfig({
     hmr: {
       clientPort: 443,
     },
-    // This is the new part that fixes the "Blocked request" error.
-    // It tells Vite to trust the preview window's address.
-    allowedHosts: ["wqz6c2-5173.csb.app"],
+    // This is the updated part that fixes the new "Blocked request" error.
+    // It tells Vite to trust the NEW preview window's address.
+    allowedHosts: ["wqz6c2-5174.csb.app"],
   },
 });
