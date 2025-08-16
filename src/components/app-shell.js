@@ -9,6 +9,7 @@ import { LitElement, html, css } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
 import { getData } from "../services/api.js";
 import "./workout-session.js";
+import "./history-view.js";
 
 class AppShell extends LitElement {
   static properties = {
@@ -18,6 +19,7 @@ class AppShell extends LitElement {
     loadingMessage: { type: String },
     errorMessage: { type: String },
     isWorkoutActive: { type: Boolean },
+    currentView: { type: String },
   };
 
   constructor() {
@@ -28,6 +30,7 @@ class AppShell extends LitElement {
     this.loadingMessage = "Initializing...";
     this.errorMessage = "";
     this.isWorkoutActive = false;
+    this.currentView = "home"; // New property to manage the current view
   }
 
   connectedCallback() {
@@ -114,7 +117,14 @@ class AppShell extends LitElement {
     } else if (this.isWorkoutActive) {
       return this.renderWorkoutScreen();
     } else {
-      return this.renderHomeScreen();
+      switch (this.currentView) {
+        case "home":
+          return this.renderHomeScreen();
+        case "history":
+          return this.renderHistoryScreen();
+        default:
+          return this.renderHomeScreen();
+      }
     }
   }
 
@@ -202,12 +212,25 @@ class AppShell extends LitElement {
         .start-workout-btn:hover {
           background-color: var(--color-primary-hover);
         }
+        .view-history-btn {
+          width: 100%;
+          padding: 1rem;
+          background-color: var(--color-surface);
+          color: var(--color-text-primary);
+          border: 1px solid var(--color-border);
+          border-radius: var(--border-radius);
+          cursor: pointer;
+          margin-top: 1rem;
+        }
       </style>
       <div class="home-container">
         <h1>Welcome Back, ${this.userData.userEmail}!</h1>
         <p>You have ${this.userData.workouts?.length || 0} workouts logged.</p>
         <button class="start-workout-btn" @click=${this._startWorkout}>
           Start Workout
+        </button>
+        <button class="view-history-btn" @click=${this._viewHistory}>
+          View History
         </button>
       </div>
     `;
@@ -217,8 +240,16 @@ class AppShell extends LitElement {
     return html`<workout-session></workout-session>`;
   }
 
+  renderHistoryScreen() {
+    return html`<history-view></history-view>`;
+  }
+
   _startWorkout() {
     this.isWorkoutActive = true;
+  }
+
+  _viewHistory() {
+    this.currentView = "history";
   }
 }
 
