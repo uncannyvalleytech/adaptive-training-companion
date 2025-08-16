@@ -7,8 +7,6 @@
 
 import { LitElement, html, css } from "lit";
 import { initializeSignIn } from "../services/google-auth.js";
-// *** NEW: Import our api service ***
-import { getData } from "../services/api.js";
 
 class AppShell extends LitElement {
   static properties = {
@@ -24,14 +22,18 @@ class AppShell extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    // This function will wait until the Google library is ready.
     this.waitForGoogleLibrary();
   }
 
+  // This function repeatedly checks for the Google library.
+  // This is a much more reliable way to handle the timing issue.
   waitForGoogleLibrary() {
     if (window.google && window.google.accounts) {
       this.isGoogleLibraryLoaded = true;
       this.setupSignIn();
     } else {
+      // If it's not ready, check again in a moment.
       setTimeout(() => this.waitForGoogleLibrary(), 100);
     }
   }
@@ -47,16 +49,9 @@ class AppShell extends LitElement {
     }
   }
 
-  // This function is called by our auth service after a successful sign-in
-  async _handleSignIn(credential) {
+  _handleSignIn(credential) {
     this.userCredential = credential;
-    console.log("User signed in. Credential:", this.userCredential);
-
-    // *** NEW: Test the backend connection ***
-    console.log("Attempting to fetch data from the backend...");
-    // The `credential` object contains the secure token in a property called `credential`.
-    const response = await getData(this.userCredential.credential);
-    console.log("Response from backend:", response);
+    console.log("User has been passed to the app shell:", this.userCredential);
   }
 
   render() {
@@ -70,7 +65,11 @@ class AppShell extends LitElement {
       <div>
         <h1>Welcome to the Adaptive Training Companion</h1>
         <p>Please sign in to continue.</p>
+
+        <!-- The Google Sign-In button will be rendered here -->
         <div id="google-signin-button"></div>
+
+        <!-- Show a message if the library is slow to load -->
         ${!this.isGoogleLibraryLoaded
           ? html`<p><em>Loading Sign-In button...</em></p>`
           : ""}
@@ -82,7 +81,7 @@ class AppShell extends LitElement {
     return html`
       <div>
         <h1>Welcome Back!</h1>
-        <p>You are now signed in and connected to the backend.</p>
+        <p>You are now signed in.</p>
       </div>
     `;
   }
