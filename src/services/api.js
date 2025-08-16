@@ -9,7 +9,7 @@
 // --- CONFIGURATION ---
 // Replace this with the Web App URL you got after deploying the script.
 const APPS_SCRIPT_URL =
-  "Yhttps://script.google.com/macros/s/AKfycbzBPGLUduH9SiCgjTVvb2fNe8Su5n6PSAJFZbF_Ix3nozIDBEYchLTkwypYxU6TwLy2/exec";
+  "https://script.google.com/macros/s/AKfycbzz-LnZdPpM5KzMu4JlvpScp8tq0R45GSOpb8wZBVOZMglXqqJVIrJwTNFjnVW-7bOb/exec";
 
 /**
  * A generic function to make a secure, authenticated request to our backend.
