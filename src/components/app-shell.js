@@ -182,6 +182,10 @@ class AppShell extends LitElement {
   }
 
   renderHomeScreen() {
+    if (!this.userData) {
+      return this.renderLoadingScreen();
+    }
+
     return html`
       <style>
         .home-container {
