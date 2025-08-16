@@ -83,18 +83,20 @@ class AppShell extends LitElement {
     this.loadingMessage = "Fetching your data...";
     this.errorMessage = "";
     try {
-      // The secure token from Google is what we'll use to authenticate with our backend.
       const token = getCredential().credential;
       const response = await getData(token);
 
-      // Log the full response for debugging purposes
+      // Log the full response for debugging purposes.
       console.log("API Response:", response);
 
-      if (response.success === false) {
-        throw new Error(response.error);
+      // Check if the response contains the expected data object.
+      if (response && response.data) {
+        this.userData = response.data;
+        this.loadingMessage = "";
+      } else {
+        // If the response is not as expected, handle it as an error.
+        throw new Error(response.error || "Unexpected API response format.");
       }
-      this.userData = response;
-      this.loadingMessage = ""; // Clear the loading message on success
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       this.errorMessage = "Failed to load your data. Please try again.";
