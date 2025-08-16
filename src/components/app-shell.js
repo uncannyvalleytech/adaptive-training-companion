@@ -8,6 +8,7 @@
 import { LitElement, html, css } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
 import { getData } from "../services/api.js";
+import "./workout-session.js";
 
 class AppShell extends LitElement {
   static properties = {
@@ -16,6 +17,7 @@ class AppShell extends LitElement {
     userData: { type: Object },
     loadingMessage: { type: String },
     errorMessage: { type: String },
+    isWorkoutActive: { type: Boolean },
   };
 
   constructor() {
@@ -25,6 +27,7 @@ class AppShell extends LitElement {
     this.userData = null;
     this.loadingMessage = "Initializing...";
     this.errorMessage = "";
+    this.isWorkoutActive = false;
   }
 
   connectedCallback() {
@@ -171,13 +174,44 @@ class AppShell extends LitElement {
   }
 
   renderHomeScreen() {
+    if (this.isWorkoutActive) {
+      // If a workout is active, render the workout session component
+      return html`<workout-session></workout-session>`;
+    }
+
     return html`
-      <div>
+      <style>
+        .home-container {
+          padding: 1rem;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        .start-workout-btn {
+          width: 100%;
+          padding: 1rem;
+          background-color: var(--color-primary);
+          color: white;
+          border: none;
+          border-radius: var(--border-radius);
+          cursor: pointer;
+          margin-top: 1rem;
+        }
+        .start-workout-btn:hover {
+          background-color: var(--color-primary-hover);
+        }
+      </style>
+      <div class="home-container">
         <h1>Welcome Back, ${this.userData.userEmail}!</h1>
         <p>You have ${this.userData.workouts.length} workouts logged.</p>
-        <p>Your user ID is: ${this.userData.userId}</p>
+        <button class="start-workout-btn" @click=${this._startWorkout}>
+          Start Workout
+        </button>
       </div>
     `;
+  }
+
+  _startWorkout() {
+    this.isWorkoutActive = true;
   }
 }
 
