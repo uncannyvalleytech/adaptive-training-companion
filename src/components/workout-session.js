@@ -119,6 +119,11 @@ class WorkoutSession extends LitElement {
       cursor: pointer;
       margin-top: 1rem;
     }
+    .error-message {
+      color: red;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
   `;
 
   render() {
@@ -138,6 +143,9 @@ class WorkoutSession extends LitElement {
     return html`
       <div class="container">
         <h1>${this.workout.name}</h1>
+        ${this.errorMessage
+          ? html`<p class="error-message">${this.errorMessage}</p>`
+          : ""}
         ${this.workout.exercises.map(
           (exercise, index) => html`
             <div class="exercise-card">
@@ -203,11 +211,13 @@ class WorkoutSession extends LitElement {
       rpe: parseInt(rpeInput.value),
     };
 
-    // Validate inputs
+    // Validate inputs and set an error message
     if (isNaN(newSet.reps) || isNaN(newSet.weight) || isNaN(newSet.rpe)) {
-      alert("Please enter valid numbers for reps, weight, and RPE.");
+      this.errorMessage = "Please enter valid numbers for all fields.";
       return;
     }
+
+    this.errorMessage = ""; // Clear any previous error messages
 
     // Add the new set to the workout data
     const updatedExercises = [...this.workout.exercises];
@@ -259,6 +269,11 @@ class WorkoutSession extends LitElement {
       this.errorMessage = "Failed to save your workout. Please try again.";
       this.loadingMessage = "";
     }
+  }
+
+  _goBackToHome() {
+    // This will reload the app and bring the user back to the home screen
+    window.location.reload();
   }
 }
 
