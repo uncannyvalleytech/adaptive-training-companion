@@ -16,24 +16,50 @@ class AppShell extends LitElement {
   // Define the properties that will trigger updates when they change
   static properties = {
     isLoading: { type: Boolean },
-    user: { type: Object },
+    userCredential: { type: Object },
   };
 
   constructor() {
     super();
-    this.isLoading = true; // Start in a loading state
-    this.user = null; // No user is signed in initially
+    this.isLoading = true;
+    this.userCredential = null; // No user is signed in initially
   }
 
   // This function runs when the component is first added to the page
   connectedCallback() {
     super.connectedCallback();
-    // We will initialize the Google Sign-In flow here later
-    console.log("AppShell connected. Ready to initialize sign-in.");
-    // For now, let's pretend loading is finished after a short delay
-    setTimeout(() => {
+    // The Google library is loaded asynchronously, so we wait for it.
+    // Once the window is fully loaded, we know the script is available.
+    window.onload = () => {
       this.isLoading = false;
-    }, 1500);
+    };
+  }
+
+  // This function runs after the component's first render
+  firstUpdated() {
+    if (!this.isLoading) {
+      this.setupSignIn();
+    }
+  }
+
+  // A new function to set up the sign-in button
+  setupSignIn() {
+    // Find the div we created in our HTML to hold the button
+    const signInButtonContainer = this.shadowRoot.querySelector(
+      "#google-signin-button"
+    );
+    if (signInButtonContainer) {
+      // Call our service to render the button inside that div
+      initializeSignIn(signInButtonContainer, (credential) => {
+        this._handleSignIn(credential);
+      });
+    }
+  }
+
+  // This function is called by our auth service after a successful sign-in
+  _handleSignIn(credential) {
+    this.userCredential = credential;
+    console.log("User has been passed to the app shell:", this.userCredential);
   }
 
   // The `render` function describes what to display on the screen
@@ -42,9 +68,11 @@ class AppShell extends LitElement {
       return html`<p>Loading Application...</p>`;
     }
 
-    // If we are not loading, we check if a user is signed in.
-    // For now, the user is always null, so we show the login view.
-    return this.user ? this.renderHomeScreen() : this.renderLoginScreen();
+    // Now, when a user signs in, `this.userCredential` will be updated,
+    // and this will automatically re-render to show the home screen.
+    return this.userCredential
+      ? this.renderHomeScreen()
+      : this.renderLoginScreen();
   }
 
   renderLoginScreen() {
@@ -59,11 +87,11 @@ class AppShell extends LitElement {
   }
 
   renderHomeScreen() {
-    // We will build the main application view here later
     return html`
       <div>
         <h1>Welcome Back!</h1>
-        <p>You are signed in.</p>
+        <p>You are now signed in.</p>
+        <!-- We will add a sign-out button and more features here later -->
       </div>
     `;
   }
