@@ -31,10 +31,20 @@ class AppShell extends LitElement {
   waitForGoogleLibrary() {
     if (window.google && window.google.accounts) {
       this.isGoogleLibraryLoaded = true;
-      this.setupSignIn();
     } else {
       // If it's not ready, check again in a moment.
       setTimeout(() => this.waitForGoogleLibrary(), 100);
+    }
+  }
+
+  // This function runs after the component's render is updated.
+  // We wait until the google library is loaded before trying to set up the button.
+  updated(changedProperties) {
+    if (
+      changedProperties.has("isGoogleLibraryLoaded") &&
+      this.isGoogleLibraryLoaded
+    ) {
+      this.setupSignIn();
     }
   }
 
