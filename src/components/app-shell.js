@@ -105,6 +105,8 @@ class AppShell extends LitElement {
       return this.renderLoadingScreen();
     } else if (this.errorMessage) {
       return this.renderErrorScreen();
+    } else if (this.isWorkoutActive) {
+      return this.renderWorkoutScreen();
     } else {
       return this.renderHomeScreen();
     }
@@ -174,11 +176,6 @@ class AppShell extends LitElement {
   }
 
   renderHomeScreen() {
-    if (this.isWorkoutActive) {
-      // If a workout is active, render the workout session component
-      return html`<workout-session></workout-session>`;
-    }
-
     return html`
       <style>
         .home-container {
@@ -208,6 +205,10 @@ class AppShell extends LitElement {
         </button>
       </div>
     `;
+  }
+
+  renderWorkoutScreen() {
+    return html`<workout-session></workout-session>`;
   }
 
   _startWorkout() {
