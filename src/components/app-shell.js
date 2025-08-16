@@ -6,18 +6,25 @@
  */
 
 import { LitElement, html, css } from "lit";
-import { initializeSignIn } from "../services/google-auth.js";
+import { initializeSignIn, getCredential } from "../services/google-auth.js";
+import { getData } from "../services/api.js";
 
 class AppShell extends LitElement {
   static properties = {
     userCredential: { type: Object },
     isGoogleLibraryLoaded: { type: Boolean },
+    userData: { type: Object },
+    loadingMessage: { type: String },
+    errorMessage: { type: String },
   };
 
   constructor() {
     super();
     this.userCredential = null;
     this.isGoogleLibraryLoaded = false;
+    this.userData = null;
+    this.loadingMessage = "Initializing...";
+    this.errorMessage = "";
   }
 
   connectedCallback() {
@@ -46,6 +53,11 @@ class AppShell extends LitElement {
     ) {
       this.setupSignIn();
     }
+
+    // When the userCredential changes (i.e., the user signs in), fetch their data.
+    if (changedProperties.has("userCredential") && this.userCredential) {
+      this.fetchUserData();
+    }
   }
 
   setupSignIn() {
@@ -64,21 +76,55 @@ class AppShell extends LitElement {
     console.log("User has been passed to the app shell:", this.userCredential);
   }
 
+  async fetchUserData() {
+    this.loadingMessage = "Fetching your data...";
+    this.errorMessage = "";
+    try {
+      // The secure token from Google is what we'll use to authenticate with our backend.
+      const token = getCredential().credential;
+      const response = await getData(token);
+      if (response.success === false) {
+        throw new Error(response.error);
+      }
+      this.userData = response;
+      this.loadingMessage = ""; // Clear the loading message on success
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+      this.errorMessage = "Failed to load your data. Please try again.";
+      this.loadingMessage = "";
+    }
+  }
+
   render() {
-    return this.userCredential
-      ? this.renderHomeScreen()
-      : this.renderLoginScreen();
+    if (!this.userCredential) {
+      return this.renderLoginScreen();
+    } else if (!this.userData && this.loadingMessage) {
+      return this.renderLoadingScreen();
+    } else if (this.errorMessage) {
+      return this.renderErrorScreen();
+    } else {
+      return this.renderHomeScreen();
+    }
   }
 
   renderLoginScreen() {
     return html`
-      <div>
+      <style>
+        /* This is a local style for this component only */
+        .login-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          text-align: center;
+        }
+      </style>
+      <div class="login-container">
         <h1>Welcome to the Adaptive Training Companion</h1>
         <p>Please sign in to continue.</p>
-
         <!-- The Google Sign-In button will be rendered here -->
         <div id="google-signin-button"></div>
-
         <!-- Show a message if the library is slow to load -->
         ${!this.isGoogleLibraryLoaded
           ? html`<p><em>Loading Sign-In button...</em></p>`
@@ -87,11 +133,49 @@ class AppShell extends LitElement {
     `;
   }
 
+  renderLoadingScreen() {
+    return html`
+      <style>
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          text-align: center;
+        }
+      </style>
+      <div class="loading-container">
+        <p>${this.loadingMessage}</p>
+      </div>
+    `;
+  }
+
+  renderErrorScreen() {
+    return html`
+      <style>
+        .error-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          text-align: center;
+          color: red;
+        }
+      </style>
+      <div class="error-container">
+        <p>${this.errorMessage}</p>
+      </div>
+    `;
+  }
+
   renderHomeScreen() {
     return html`
       <div>
-        <h1>Welcome Back!</h1>
-        <p>You are now signed in.</p>
+        <h1>Welcome Back, ${this.userData.userEmail}!</h1>
+        <p>You have ${this.userData.workouts.length} workouts logged.</p>
+        <p>Your user ID is: ${this.userData.userId}</p>
       </div>
     `;
   }
