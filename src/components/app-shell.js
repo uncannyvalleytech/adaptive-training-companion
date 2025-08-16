@@ -86,6 +86,10 @@ class AppShell extends LitElement {
       // The secure token from Google is what we'll use to authenticate with our backend.
       const token = getCredential().credential;
       const response = await getData(token);
+
+      // Log the full response for debugging purposes
+      console.log("API Response:", response);
+
       if (response.success === false) {
         throw new Error(response.error);
       }
