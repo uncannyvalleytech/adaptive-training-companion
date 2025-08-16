@@ -205,7 +205,7 @@ class AppShell extends LitElement {
       </style>
       <div class="home-container">
         <h1>Welcome Back, ${this.userData.userEmail}!</h1>
-        <p>You have ${this.userData.workouts.length} workouts logged.</p>
+        <p>You have ${this.userData.workouts?.length || 0} workouts logged.</p>
         <button class="start-workout-btn" @click=${this._startWorkout}>
           Start Workout
         </button>
