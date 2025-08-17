@@ -246,8 +246,13 @@ class WorkoutSession extends LitElement {
     inputReps: { type: Number },
     inputRpe: { type: Number },
     inputRir: { type: Number },
+    currentExerciseIndex: { type: Number },
   };
 
+  // Touch state for gestures
+  _touchStartX = 0;
+  _touchEndX = 0;
+  
   constructor() {
     super();
     this.workout = initialWorkout;
@@ -271,6 +276,7 @@ class WorkoutSession extends LitElement {
     this.inputReps = 0;
     this.inputRpe = 0;
     this.inputRir = 0;
+    this.currentExerciseIndex = 0;
   }
 
   static styles = [];
@@ -323,6 +329,7 @@ class WorkoutSession extends LitElement {
         }
         this.workoutStartTime = data.workoutStartTime || Date.Mow();
         this.pauseDuration = data.pauseDuration || 0;
+        this.currentExerciseIndex = data.currentExerciseIndex || 0;
         this._calculateEstimatedTime();
       } catch (e) {
         console.error("Failed to parse saved workout data.", e);
@@ -339,6 +346,7 @@ class WorkoutSession extends LitElement {
       nextExerciseName: this.nextExerciseName,
       workoutStartTime: this.workoutStartTime,
       pauseDuration: this.pauseDuration,
+      currentExerciseIndex: this.currentExerciseIndex,
     };
     localStorage.setItem('currentWorkout', JSON.stringify(dataToSave));
   }
@@ -358,6 +366,46 @@ class WorkoutSession extends LitElement {
     }
     this.estimatedTimeRemaining = remainingTime;
   }
+  
+  // New gesture handlers
+  _handleTouchStart(e) {
+    this._touchStartX = e.touches[0].clientX;
+  }
+
+  _handleTouchEnd(e) {
+    this._touchEndX = e.changedTouches[0].clientX;
+    const swipeDistance = this._touchStartX - this._touchEndX;
+
+    // Define a threshold for a valid swipe
+    if (Math.abs(swipeDistance) < 50) {
+      return;
+    }
+
+    if (swipeDistance > 0) {
+      // Swiped left, move to next exercise
+      this._nextExercise();
+    } else {
+      // Swiped right, move to previous exercise
+      this._prevExercise();
+    }
+  }
+
+  _nextExercise() {
+    this._triggerHapticFeedback('light');
+    if (this.currentExerciseIndex < this.workout.exercises.length - 1) {
+        this.currentExerciseIndex++;
+        this._saveProgressToLocalStorage();
+    }
+  }
+
+  _prevExercise() {
+    this._triggerHapticFeedback('light');
+    if (this.currentExerciseIndex > 0) {
+        this.currentExerciseIndex--;
+        this._saveProgressToLocalStorage();
+    }
+  }
+
 
   _validateInput(e) {
     const input = e.target;
@@ -410,6 +458,7 @@ class WorkoutSession extends LitElement {
   }
   
   _adjustInput(e) {
+    this._triggerHapticFeedback();
     const { exerciseIndex, inputType, amount } = e.target.dataset;
     const input = this.shadowRoot.querySelector(`input[data-exercise-index="${exerciseIndex}"][data-input-type="${inputType}"]`);
     if (input) {
@@ -423,6 +472,7 @@ class WorkoutSession extends LitElement {
   }
 
   _startRestTimer(duration, nextExerciseName) {
+    this._triggerHapticFeedback('medium');
     this.totalRestTime = duration;
     this.restTimeRemaining = duration;
     this.nextExerciseName = nextExerciseName;
@@ -441,22 +491,26 @@ class WorkoutSession extends LitElement {
   }
 
   _stopRestTimer() {
+    this._triggerHapticFeedback();
     clearInterval(this.restTimerInterval);
     this.isResting = false;
     this._saveProgressToLocalStorage();
   }
 
   _adjustRestTime(seconds) {
+    this._triggerHapticFeedback();
     this.restTimeRemaining += seconds;
     if (this.restTimeRemaining < 0) this.restTimeRemaining = 0;
   }
 
   _pauseWorkout() {
+    this._triggerHapticFeedback('medium');
     this.isPaused = true;
     this.pauseStartTime = Date.now();
   }
 
   _resumeWorkout() {
+    this._triggerHapticFeedback('success');
     this.isPaused = false;
     if (this.pauseStartTime) {
       this.pauseDuration += Date.now() - this.pauseStartTime;
@@ -470,21 +524,43 @@ class WorkoutSession extends LitElement {
   }
 
   _showExitModal() {
+    this._triggerHapticFeedback('warning');
     this.showExitModal = true;
   }
 
   _closeExitModal() {
+    this._triggerHapticFeedback();
     this.showExitModal = false;
   }
   
   _exitWorkoutAndSave() {
+    this._triggerHapticFeedback('success');
     // This will trigger the _completeWorkout method with a flag to save and exit.
     this.shadowRoot.querySelector('.complete-workout-button').click();
   }
   
   _discardWorkout() {
+    this._triggerHapticFeedback('heavy');
     localStorage.removeItem('currentWorkout');
     this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }));
+  }
+  
+  // New haptic feedback function
+  _triggerHapticFeedback(type = 'light') {
+    if (!('vibrate' in navigator)) {
+        return;
+    }
+
+    const patterns = {
+        light: [40],
+        medium: [80],
+        heavy: [120],
+        success: [50, 100, 50],
+        warning: [100],
+        error: [100, 50, 100],
+    };
+
+    navigator.vibrate(patterns[type] || patterns.light);
   }
 
   renderRestTimer() {
@@ -549,13 +625,18 @@ class WorkoutSession extends LitElement {
     const totalMinutes = Math.floor(totalWorkoutDuration / 60000);
     const totalSeconds = Math.floor((totalWorkoutDuration % 60000) / 1000);
     const weightUnit = this.units === 'lbs' ? 'lbs' : 'kg';
+    
+    const currentExercise = this.workout.exercises[this.currentExerciseIndex];
+    const isExerciseComplete = currentExercise?.completedSets.length >= currentExercise?.sets;
+    const currentSetNumber = currentExercise?.completedSets.length + 1;
+    const hasInputValue = this.inputReps > 0 || this.inputWeight > 0 || this.inputRpe > 0 || this.inputRir > 0;
 
     return html`
       ${this.isResting ? this.renderRestTimer() : ''}
       ${this.isPaused ? this.renderPauseOverlay() : ''}
       ${this.showExitModal ? this.renderExitModal() : ''}
 
-      <div class="container workout-container">
+      <div class="container workout-container" @touchstart=${this._handleTouchStart} @touchend=${this._handleTouchEnd}>
         <header class="workout-header-full">
           <button class="icon-btn back-btn" @click=${this._showExitModal}>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -577,85 +658,80 @@ class WorkoutSession extends LitElement {
           </div>
         </div>
         
-        ${this.workout.exercises.map(
-          (exercise, index) => {
-            const currentSetNumber = exercise.completedSets.length + 1;
-            const isExerciseComplete = currentSetNumber > exercise.sets;
-
-            // Check if any input field has a value
-            const hasInputValue = this.inputReps > 0 || this.inputWeight > 0 || this.inputRpe > 0 || this.inputRir > 0;
-
-            return html`
-              <div class="card exercise-card" role="region" aria-labelledby="exercise-title-${index}">
-                <div class="exercise-header">
-                  <div class="exercise-title-group">
-                    <span class="exercise-icon">${this._getExerciseIcon(exercise.category)}</span>
-                    <h3 id="exercise-title-${index}">${exercise.name}</h3>
+        <div class="exercise-carousel">
+            ${this.workout.exercises.map(
+              (exercise, index) => html`
+                <div class="exercise-card ${this.currentExerciseIndex === index ? 'is-active' : ''}" role="region" aria-labelledby="exercise-title-${index}" style="transform: translateX(-${this.currentExerciseIndex * 100}%)">
+                  <div class="exercise-header">
+                    <div class="exercise-title-group">
+                      <span class="exercise-icon">${this._getExerciseIcon(exercise.category)}</span>
+                      <h3 id="exercise-title-${index}">${exercise.name}</h3>
+                    </div>
+                    <span class="set-progress">Set ${Math.min(currentSetNumber, exercise.sets)} of ${exercise.sets}</span>
                   </div>
-                  <span class="set-progress">Set ${Math.min(currentSetNumber, exercise.sets)} of ${exercise.sets}</span>
-                </div>
-                
-                ${exercise.media ? html`
-                  <div class="exercise-media-container">
-                    <iframe
-                      src="${exercise.media.url}"
-                      title="${exercise.name} instructional video"
-                      frameborder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      referrerpolicy="strict-origin-when-cross-origin"
-                      allowfullscreen
-                      class="exercise-media-frame"
-                    ></iframe>
-                  </div>
-                ` : ''}
+                  
+                  ${exercise.media ? html`
+                    <div class="exercise-media-container">
+                      <iframe
+                        src="${exercise.media.url}"
+                        title="${exercise.name} instructional video"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerpolicy="strict-origin-when-cross-origin"
+                        allowfullscreen
+                        class="exercise-media-frame"
+                      ></iframe>
+                    </div>
+                  ` : ''}
 
-                ${exercise.completedSets.length > 0 ? html`
-                  <div class="completed-sets">
-                    ${exercise.completedSets.map(
-                      (set, setIndex) => html`
-                        <div class="completed-set">
-                          <span class="checkmark">✓</span>
-                          <p>Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</p>
-                        </div>
-                      `
-                    )}
-                  </div>
-                ` : ''}
-                
-                ${!isExerciseComplete ? html`
-                  <div class="suggestion-box">
-                    <p><strong>Suggestion:</strong> ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
-                    <p class="feedback-impact-note"><em>${exercise.nextSetSuggestion.adjustment}</em></p>
-                  </div>
-
-                  <div class="set-input-grid">
-                    ${['reps', 'weight', 'rpe', 'rir'].map(inputType => html`
-                      <div class="input-group">
-                        <label for="${inputType}-${index}" class="sr-only">${inputType.charAt(0).toUpperCase() + inputType.slice(1)} for ${exercise.name}</label>
-                        <div class="input-wrapper">
-                          <input
-                            id="${inputType}-${index}"
-                            type="number"
-                            placeholder="${inputType.charAt(0).toUpperCase() + inputType.slice(1)}"
-                            class=${this.errors[`${index}-${inputType}`] ? 'input-error' : ''}
-                            data-exercise-index="${index}"
-                            data-input-type="${inputType}"
-                            @input=${this._handleInput}
-                            @keydown=${this._handleInputKeydown}
-                            aria-label="${inputType} for ${exercise.name}, set ${currentSetNumber}"
-                            aria-invalid=${!!this.errors[`${index}-${inputType}`]}
-                            aria-describedby="${inputType}-error-${index}"
-                          />
-                          <div class="input-stepper">
-                            <button class="step-up" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="1" @click=${this._adjustInput}>
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
-                            </button>
-                            <button class="step-down" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="-1" @click=${this._adjustInput}>
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </button>
+                  ${exercise.completedSets.length > 0 ? html`
+                    <div class="completed-sets">
+                      ${exercise.completedSets.map(
+                        (set, setIndex) => html`
+                          <div class="completed-set">
+                            <span class="checkmark">✓</span>
+                            <p>Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</p>
                           </div>
+                        `
+                      )}
+                    </div>
+                  ` : ''}
+                  
+                  ${!isExerciseComplete ? html`
+                    <div class="suggestion-box">
+                      <p><strong>Suggestion:</strong> ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
+                      <p class="feedback-impact-note"><em>${exercise.nextSetSuggestion.adjustment}</em></p>
+                    </div>
+
+                    <div class="set-input-grid">
+                      ${['reps', 'weight', 'rpe', 'rir'].map(inputType => html`
+                        <div class="input-group">
+                          <label for="${inputType}-${index}" class="sr-only">${inputType.charAt(0).toUpperCase() + inputType.slice(1)} for ${exercise.name}</label>
+                          <div class="input-wrapper">
+                            <input
+                              id="${inputType}-${index}"
+                              type="number"
+                              placeholder="${inputType.charAt(0).toUpperCase() + inputType.slice(1)}"
+                              class=${this.errors[`${index}-${inputType}`] ? 'input-error' : ''}
+                              data-exercise-index="${index}"
+                              data-input-type="${inputType}"
+                              @input=${this._handleInput}
+                              @keydown=${this._handleInputKeydown}
+                              aria-label="${inputType} for ${exercise.name}, set ${currentSetNumber}"
+                              aria-invalid=${!!this.errors[`${index}-${inputType}`]}
+                              aria-describedby="${inputType}-error-${index}"
+                            />
+                            <div class="input-stepper">
+                              <button class="step-up" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="1" @click=${this._adjustInput}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                              </button>
+                              <button class="step-down" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="-1" @click=${this._adjustInput}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                              </button>
+                            </div>
+                          </div>
+                          <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
                         </div>
-                        <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
                       </div>
                     `)}
                     <button 
@@ -667,10 +743,9 @@ class WorkoutSession extends LitElement {
                     </button>
                   </div>
                 ` : html`<p><strong>Exercise complete! Great job.</strong></p>`}
-              </div>
-            `;
-          }
-        )}
+                </div>
+            `)}
+        </div>
         
         <div class="workout-action-buttons">
           <button class="btn-secondary" @click=${this._showExitModal}>
@@ -707,6 +782,7 @@ class WorkoutSession extends LitElement {
   }
 
   _addSet(event) {
+    this._triggerHapticFeedback('success');
     const exerciseIndex = parseInt(event.target.closest('button').dataset.exerciseIndex);
     const exercise = this.workout.exercises[exerciseIndex];
 
@@ -757,9 +833,14 @@ class WorkoutSession extends LitElement {
     rirInput.value = "";
     this.errors = {};
     
-    this.feedbackQuestions = exercise.feedbackRequired;
-    this.currentFeedbackExerciseIndex = exerciseIndex;
-    this.showFeedbackModal = true;
+    // We only show the modal on the last set of an exercise
+    if (updatedExercises[exerciseIndex].completedSets.length >= updatedExercises[exerciseIndex].sets) {
+        this.feedbackQuestions = exercise.feedbackRequired;
+        this.currentFeedbackExerciseIndex = exerciseIndex;
+        this.showFeedbackModal = true;
+    } else {
+         this._startRestTimer(exercise.rest, exercise.name);
+    }
   }
   
   async _handleFeedbackSubmit(feedback) {
@@ -805,8 +886,12 @@ class WorkoutSession extends LitElement {
     
     this.showFeedbackModal = false;
 
-    if (nextUp !== "Workout Complete!") {
-      this._startRestTimer(currentExercise.rest, nextUp);
+    // Check if the next exercise has already been completed before starting the rest timer
+    if (this.currentExerciseIndex + 1 < this.workout.exercises.length) {
+      const nextExercise = this.workout.exercises[this.currentExerciseIndex + 1];
+      if (nextExercise.completedSets.length < nextExercise.sets) {
+        this._startRestTimer(currentExercise.rest, nextExercise.name);
+      }
     }
   }
 
@@ -815,6 +900,7 @@ class WorkoutSession extends LitElement {
   }
 
   async _completeWorkout() {
+    this._triggerHapticFeedback('success');
     this.isSaving = true;
 
     try {
