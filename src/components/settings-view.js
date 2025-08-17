@@ -43,7 +43,9 @@ class SettingsView extends LitElement {
   render() {
     return html`
       <div class="settings-container container">
-        <h1>Settings</h1>
+        <header class="app-header">
+          <h1>Settings</h1>
+        </header>
         <div class="card settings-group">
           <h3>Appearance</h3>
           <div class="setting-item">
