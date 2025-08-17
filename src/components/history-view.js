@@ -446,16 +446,23 @@ class HistoryView extends LitElement {
 
     return html`
       <div class="container">
-        <h1>Workout History</h1>
+        <header class="app-header">
+          <h1>Workout History</h1>
+          <div class="header-actions">
+            <button class="icon-btn" @click=${this._exportData} aria-label="Export to CSV">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </button>
+          </div>
+        </header>
+
         <div class="card summary-card">
           <h3>Workout Summary</h3>
           <p>You have logged <strong>${this.workouts.length}</strong> workouts.</p>
-          <button class="btn-secondary" @click=${this._exportData}>Export to CSV</button>
         </div>
 
         <div class="card filter-controls">
           <div class="input-group">
-            <label for="search-bar" class="sr-only">Search</label>
+            <label for="search-bar">Search:</label>
             <input
               id="search-bar"
               type="text"
@@ -465,7 +472,7 @@ class HistoryView extends LitElement {
             />
           </div>
           <div class="input-group">
-            <label for="filter-select">Filter:</label>
+            <label for="filter-select">Filter by Category:</label>
             <select id="filter-select" @change=${this._handleFilter}>
               <option value="all">All Categories</option>
               ${uniqueCategories.map(cat => html`<option value="${cat}">${cat}</option>`)}
@@ -480,11 +487,13 @@ class HistoryView extends LitElement {
           </div>
         </div>
 
-        ${this._groupAndRenderWorkouts()}
+        <div class="history-list">
+          ${this._groupAndRenderWorkouts()}
+        </div>
 
         <h2 class="section-title">Strength Progress</h2>
         ${Object.keys(exerciseData).map(exerciseName => html`
-        <div class="card workout-card">
+        <div class="card progress-card">
           <div class="exercise-header">
             <div class="exercise-title-group">
               <span class="exercise-icon">${this._getExerciseIcon(this.workouts[0].exercises.find(e => e.name === exerciseName)?.category || 'default')}</span>
@@ -511,11 +520,20 @@ class HistoryView extends LitElement {
     return html`
       <div class="container">
         <h1>Workout History</h1>
+        <div class="card">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+        </div>
+        <div class="card">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text"></div>
+        </div>
         ${[...Array(2)].map(() => html`
           <div class="card">
-            <div class="skeleton skeleton-title" style="width: 70%;"></div>
-            <div class="skeleton skeleton-text" style="width: 90%; height: 20px; margin-bottom: 1rem;"></div>
-            <div class="skeleton skeleton-card" style="height: 200px;"></div>
+            <div class="skeleton skeleton-card-title"></div>
+            <div class="skeleton skeleton-text-short"></div>
+            <div class="skeleton skeleton-chart-container"></div>
           </div>
         `)}
       </div>
