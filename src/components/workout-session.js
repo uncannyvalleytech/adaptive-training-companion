@@ -378,7 +378,7 @@ class WorkoutSession extends LitElement {
                 ${!isExerciseComplete ? html`
                   <div class="suggestion-box">
                     <p><strong>Suggestion:</strong> ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
-                    <p><em>${exercise.nextSetSuggestion.adjustment}</em></p>
+                    <p class="feedback-impact-note"><em>${exercise.nextSetSuggestion.adjustment}</em></p>
                   </div>
 
                   <div class="set-input-grid">
@@ -535,6 +535,22 @@ class WorkoutSession extends LitElement {
     if (lastSetIndex >= 0) {
       currentExercise.completedSets[lastSetIndex].feedback = feedback;
     }
+
+    // Now, update the next suggestion based on the 'Workout Difficulty' feedback
+    const difficultyFeedback = feedback["Workout Difficulty"];
+    let newAdjustment = currentExercise.nextSetSuggestion.adjustment;
+
+    if (difficultyFeedback === "Easy") {
+      currentExercise.nextSetSuggestion.rpe = Math.min(10, currentExercise.nextSetSuggestion.rpe + 1);
+      newAdjustment = `Because you found the last set easy, we're increasing the RPE.`;
+    } else if (difficultyFeedback === "Too Much") {
+      currentExercise.nextSetSuggestion.rpe = Math.max(1, currentExercise.nextSetSuggestion.rpe - 1);
+      newAdjustment = `Because you found the last set too difficult, we're decreasing the RPE.`;
+    } else {
+      newAdjustment = `Your feedback helps us fine-tune your next set.`;
+    }
+
+    currentExercise.nextSetSuggestion.adjustment = newAdjustment;
     
     this.workout = { ...this.workout, exercises: updatedExercises };
     this._saveProgressToLocalStorage();
