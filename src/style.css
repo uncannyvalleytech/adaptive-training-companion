@@ -216,6 +216,12 @@ input[type="number"]:focus, input[type="text"]:focus {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes checkmark-pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 .toast-notification {
   position: fixed;
   bottom: 20px;
@@ -230,6 +236,7 @@ input[type="number"]:focus, input[type="text"]:focus {
 }
 .toast-notification.success { background-color: var(--color-state-success); }
 .toast-notification.error { background-color: var(--color-state-error); }
+.toast-notification.info { background-color: var(--color-text-tertiary); }
 
 /* Skeleton Loader */
 .skeleton {
@@ -287,7 +294,20 @@ input[type="number"]:focus, input[type="text"]:focus {
   color: var(--color-text-primary);
 }
 
-.exercise-header { display: flex; justify-content: space-between; align-items: center; }
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+.exercise-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.exercise-icon {
+  color: var(--color-accent-primary);
+}
 .set-progress { font-size: var(--font-size-sm); background-color: var(--color-surface-primary); padding: var(--space-1) var(--space-2); border-radius: var(--border-radius-md); }
 .suggestion-box { background-color: rgba(0, 191, 255, 0.1); border-left: 4px solid var(--color-accent-primary); padding: var(--space-4); margin: var(--space-4) 0; }
 .set-input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: var(--space-4); align-items: flex-start; }
@@ -295,6 +315,20 @@ input[type="number"]:focus, input[type="text"]:focus {
   display: flex;
   justify-content: space-between;
   margin-top: var(--space-8);
+}
+.completed-sets {
+  margin-top: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.completed-set {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.checkmark {
+  color: var(--color-state-success);
+  font-size: var(--font-size-lg);
+  animation: checkmark-pulse 0.5s ease-in-out;
 }
 
 /* Rest Timer */
@@ -375,6 +409,13 @@ input[type="number"]:focus, input[type="text"]:focus {
 
 /* History View */
 .personal-record { margin-bottom: var(--space-4); }
+.summary-card {
+  text-align: center;
+}
+.summary-card h3 {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--space-2);
+}
 
 /* Navigation */
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(45, 55, 72, 0.7); backdrop-filter: blur(15px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; z-index: 100; }
