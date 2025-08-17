@@ -9,7 +9,7 @@
 import { LitElement, html, css } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
 import { getData } from "../services/api.js";
-import "./workout-session.js";
+// REMOVE THIS LINE: import "./workout-session.js";
 import "./history-view.js";
 
 class AppShell extends LitElement {
@@ -221,6 +221,9 @@ class AppShell extends LitElement {
   }
 
   renderWorkoutScreen() {
+    // Dynamically import the workout-session component only when it's needed
+    // This is the preferred way to load web components
+    import("./workout-session.js");
     return html`<workout-session></workout-session>`;
   }
 
