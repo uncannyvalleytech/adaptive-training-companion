@@ -7,11 +7,11 @@
 
 import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
-import { getData, saveData } from "../services/api.js";
+import { getData } from "../services/api.js";
 import "./workout-session.js";
 import "./history-view.js";
-import "./onboarding-flow.js"; // Import the new onboarding component
-import "./settings-view.js"; // Import the new settings component
+import "./onboarding-flow.js";
+import "./settings-view.js";
 
 class AppShell extends LitElement {
   static properties = {
@@ -43,7 +43,6 @@ class AppShell extends LitElement {
     this.units = localStorage.getItem('units') || 'lbs';
   }
 
-  // This component will use styles from the global stylesheet
   static styles = [];
 
   connectedCallback() {
@@ -51,7 +50,6 @@ class AppShell extends LitElement {
     this.waitForGoogleLibrary();
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
-    // Listen for the custom sign-in event
     window.addEventListener('user-signed-in', () => this.fetchUserData());
     window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
     window.addEventListener('units-change', (e) => this._handleUnitsChange(e.detail.units));
@@ -76,7 +74,6 @@ class AppShell extends LitElement {
   
   _handleUnitsChange(units) {
     this.units = units;
-    // We don't need to do anything else here since child components listen for this event.
   }
 
   waitForGoogleLibrary() {
@@ -94,9 +91,6 @@ class AppShell extends LitElement {
     ) {
       this.setupSignIn();
     }
-
-    // The user data is now fetched in response to a custom event
-    // so we can remove the check on userCredential.
   }
 
   setupSignIn() {
@@ -120,7 +114,6 @@ class AppShell extends LitElement {
   _handleSignIn(credential) {
     this.userCredential = credential;
     this._showToast("Successfully signed in!", "success");
-    // Dispatch a custom event to signal that the user has signed in
     window.dispatchEvent(new CustomEvent('user-signed-in'));
   }
 
@@ -134,7 +127,6 @@ class AppShell extends LitElement {
       if (response && response.data) {
         setTimeout(() => {
           this.userData = response.data;
-          // Check if user is new (no workouts) and onboarding hasn't been completed
           if (!this.userData.workouts || this.userData.workouts.length === 0) {
               if (localStorage.getItem('onboardingComplete') !== 'true') {
                   this.showOnboarding = true;
@@ -346,7 +338,7 @@ class AppShell extends LitElement {
           @click=${() => this.currentView = 'settings'}
           aria-label="Settings"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.125 1.125 0 011.97.426c1.558.337 2.25 2.274 1.25 3.593a1.125 1.125 0 01-.426 1.97c1.756.426 1.756 2.924 0 3.35a1.125 1.125 0 01.426 1.97c1.29.92 2.052 2.302 1.25 3.593a1.125 1.125 0 01-.426 1.97c-1.756.426-2.924-1.756-3.35 0a1.125 1.125 0 01-1.97.426c-1.558.337-2.25-2.274-1.25-3.593a1.125 1.125 0 01-.426-1.97c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 01-.426-1.97c-1.29-.92-2.052-2.302-1.25-3.593a1.125 1.125 0 01-.426-1.97c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 01-.426-1.97z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.125 1.125 0 011.97.426c1.558.337 2.25 2.274 1.25 3.593a1.125 1.125 0 01-.426 1.97c1.756.426 1.756 2.924 0 3.35a1.125 1.125 0 01.426 1.97c1.29.92 2.052 2.302 1.25 3.593a1.125 1.125 0 01-.426 1.97c-1.756.426-2.924-1.756-3.35 0a1.125 1.125 0 01-1.97.426c-1.558.337-2.25-2.274-1.25-3.593a1.125 1.125 0 01-.426-1.97c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 01-.426-1.97c-1.29-.92-2.052-2.302-1.25-3.593a1.125 1.125 0 01-.426-1.97z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
           <span>Settings</span>
         </button>
       </nav>
