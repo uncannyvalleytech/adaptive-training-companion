@@ -305,39 +305,37 @@ class HistoryView extends LitElement {
         </div>
       `);
     } else if (this.groupBy === "muscle-group") {
-      // Logic for grouping by muscle group would go here, which requires more data
-      // For now, we'll just group by exercise name as a proxy
-      const exercisesByName = {};
+      // Group exercises by muscle group
+      const exercisesByMuscleGroup = {};
       this.filteredWorkouts.forEach(workout => {
         workout.exercises.forEach(exercise => {
-          if (!exercisesByName[exercise.name]) {
-            exercisesByName[exercise.name] = [];
+          if (!exercisesByMuscleGroup[exercise.muscleGroup]) {
+            exercisesByMuscleGroup[exercise.muscleGroup] = [];
           }
-          exercisesByName[exercise.name].push({
+          exercisesByMuscleGroup[exercise.muscleGroup].push({
             date: new Date(workout.date).toLocaleDateString(),
             completedSets: exercise.completedSets,
             category: exercise.category,
-            // Include workout duration to link sets to a specific workout session
-            duration: workout.durationInSeconds,
+            name: exercise.name,
           });
         });
       });
       
-      return Object.keys(exercisesByName).map(exerciseName => html`
-        <div class="card workout-card" @click=${() => this._toggleExpand(exerciseName)}>
+      return Object.keys(exercisesByMuscleGroup).map(muscleGroup => html`
+        <div class="card workout-card" @click=${() => this._toggleExpand(muscleGroup)}>
           <div class="workout-summary">
-            <h3 class="workout-name">
-              <span class="exercise-icon">${this._getExerciseIcon(exercisesByName[exerciseName][0].category)}</span>
-              ${exerciseName}
-            </h3>
-            <span class="workout-count">(${exercisesByName[exerciseName].length} workouts)</span>
+            <h3 class="workout-name">${muscleGroup}</h3>
+            <span class="workout-count">(${exercisesByMuscleGroup[muscleGroup].length} exercises)</span>
           </div>
-          <div class="workout-details ${this.expandedWorkouts[exerciseName] ? 'expanded' : 'collapsed'}">
-            ${exercisesByName[exerciseName].map(ex => html`
+          <div class="workout-details ${this.expandedWorkouts[muscleGroup] ? 'expanded' : 'collapsed'}">
+            ${exercisesByMuscleGroup[muscleGroup].map(exercise => html`
               <div class="exercise-item">
-                <h4 class="exercise-name">${ex.date}</h4>
+                <h4 class="exercise-name">
+                  <span class="exercise-icon">${this._getExerciseIcon(exercise.category)}</span>
+                  ${exercise.name} on ${exercise.date}
+                </h4>
                 <ul class="set-list">
-                  ${ex.completedSets.map((set, setIndex) => html`
+                  ${exercise.completedSets.map((set, setIndex) => html`
                     <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</li>
                   `)}
                 </ul>
@@ -399,7 +397,7 @@ class HistoryView extends LitElement {
                   <label for="group-by-select">Group by:</label>
                   <select id="group-by-select" @change=${this._handleGroupBy}>
                     <option value="workout">Workout</option>
-                    <option value="muscle-group">Exercise</option>
+                    <option value="muscle-group">Muscle Group</option>
                   </select>
                 </div>
               </div>
