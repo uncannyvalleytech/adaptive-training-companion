@@ -5,6 +5,7 @@
  * based on the application's state, primarily the user's authentication status.
  */
 
+// We have updated the import path for Lit to work correctly with Vite.
 import { LitElement, html, css } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
 import { getData } from "../services/api.js";
@@ -30,28 +31,22 @@ class AppShell extends LitElement {
     this.loadingMessage = "Initializing...";
     this.errorMessage = "";
     this.isWorkoutActive = false;
-    this.currentView = "home"; // New property to manage the current view
+    this.currentView = "home";
   }
 
   connectedCallback() {
     super.connectedCallback();
-    // This function will wait until the Google library is ready.
     this.waitForGoogleLibrary();
   }
 
-  // This function repeatedly checks for the Google library.
-  // This is a much more reliable way to handle the timing issue.
   waitForGoogleLibrary() {
     if (window.google && window.google.accounts) {
       this.isGoogleLibraryLoaded = true;
     } else {
-      // If it's not ready, check again in a moment.
       setTimeout(() => this.waitForGoogleLibrary(), 100);
     }
   }
 
-  // This function runs after the component's render is updated.
-  // We wait until the google library is loaded before trying to set up the button.
   updated(changedProperties) {
     if (
       changedProperties.has("isGoogleLibraryLoaded") &&
@@ -60,7 +55,6 @@ class AppShell extends LitElement {
       this.setupSignIn();
     }
 
-    // When the userCredential changes (i.e., the user signs in), fetch their data.
     if (changedProperties.has("userCredential") && this.userCredential) {
       this.fetchUserData();
     }
@@ -88,16 +82,13 @@ class AppShell extends LitElement {
     try {
       const token = getCredential().credential;
       const response = await getData(token);
-
-      // Log the full response for debugging purposes.
+      
       console.log("API Response:", response);
-
-      // Check if the response contains the expected data object.
+      
       if (response && response.data) {
         this.userData = response.data;
         this.loadingMessage = "";
       } else {
-        // If the response is not as expected, handle it as an error.
         throw new Error(response.error || "Unexpected API response format.");
       }
     } catch (error) {
@@ -131,7 +122,6 @@ class AppShell extends LitElement {
   renderLoginScreen() {
     return html`
       <style>
-        /* This is a local style for this component only */
         .login-container {
           display: flex;
           flex-direction: column;
@@ -144,9 +134,7 @@ class AppShell extends LitElement {
       <div class="login-container">
         <h1>Welcome to the Adaptive Training Companion</h1>
         <p>Please sign in to continue.</p>
-        <!-- The Google Sign-In button will be rendered here -->
         <div id="google-signin-button"></div>
-        <!-- Show a message if the library is slow to load -->
         ${!this.isGoogleLibraryLoaded
           ? html`<p><em>Loading Sign-In button...</em></p>`
           : ""}
@@ -226,12 +214,8 @@ class AppShell extends LitElement {
       <div class="home-container">
         <h1>Welcome Back, ${this.userData.userEmail}!</h1>
         <p>You have ${this.userData.workouts?.length || 0} workouts logged.</p>
-        <button class="start-workout-btn" @click=${this._startWorkout}>
-          Start Workout
-        </button>
-        <button class="view-history-btn" @click=${this._viewHistory}>
-          View History
-        </button>
+        <button class="start-workout-btn" @click=${this._startWorkout}>Start Workout</button>
+        <button class="view-history-btn" @click=${this._viewHistory}>View History</button>
       </div>
     `;
   }
