@@ -88,10 +88,10 @@ class HistoryView extends LitElement {
   _getExerciseIcon(category) {
     // A simple mapping for now. Can be expanded later.
     const icons = {
-      'strength': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M14 2L6 2v6a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V2zM14 2h6l-6 6a4 4 0 0 0-4-4V2zM14 2h6L14 8a4 4 0 0 0-4-4V2z"></path></svg>`,
-      'cardio': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19zM12 2a9.5 9.5 0 0 0 0 19M12 2a9.5 9.5 0 0 0 0 19zM12 2a9.5 9.5 0 0 0 0 19z"></path></svg>`,
-      'flexibility': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 2v10l-4-4"></path></svg>`,
-      'default': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`
+      'strength': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L6 2v6a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V2z"></path><path d="M14 2h6l-6 6a4 4 0 0 0-4-4V2z"></path><path d="M14 2h6L14 8a4 4 0 0 0-4-4V2z"></path></svg>`,
+      'cardio': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 12.58a9.5 9.5 0 1 1-10.5-9.5"></path><path d="M16 16l-3-3"></path><path d="M14.5 12.5l-3 3"></path></svg>`,
+      'flexibility': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path><path d="M12 2v10l-4-4"></path></svg>`,
+      'default': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`
     };
     return icons[category] || icons['default'];
   }
@@ -185,19 +185,30 @@ class HistoryView extends LitElement {
             datasets: [{
               label: `Estimated 1RM (${unitLabel})`,
               data: exerciseData[exerciseName].data,
-              borderColor: 'rgba(138, 43, 226, 1)',
-              backgroundColor: 'rgba(138, 43, 226, 0.2)',
+              borderColor: 'var(--color-accent-primary)',
+              backgroundColor: 'rgba(0, 191, 255, 0.2)',
               fill: true,
-              tension: 0.1,
+              tension: 0.4,
+              pointBackgroundColor: 'var(--color-accent-primary)',
+              pointBorderColor: 'var(--color-surface-secondary)',
+              pointHoverRadius: 8,
+              pointHoverBackgroundColor: 'var(--color-accent-primary-hover)',
+              pointHoverBorderColor: 'var(--color-text-primary)'
             }]
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               legend: {
                 display: false
               },
               tooltip: {
+                backgroundColor: 'var(--color-surface-tertiary)',
+                titleColor: 'var(--color-text-primary)',
+                bodyColor: 'var(--color-text-secondary)',
+                borderColor: 'var(--border-color)',
+                borderWidth: 1,
                 callbacks: {
                   label: (context) => {
                     return `Est. 1RM: ${Math.round(context.raw)} ${unitLabel}`;
@@ -206,11 +217,26 @@ class HistoryView extends LitElement {
               }
             },
             scales: {
+              x: {
+                grid: {
+                  color: 'var(--border-color)'
+                },
+                ticks: {
+                  color: 'var(--color-text-secondary)'
+                }
+              },
               y: {
                 beginAtZero: true,
                 title: {
                   display: true,
-                  text: `Est. 1RM (${unitLabel})`
+                  text: `Est. 1RM (${unitLabel})`,
+                  color: 'var(--color-text-secondary)'
+                },
+                grid: {
+                  color: 'var(--border-color)'
+                },
+                ticks: {
+                  color: 'var(--color-text-secondary)'
                 }
               }
             }
@@ -406,7 +432,7 @@ class HistoryView extends LitElement {
       return html`
         <div class="container empty-state-container">
           <h1>Workout History</h1>
-          <div class="glass-card">
+          <div class="card">
             <h3>No Workouts Logged Yet</h3>
             <p>Once you complete a workout, your history and progress charts will appear here.</p>
           </div>
@@ -421,13 +447,13 @@ class HistoryView extends LitElement {
     return html`
       <div class="container">
         <h1>Workout History</h1>
-        <div class="summary-card glass-card">
+        <div class="card summary-card">
           <h3>Workout Summary</h3>
           <p>You have logged <strong>${this.workouts.length}</strong> workouts.</p>
           <button class="btn-secondary" @click=${this._exportData}>Export to CSV</button>
         </div>
 
-        <div class="filter-controls glass-card">
+        <div class="card filter-controls">
           <div class="input-group">
             <label for="search-bar" class="sr-only">Search</label>
             <input
@@ -472,7 +498,9 @@ class HistoryView extends LitElement {
               : 'No records yet.'
             }
           </div>
-          <canvas id="chart-${exerciseName.replace(/\s+/g, '-')}"></canvas>
+          <div class="chart-container">
+            <canvas id="chart-${exerciseName.replace(/\s+/g, '-')}"></canvas>
+          </div>
         </div>
       `)}
       </div>
