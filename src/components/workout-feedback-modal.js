@@ -4,8 +4,7 @@
  * after completing a set during a workout session.
  */
 
-import { LitElement, html, css } from "lit";
-// import "../style.css"; // This line is removed to fix the loading error
+import { LitElement, html } from "lit";
 
 class WorkoutFeedbackModal extends LitElement {
   static properties = {
@@ -21,10 +20,9 @@ class WorkoutFeedbackModal extends LitElement {
     this.selectedAnswers = {};
   }
 
-  static styles = []; // The component's styles will now be handled by the imported stylesheet.
+  static styles = [];
 
   firstUpdated() {
-    // Focus the first radio button when the modal opens
     const firstRadio = this.shadowRoot.querySelector('input[type="radio"]');
     if (firstRadio) {
       firstRadio.focus();
@@ -39,7 +37,7 @@ class WorkoutFeedbackModal extends LitElement {
 
     return html`
       <div class="modal-overlay" @click=${this._handleOverlayClick}>
-        <div class="modal-content glass-card" 
+        <div class="glass-card modal-content" 
              role="dialog" 
              aria-modal="true" 
              aria-labelledby="modal-title"
@@ -71,11 +69,11 @@ class WorkoutFeedbackModal extends LitElement {
           `)}
 
           <div class="submit-section">
-            <button class="cancel-button btn-secondary" @click=${this._handleClose}>
+            <button class="btn-secondary" @click=${this._handleClose}>
               Skip
             </button>
             <button 
-              class="submit-button btn-primary" 
+              class="btn-primary" 
               @click=${this._handleSubmit}
               ?disabled=${!allQuestionsAnswered}
             >
