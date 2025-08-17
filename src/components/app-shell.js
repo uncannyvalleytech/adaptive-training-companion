@@ -7,9 +7,10 @@
 
 import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
-import { getData } from "../services/api.js";
+import { getData, saveData } from "../services/api.js";
 import "./workout-session.js";
 import "./history-view.js";
+import "./onboarding-flow.js"; // Import the new onboarding component
 
 class AppShell extends LitElement {
   static properties = {
@@ -21,6 +22,7 @@ class AppShell extends LitElement {
     isWorkoutActive: { type: Boolean },
     currentView: { type: String },
     toast: { type: Object },
+    showOnboarding: { type: Boolean },
   };
 
   constructor() {
@@ -33,6 +35,7 @@ class AppShell extends LitElement {
     this.isWorkoutActive = false;
     this.currentView = "home";
     this.toast = null;
+    this.showOnboarding = false;
   }
 
   // This component will use styles from the global stylesheet
@@ -98,6 +101,12 @@ class AppShell extends LitElement {
       if (response && response.data) {
         setTimeout(() => {
           this.userData = response.data;
+          // Check if user is new (no workouts) and onboarding hasn't been completed
+          if (!this.userData.workouts || this.userData.workouts.length === 0) {
+              if (localStorage.getItem('onboardingComplete') !== 'true') {
+                  this.showOnboarding = true;
+              }
+          }
           this.loadingMessage = "";
         }, 1000);
       } else {
@@ -111,13 +120,18 @@ class AppShell extends LitElement {
     }
   }
 
+  _handleOnboardingComplete() {
+      localStorage.setItem('onboardingComplete', 'true');
+      this.showOnboarding = false;
+  }
+
   _retryFetchUserData() {
     this.errorMessage = "";
     this.fetchUserData();
   }
 
   render() {
-    const showNav = this.userCredential && !this.isWorkoutActive && this.userData;
+    const showNav = this.userCredential && !this.isWorkoutActive && this.userData && !this.showOnboarding;
     return html`
       ${this.renderToast()}
       ${this._renderCurrentView()}
@@ -132,6 +146,8 @@ class AppShell extends LitElement {
       return this.renderErrorScreen();
     } else if (!this.userData) {
       return this.renderSkeletonHomeScreen();
+    } else if (this.showOnboarding) {
+        return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
     } else if (this.isWorkoutActive) {
       return this.renderWorkoutScreen();
     } else {
