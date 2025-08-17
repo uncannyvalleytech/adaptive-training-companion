@@ -172,3 +172,58 @@ export function getQueuedWorkoutsCount() {
   return queuedWorkouts.length;
 }
 
+/**
+ * Generates a smart recommendation for the next set based on user feedback.
+ * @param {object} context - The context for the recommendation, including last set data.
+ * @returns {Promise<object>} The recommendation from the model.
+ */
+export async function generateRecommendation(context) {
+  try {
+    let chatHistory = [];
+    const prompt = `Based on the last completed set for the exercise "${context.exerciseName}" with ${context.lastSet.reps} reps and an RPE of ${context.lastSet.rpe}, and the user's feedback, what is the best suggestion for the next set? The target RPE was ${context.targetRpe}. The user's feedback was: ${JSON.stringify(context.lastSet.feedback)}. Provide a new reps, new RPE, and a brief explanation in JSON format.
+    Example: {"reps": 10, "rpe": 8, "adjustment": "Because you felt good, we're increasing the RPE slightly to keep you challenged."}
+    `;
+    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+    
+    const payload = {
+        contents: chatHistory,
+        generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+                type: "OBJECT",
+                properties: {
+                    "reps": { "type": "NUMBER" },
+                    "rpe": { "type": "NUMBER" },
+                    "adjustment": { "type": "STRING" }
+                },
+                "propertyOrdering": ["reps", "rpe", "adjustment"]
+            }
+        }
+    };
+    
+    // Replace the API key with your own if needed, or leave it as-is for the runtime environment.
+    const apiKey = "";
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+    if (result.candidates && result.candidates.length > 0 &&
+        result.candidates[0].content && result.candidates[0].content.parts &&
+        result.candidates[0].content.parts.length > 0) {
+      const json = result.candidates[0].content.parts[0].text;
+      return JSON.parse(json);
+    } else {
+      console.error("API response was not in the expected format.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Failed to generate recommendation:", error);
+    // Fallback to a simple rule-based suggestion if API call fails
+    return { reps: context.lastSet.reps, rpe: context.lastSet.rpe, adjustment: "Failed to generate smart recommendation. Using a fallback." };
+  }
+}
