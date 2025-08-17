@@ -8,8 +8,18 @@
       name="description"
       content="An intelligent workout app that adapts to you in real-time."
     />
-    <!-- GitHub Pages compatible paths -->
     <link rel="stylesheet" href="./src/style.css" />
+    
+    <!-- Import map to resolve 'lit' from CDN -->
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "https://cdn.skypack.dev/lit@3",
+          "lit/": "https://cdn.skypack.dev/lit@3/"
+        }
+      }
+    </script>
+    
     <script type="module" src="./src/main.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
