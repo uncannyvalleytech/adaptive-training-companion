@@ -30,6 +30,10 @@ const initialWorkout = {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/irA7MTz96ho?si=K-Lq-055i5r-13iC'
       }
     },
     {
@@ -47,6 +51,10 @@ const initialWorkout = {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/McCDaAsSeRc?si=nK5Xp8xR5d7dFwQo'
       }
     },
     {
@@ -64,6 +72,10 @@ const initialWorkout = {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/0cXAp6WhSj4?si=6mG3B1xK2d7d5Qk'
       }
     },
     {
@@ -80,6 +92,10 @@ const initialWorkout = {
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/F3QY5vMz_6I?si=6mG3B1xK2d7d5Qk'
       }
     },
     {
@@ -97,6 +113,10 @@ const initialWorkout = {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/eGo4IYlbE5g?si=6mG3B1xK2d7d5Qk'
       }
     },
     {
@@ -114,6 +134,10 @@ const initialWorkout = {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/Nqh7q3zDCoQ?si=6mG3B1xK2d7d5Qk'
       }
     },
     {
@@ -131,6 +155,10 @@ const initialWorkout = {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/9xEPQwUDNuI?si=6mG3B1xK2d7d5Qk'
       }
     },
     {
@@ -148,6 +176,10 @@ const initialWorkout = {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Tricep Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/2-LAMcpzODU?si=6mG3B1xK2d7d5Qk'
       }
     },
     {
@@ -164,6 +196,10 @@ const initialWorkout = {
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/sSj-Q25vJkU?si=6mG3B1xK2d7d5Qk'
       }
     },
     {
@@ -180,6 +216,10 @@ const initialWorkout = {
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      },
+      media: {
+        type: 'youtube',
+        url: 'https://www.youtube.com/embed/5xR8tvg4-yM?si=6mG3B1xK2d7d5Qk'
       }
     }
   ],
@@ -511,6 +551,20 @@ class WorkoutSession extends LitElement {
                   <span class="set-progress">Set ${Math.min(currentSetNumber, exercise.sets)} of ${exercise.sets}</span>
                 </div>
                 
+                ${exercise.media ? html`
+                  <div class="exercise-media-container">
+                    <iframe
+                      src="${exercise.media.url}"
+                      title="${exercise.name} instructional video"
+                      frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      allowfullscreen
+                      class="exercise-media-frame"
+                    ></iframe>
+                  </div>
+                ` : ''}
+
                 ${exercise.completedSets.length > 0 ? html`
                   <div class="completed-sets">
                     ${exercise.completedSets.map(
