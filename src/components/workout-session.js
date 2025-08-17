@@ -242,6 +242,10 @@ class WorkoutSession extends LitElement {
     estimatedTimeRemaining: { type: Number },
     showExitModal: { type: Boolean },
     units: { type: String },
+    inputWeight: { type: Number },
+    inputReps: { type: Number },
+    inputRpe: { type: Number },
+    inputRir: { type: Number },
   };
 
   constructor() {
@@ -263,6 +267,10 @@ class WorkoutSession extends LitElement {
     this.showExitModal = false;
     this.units = 'lbs';
     this.workoutStartTime = Date.now();
+    this.inputWeight = 0;
+    this.inputReps = 0;
+    this.inputRpe = 0;
+    this.inputRir = 0;
   }
 
   static styles = [];
@@ -365,6 +373,31 @@ class WorkoutSession extends LitElement {
     this.errors = { ...this.errors, [errorKey]: errorMessage };
   }
 
+  _handleInput(e) {
+    const input = e.target;
+    const { inputType } = input.dataset;
+    const value = input.value;
+    
+    // Update the properties for each input field
+    switch (inputType) {
+      case 'reps':
+        this.inputReps = value;
+        break;
+      case 'weight':
+        this.inputWeight = value;
+        break;
+      case 'rpe':
+        this.inputRpe = value;
+        break;
+      case 'rir':
+        this.inputRir = value;
+        break;
+    }
+
+    // Call validation to ensure instant feedback
+    this._validateInput(e);
+  }
+
   _handleInputKeydown(e) {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -384,6 +417,7 @@ class WorkoutSession extends LitElement {
       input.value = Math.max(0, currentValue + parseFloat(amount));
       // Re-run validation and trigger a change event for Lit to pick it up
       this._validateInput({ target: input });
+      this._handleInput({ target: input });
       input.dispatchEvent(new Event('input'));
     }
   }
@@ -541,6 +575,9 @@ class WorkoutSession extends LitElement {
             const currentSetNumber = exercise.completedSets.length + 1;
             const isExerciseComplete = currentSetNumber > exercise.sets;
 
+            // Check if any input field has a value
+            const hasInputValue = this.inputReps > 0 || this.inputWeight > 0 || this.inputRpe > 0 || this.inputRir > 0;
+
             return html`
               <div class="card" role="region" aria-labelledby="exercise-title-${index}">
                 <div class="exercise-header">
@@ -596,7 +633,7 @@ class WorkoutSession extends LitElement {
                             class=${this.errors[`${index}-${inputType}`] ? 'input-error' : ''}
                             data-exercise-index="${index}"
                             data-input-type="${inputType}"
-                            @input=${this._validateInput}
+                            @input=${this._handleInput}
                             @keydown=${this._handleInputKeydown}
                             aria-label="${inputType} for ${exercise.name}, set ${currentSetNumber}"
                             aria-invalid=${!!this.errors[`${index}-${inputType}`]}
@@ -610,7 +647,11 @@ class WorkoutSession extends LitElement {
                         <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
                       </div>
                     `)}
-                    <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary add-set-button" aria-label="Add set ${currentSetNumber} for ${exercise.name}">
+                    <button 
+                      @click=${this._addSet} 
+                      data-exercise-index="${index}" 
+                      class="btn-primary add-set-button ${hasInputValue ? 'pulse-animate' : ''}" 
+                      aria-label="Add set ${currentSetNumber} for ${exercise.name}">
                       Add Set
                     </button>
                   </div>
