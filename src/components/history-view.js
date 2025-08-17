@@ -21,6 +21,7 @@ class HistoryView extends LitElement {
     searchTerm: { type: String },
     filterTerm: { type: String },
     groupBy: { type: String },
+    units: { type: String },
   };
 
   constructor() {
@@ -34,20 +35,27 @@ class HistoryView extends LitElement {
     this.searchTerm = "";
     this.filterTerm = "all";
     this.groupBy = "workout";
+    this.units = 'lbs';
   }
   
   connectedCallback() {
     super.connectedCallback();
     this.fetchWorkoutHistory();
+    window.addEventListener('units-change', (e) => this._handleUnitsChange(e.detail.units));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     // Clean up charts when the component is removed
     Object.values(this.chartInstances).forEach(chart => chart.destroy());
+    window.removeEventListener('units-change', this._handleUnitsChange.bind(this));
   }
-
-  static styles = []; // The component's styles will now be handled by the imported stylesheet.
+  
+  _handleUnitsChange(units) {
+    this.units = units;
+    this.requestUpdate();
+    this.createCharts();
+  }
 
   async fetchWorkoutHistory() {
     this.isLoading = true;
@@ -88,8 +96,15 @@ class HistoryView extends LitElement {
     return icons[category] || icons['default'];
   }
 
+  _convertWeight(weight) {
+    if (this.units === 'kg') {
+      return (weight * 0.453592).toFixed(1);
+    }
+    return weight;
+  }
+  
   updated(changedProperties) {
-    if (changedProperties.has('workouts') || changedProperties.has('filteredWorkouts')) {
+    if (changedProperties.has('workouts') || changedProperties.has('filteredWorkouts') || changedProperties.has('units')) {
       this.createCharts();
     }
   }
@@ -133,8 +148,8 @@ class HistoryView extends LitElement {
           // Update personal records
           if (!personalRecords[exercise.name] || estimated1RM > personalRecords[exercise.name].oneRepMax) {
             personalRecords[exercise.name] = {
-              oneRepMax: Math.round(estimated1RM),
-              weight: set.weight,
+              oneRepMax: Math.round(this._convertWeight(estimated1RM)),
+              weight: this._convertWeight(set.weight),
               reps: set.reps,
               date: workoutDate,
             };
@@ -143,7 +158,7 @@ class HistoryView extends LitElement {
 
         if (dailyMax1RM > 0) {
           exerciseData[exercise.name].labels.push(workoutDate);
-          exerciseData[exercise.name].data.push(dailyMax1RM);
+          exerciseData[exercise.name].data.push(this._convertWeight(dailyMax1RM));
         }
       });
     });
@@ -153,6 +168,7 @@ class HistoryView extends LitElement {
 
   createCharts() {
     const { exerciseData } = this._processDataForCharts();
+    const unitLabel = this.units === 'lbs' ? 'lbs' : 'kg';
     
     Object.values(this.chartInstances).forEach(chart => chart.destroy());
     this.chartInstances = {};
@@ -166,7 +182,7 @@ class HistoryView extends LitElement {
           data: {
             labels: exerciseData[exerciseName].labels,
             datasets: [{
-              label: 'Estimated 1RM (lbs)',
+              label: `Estimated 1RM (${unitLabel})`,
               data: exerciseData[exerciseName].data,
               borderColor: 'rgba(138, 43, 226, 1)',
               backgroundColor: 'rgba(138, 43, 226, 0.2)',
@@ -182,8 +198,8 @@ class HistoryView extends LitElement {
               },
               tooltip: {
                 callbacks: {
-                  label: function(context) {
-                    return `Est. 1RM: ${Math.round(context.raw)} lbs`;
+                  label: (context) => {
+                    return `Est. 1RM: ${Math.round(context.raw)} ${unitLabel}`;
                   }
                 }
               }
@@ -193,7 +209,7 @@ class HistoryView extends LitElement {
                 beginAtZero: true,
                 title: {
                   display: true,
-                  text: 'Est. 1RM (lbs)'
+                  text: `Est. 1RM (${unitLabel})`
                 }
               }
             }
@@ -256,6 +272,7 @@ class HistoryView extends LitElement {
   }
   
   _groupAndRenderWorkouts() {
+    const weightUnit = this.units === 'lbs' ? 'lbs' : 'kg';
     if (this.groupBy === "workout") {
       return this.filteredWorkouts.map((workout, workoutIndex) => html`
         <div class="card workout-card" @click=${() => this._toggleExpand(workoutIndex)}>
@@ -265,7 +282,7 @@ class HistoryView extends LitElement {
           </div>
           <div class="workout-details ${this.expandedWorkouts[workoutIndex] ? 'expanded' : 'collapsed'}">
             <div class="workout-metrics">
-              <p>Total Volume: ${this._calculateVolume(workout.exercises)} lbs</p>
+              <p>Total Volume: ${this._convertWeight(this._calculateVolume(workout.exercises))} ${weightUnit}</p>
               <p>Duration: ${this._formatDuration(workout.durationInSeconds)}</p>
             </div>
             ${workout.exercises.map(exercise => html`
@@ -278,7 +295,7 @@ class HistoryView extends LitElement {
                 </div>
                 <ul class="set-list">
                   ${exercise.completedSets.map((set, setIndex) => html`
-                    <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${set.weight} lbs</li>
+                    <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</li>
                   `)}
                 </ul>
               </div>
@@ -320,7 +337,7 @@ class HistoryView extends LitElement {
                 <h4 class="exercise-name">${ex.date}</h4>
                 <ul class="set-list">
                   ${ex.completedSets.map((set, setIndex) => html`
-                    <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${set.weight} lbs</li>
+                    <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</li>
                   `)}
                 </ul>
               </div>
