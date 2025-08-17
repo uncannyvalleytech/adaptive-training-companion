@@ -1,365 +1,741 @@
-/**
- * @file workout-session.js
- * This component handles the core workout experience.
- * It is responsible for displaying the current workout,
- * managing user input for sets, reps, and RPE, and
- * implementing the core adaptive engine logic.
- */
+/* =============================================== */
+/* 1. GLOBAL VARIABLES (THEME TOKENS)              */
+/* =============================================== */
+:root {
+  --font-family-sans: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
 
-import { LitElement, html } from "lit";
-import { saveData } from "../services/api.js";
-import { getCredential } from "../services/google-auth.js";
-import "./workout-feedback-modal.js"; // Import the new modal component
-import "../style.css"; // Import the main stylesheet
+  /* Brand Colors */
+  --color-primary: #8a2be2; /* Blue Violet */
+  --color-secondary: #00d4ff; /* Electric Blue */
+  --color-accent: #ff4500; /* Energetic Orange */
+  --color-success: #28a745; /* Green */
+  --color-error: #dc3545; /* Red */
 
-// A simple workout object for our MVP (Minimum Viable Product)
-const initialWorkout = {
-  name: "Full Body Strength",
-  exercises: [
-    {
-      name: "Barbell Squats",
-      sets: 3,
-      reps: 5,
-      rpe: 8,
-      completedSets: [],
-      notes: "",
-      nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      }
-    },
-    {
-      name: "Dumbbell Bench Press",
-      sets: 3,
-      reps: 8,
-      rpe: 7,
-      completedSets: [],
-      notes: "",
-      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      }
-    },
-    {
-      name: "Pull-ups",
-      sets: 3,
-      reps: 8,
-      rpe: 8,
-      completedSets: [],
-      notes: "",
-      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      }
-    },
-  ],
-};
+  /* Gradients */
+  --gradient-bg: linear-gradient(135deg, #2b0051 0%, #0a011a 100%);
+  --gradient-btn: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+  --gradient-btn-hover: linear-gradient(45deg, #7b1fa2, #00b0ff);
 
-class WorkoutSession extends LitElement {
-  static properties = {
-    workout: { type: Object },
-    isSaving: { type: Boolean },
-    errors: { type: Object },
-    // New properties for the feedback modal
-    showFeedbackModal: { type: Boolean },
-    feedbackQuestions: { type: Object },
-    currentFeedbackExerciseIndex: { type: Number },
-  };
+  /* Glassmorphism */
+  --glass-bg-color: rgba(255, 255, 255, 0.05);
+  --glass-border-color: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
-  constructor() {
-    super();
-    this.workout = initialWorkout;
-    this.isSaving = false;
-    this.errors = {}; // To store validation errors
-    // Initialize new properties
-    this.showFeedbackModal = false;
-    this.feedbackQuestions = {};
-    this.currentFeedbackExerciseIndex = -1;
-  }
+  /* Light Theme (Default) */
+  --color-background: #121212;
+  --color-surface: #1e1e1e;
+  --color-text-primary: #e9ecef;
+  --color-text-secondary: #adb5bd;
+  --color-border: #495057;
+  --color-glow-primary: rgba(138, 43, 226, 0.5);
+  --color-glow-error: rgba(220, 53, 69, 0.5);
 
-  static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
-  _validateInput(e) {
-    const input = e.target;
-    const { exerciseIndex, inputType } = input.dataset;
-    const value = parseFloat(input.value);
-    const errorKey = `${exerciseIndex}-${inputType}`;
-    let errorMessage = '';
+  /* Other variables */
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
 
-    if (input.value !== '' && (isNaN(value) || value < 0)) {
-      errorMessage = 'Must be a positive number.';
-    }
+/* =============================================== */
+/* 2. GLOBAL STYLES & RESETS                       */
+/* =============================================== */
 
-    this.errors = { ...this.errors, [errorKey]: errorMessage };
-  }
+/* Import a modern font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
-  _handleInputKeydown(e) {
-    if (e.key === 'Enter') {
-      const exerciseIndex = e.target.dataset.exerciseIndex;
-      const addButton = this.shadowRoot.querySelector(`.add-set-button[data-exercise-index="${exerciseIndex}"]`);
-      if (addButton) {
-        addButton.click();
-      }
-    } else {
-      // Auto-focus next input
-      const { exerciseIndex, inputType } = e.target.dataset;
-      if (e.target.value.length > 0) {
-        let nextInputType;
-        switch (inputType) {
-          case 'reps': nextInputType = 'weight'; break;
-          case 'weight': nextInputType = 'rpe'; break;
-          case 'rpe': nextInputType = 'rir'; break;
-          default: return;
-        }
-        const nextInput = this.shadowRoot.querySelector(`input[data-exercise-index="${exerciseIndex}"][data-input-type="${nextInputType}"]`);
-        if (nextInput) {
-          // A small delay helps ensure the value is registered before focus shifts
-          setTimeout(() => nextInput.focus(), 100);
-        }
-      }
-    }
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  _adjustValue(exerciseIndex, inputType, amount) {
-    const input = this.shadowRoot.querySelector(`input[data-exercise-index="${exerciseIndex}"][data-input-type="${inputType}"]`);
-    if (input) {
-      let currentValue = parseFloat(input.value) || 0;
-      input.value = Math.max(0, currentValue + amount);
-      this._validateInput({ target: input }); // Re-validate after change
-    }
-  }
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
 
-  render() {
-    return html`
-      <div class="container">
-        <h1>${this.workout.name}</h1>
-        ${this.workout.exercises.map(
-          (exercise, index) => {
-            const repsError = this.errors[`${index}-reps`];
-            const weightError = this.errors[`${index}-weight`];
-            const rpeError = this.errors[`${index}-rpe`];
-            const rirError = this.errors[`${index}-rir`];
-            const currentSetNumber = exercise.completedSets.length + 1;
+body {
+  font-family: var(--font-family-sans);
+  background: var(--gradient-bg);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden; /* Hide horizontal overflow */
+}
 
-            return html`
-              <div class="card exercise-card" role="region" aria-labelledby="exercise-title-${index}">
-                <h3 id="exercise-title-${index}">${exercise.name}</h3>
-                <p>
-                  Target: ${exercise.sets} sets of ${exercise.reps} reps @ RPE
-                  ${exercise.rpe}
-                </p>
-                ${exercise.completedSets.length > 0 ? html`
-                  <div class="completed-sets">
-                    ${exercise.completedSets.map(
-                      (set, setIndex) => html`
-                        <p>
-                          Completed Set ${setIndex + 1}: ${set.reps} reps @ ${set.rpe}
-                          RPE with ${set.weight} lbs
-                        </p>
-                      `
-                    )}
-                  </div>
-                ` : ''}
-                
-                <div class="suggestion-box">
-                  <p><strong>Next set:</strong> ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
-                  <p><em>${exercise.nextSetSuggestion.adjustment}</em></p>
-                </div>
+/* =============================================== */
+/* 3. MAIN APPLICATION LAYOUT                      */
+/* =============================================== */
 
-                <div class="set-input-grid">
-                  ${['reps', 'weight', 'rpe', 'rir'].map(inputType => html`
-                    <div class="input-group">
-                      <label for="${inputType}-${index}" class="sr-only">${inputType.charAt(0).toUpperCase() + inputType.slice(1)} for ${exercise.name}</label>
-                      <div class="input-wrapper">
-                        <input
-                          id="${inputType}-${index}"
-                          type="number"
-                          placeholder="${inputType.charAt(0).toUpperCase() + inputType.slice(1)}"
-                          class=${this.errors[`${index}-${inputType}`] ? 'input-error' : ''}
-                          data-exercise-index="${index}"
-                          data-input-type="${inputType}"
-                          @input=${this._validateInput}
-                          @keydown=${this._handleInputKeydown}
-                          aria-label="${inputType} for ${exercise.name}, set ${currentSetNumber}"
-                          aria-invalid=${!!this.errors[`${index}-${inputType}`]}
-                          aria-describedby="${inputType}-error-${index}"
-                        />
-                        <div class="stepper-buttons">
-                          <button @click=${() => this._adjustValue(index, inputType, 1)} class="stepper-btn" aria-label="Increase ${inputType}">+</button>
-                          <button @click=${() => this._adjustValue(index, inputType, -1)} class="stepper-btn" aria-label="Decrease ${inputType}">-</button>
-                        </div>
-                      </div>
-                      <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
-                    </div>
-                  `)}
-                  <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary add-set-button" aria-label="Add set ${currentSetNumber} for ${exercise.name}">
-                    Add Set
-                  </button>
-                </div>
-              </div>
-            `;
-          }
-        )}
-        <button class="complete-workout-btn btn-primary" @click=${this._completeWorkout} ?disabled=${this.isSaving}>
-          ${this.isSaving
-            ? html`<div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div> Saving...`
-            : 'Complete Workout'
-          }
-        </button>
-      </div>
-      
-      ${this.showFeedbackModal
-        ? html`
-            <workout-feedback-modal
-              .feedbackData=${this.feedbackQuestions}
-              .onFeedbackSubmit=${this._handleFeedbackSubmit.bind(this)}
-              .onClose=${() => this._closeFeedbackModal()}
-            ></workout-feedback-modal>
-          `
-        : ""}
-    `;
-  }
+/* This is the main container for our entire application. */
+app-shell {
+  display: block;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+  position: relative;
+  z-index: 10;
+}
 
-  _addSet(event) {
-    const exerciseIndex = parseInt(event.target.closest('button').dataset.exerciseIndex);
-    const exercise = this.workout.exercises[exerciseIndex];
-
-    const parent = event.target.closest(".set-input-grid");
-    const repsInput = parent.querySelector('input[data-input-type="reps"]');
-    const weightInput = parent.querySelector('input[data-input-type="weight"]');
-    const rpeInput = parent.querySelector('input[data-input-type="rpe"]');
-    const rirInput = parent.querySelector('input[data-input-type="rir"]');
-
-    // Final validation check before adding the set
-    const reps = parseFloat(repsInput.value);
-    const weight = parseFloat(weightInput.value);
-    const rpe = parseFloat(rpeInput.value);
-    const rir = parseFloat(rirInput.value);
-
-    let hasError = false;
-    if (repsInput.value === '' || isNaN(reps) || reps < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-reps`]: 'Required.' };
-      hasError = true;
-    }
-    if (weightInput.value === '' || isNaN(weight) || weight < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-weight`]: 'Required.' };
-      hasError = true;
-    }
-    if (rpeInput.value === '' || isNaN(rpe) || rpe < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-rpe`]: 'Required.' };
-      hasError = true;
-    }
-    if (rirInput.value === '' || isNaN(rir) || rir < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-rir`]: 'Required.' };
-      hasError = true;
-    }
-
-    if (hasError) {
-      this.requestUpdate();
-      return;
-    }
-
-    const newSet = { reps, weight, rpe, rir };
-
-    const updatedExercises = [...this.workout.exercises];
-    updatedExercises[exerciseIndex] = {
-      ...exercise,
-      completedSets: [...exercise.completedSets, newSet],
-    };
-
-    const lastSet = newSet;
-    let nextReps = lastSet.reps;
-    let nextRpe = lastSet.rpe;
-    let adjustment = "You're on track!";
-    
-    if (lastSet.rpe > exercise.rpe) {
-      nextReps = Math.max(1, lastSet.reps - 1);
-      nextRpe = Math.max(1, lastSet.rpe - 1);
-      adjustment = "That was a little tough. Let's pull back slightly.";
-    } else if (lastSet.rpe < exercise.rpe) {
-      nextReps = lastSet.reps;
-      nextRpe = lastSet.rpe + 1;
-      adjustment = "That was easier than expected! Let's challenge you a bit more.";
-    }
-    
-    updatedExercises[exerciseIndex].nextSetSuggestion = {
-      reps: nextReps,
-      rpe: nextRpe,
-      adjustment: adjustment,
-    };
-    
-    this.workout = { ...this.workout, exercises: updatedExercises };
-
-    repsInput.value = "";
-    weightInput.value = "";
-    rpeInput.value = "";
-    rirInput.value = "";
-    this.errors = {}; // Clear errors after successful submission
-    
-    this.feedbackQuestions = exercise.feedbackRequired;
-    this.currentFeedbackExerciseIndex = exerciseIndex;
-    this.showFeedbackModal = true;
-  }
-  
-  _handleFeedbackSubmit(feedback) {
-    const updatedExercises = [...this.workout.exercises];
-    const currentExercise = updatedExercises[this.currentFeedbackExerciseIndex];
-    const lastSetIndex = currentExercise.completedSets.length - 1;
-    
-    if (lastSetIndex >= 0) {
-      currentExercise.completedSets[lastSetIndex].feedback = feedback;
-    }
-    
-    this.workout = { ...this.workout, exercises: updatedExercises };
-    this.showFeedbackModal = false;
-  }
-
-  _closeFeedbackModal() {
-    this.showFeedbackModal = false;
-  }
-
-  async _completeWorkout() {
-    this.isSaving = true;
-
-    try {
-      const token = getCredential().credential;
-      if (!token) {
-        throw new Error("User not authenticated.");
-      }
-
-      const workoutToSave = {
-        date: new Date().toISOString(),
-        exercises: this.workout.exercises.map((exercise) => ({
-          name: exercise.name,
-          completedSets: exercise.completedSets,
-        })),
-      };
-
-      const response = await saveData([workoutToSave], token);
-
-      if (response.success === false) {
-        throw new Error(response.error);
-      }
-
-      this.dispatchEvent(new CustomEvent('workout-completed', { bubbles: true, composed: true }));
-
-    } catch (error) {
-      console.error("Failed to save workout data:", error);
-      this.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Failed to save your workout. Please try again.', type: 'error' },
-        bubbles: true, 
-        composed: true 
-      }));
-    } finally {
-      this.isSaving = false;
-    }
+@media (min-width: 600px) {
+  app-shell {
+    padding: 2rem;
   }
 }
 
-customElements.define("workout-session", WorkoutSession);
+/* Base styles for card components */
+.card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 1.5rem;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Glassmorphism effect for the hero/stats section */
+.glass-card {
+  background: var(--glass-bg-color);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--glass-border-color);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1.5rem;
+}
+
+/* =============================================== */
+/* 4. BUTTONS & INTERACTIVE ELEMENTS               */
+/* =============================================== */
+
+button, .button {
+  border: none;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  padding: 0.8rem 1.25rem; /* Increased padding for better touch targets */
+  min-height: 44px; /* Minimum touch target size */
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%; /* Make buttons full-width by default on mobile */
+}
+
+@media (min-width: 600px) {
+  button, .button {
+    width: auto; /* Revert to auto width on larger screens */
+  }
+}
+
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+
+.btn-primary {
+  background: var(--gradient-btn);
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--gradient-btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
+  background: none;
+  border: 2px solid var(--color-text-secondary);
+  color: var(--color-text-secondary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--color-text-primary);
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Accessibility Focus Styles */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--color-glow-primary);
+}
+
+
+/* =============================================== */
+/* 5. TYPOGRAPHY                                   */
+/* =============================================== */
+
+h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #fff;
+}
+
+h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+p, span, label, input {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+@media (min-width: 600px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+  h2 {
+    font-size: 2rem;
+  }
+  h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* =============================================== */
+/* 6. DYNAMIC BACKGROUND ANIMATION                 */
+/* =============================================== */
+
+.background-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.shape {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  animation: float 20s infinite ease-in-out;
+}
+
+.shape:nth-child(1) {
+  width: 150px;
+  height: 150px;
+  top: 10%;
+  left: 15%;
+  animation-delay: 0s;
+  background: rgba(138, 43, 226, 0.2);
+}
+
+.shape:nth-child(2) {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  left: 80%;
+  animation-delay: 5s;
+  background: rgba(0, 212, 255, 0.2);
+}
+
+.shape:nth-child(3) {
+  width: 200px;
+  height: 200px;
+  top: 80%;
+  left: 30%;
+  animation-delay: 10s;
+  background: rgba(255, 69, 0, 0.2);
+}
+
+.shape:nth-child(4) {
+  width: 120px;
+  height: 120px;
+  top: 25%;
+  left: 70%;
+  animation-delay: 15s;
+  background: rgba(138, 43, 226, 0.2);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+  100% {
+    transform: translateY(0) rotate(360deg);
+  }
+}
+
+/* =============================================== */
+/* 7. LOADING, SKELETON & FEEDBACK STATES          */
+/* =============================================== */
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid var(--color-surface);
+  border-top: 5px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Skeleton Loader */
+.skeleton {
+  animation: skeleton-loading 1.5s infinite linear;
+  background: linear-gradient(90deg, var(--color-surface), #333, var(--color-surface));
+  background-size: 200% 100%;
+  border-radius: var(--border-radius-sm);
+}
+
+.skeleton-text {
+  height: 1em;
+  margin-bottom: 0.5em;
+}
+
+.skeleton-title {
+  height: 1.5em;
+  width: 60%;
+  margin-bottom: 1em;
+}
+
+.skeleton-card {
+  height: 150px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Toast Notifications */
+.toast-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  transform: none;
+  text-align: center;
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius-sm);
+  color: white;
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+  animation: fadeInOut 3s forwards;
+}
+
+@media (min-width: 600px) {
+  .toast-notification {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: auto;
+    min-width: 300px;
+  }
+}
+
+
+.toast-notification.success {
+  background-color: var(--color-success);
+}
+
+.toast-notification.error {
+  background-color: var(--color-error);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(20px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(20px); }
+}
+
+@media (min-width: 600px) {
+  @keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, 20px); }
+    10% { opacity: 1; transform: translate(-50%, 0); }
+    90% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, 20px); }
+  }
+}
+
+
+/* =============================================== */
+/* 8. FORMS & INPUTS                               */
+/* =============================================== */
+.input-group {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+input[type="number"], input[type="text"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-color);
+  color: var(--color-text-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 0.8rem;
+  font-size: 1.1rem; /* Slightly larger for mobile readability */
+  width: 100%;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  padding-right: 35px; /* Make space for stepper buttons */
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.stepper-buttons {
+  position: absolute;
+  right: 6px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 4px);
+  justify-content: center;
+}
+
+.stepper-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--color-text-primary);
+  width: 24px;
+  height: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0;
+  min-height: 0;
+}
+.stepper-btn:first-child {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+.stepper-btn:last-child {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+.stepper-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+input[type="number"]:focus, input[type="text"]:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-glow-primary);
+}
+
+.input-error {
+  border-color: var(--color-error);
+}
+
+.input-error:focus {
+  box-shadow: 0 0 0 3px var(--color-glow-error);
+}
+
+.error-message-text {
+  color: var(--color-error);
+  font-size: 0.8rem;
+  padding-left: 0.25rem;
+  height: 1.2em; /* Reserve space to prevent layout shift */
+}
+
+
+/* =============================================== */
+/* 9. COMPONENT-SPECIFIC STYLES                    */
+/* =============================================== */
+
+/* App Shell & Login */
+.login-container {
+  text-align: center;
+  padding-top: 10vh;
+}
+#google-signin-button {
+  display: inline-block;
+  margin-top: 2rem;
+}
+
+/* Home Screen */
+.home-container .welcome-message {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.stats-section {
+  display: grid;
+  gap: 1rem;
+}
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--glass-border-color);
+}
+.stat-item:last-child {
+  border-bottom: none;
+}
+.stat-label {
+  color: var(--color-text-secondary);
+}
+.stat-value {
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+.action-buttons {
+  display: flex;
+  flex-direction: column; /* Stack buttons on mobile */
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+@media (min-width: 600px) {
+  .action-buttons {
+    flex-direction: row; /* Side-by-side on larger screens */
+  }
+}
+
+/* Workout Session */
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.set-progress {
+  font-size: 0.9rem;
+  font-weight: 500;
+  background-color: var(--glass-bg-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.exercise-card .suggestion-box {
+  background-color: rgba(0, 212, 255, 0.1);
+  border-left: 4px solid var(--color-secondary);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: var(--border-radius-sm);
+}
+.set-input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 2 columns on mobile */
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+}
+.set-input-grid .add-set-button {
+  grid-column: 1 / -1; /* Make button span full width */
+  margin-top: 1rem;
+}
+@media (min-width: 600px) {
+  .set-input-grid {
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    align-items: center;
+  }
+  .set-input-grid .add-set-button {
+    grid-column: auto;
+    margin-top: 0;
+  }
+}
+
+/* Rest Timer */
+.rest-timer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 1, 26, 0.95);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  color: white;
+  text-align: center;
+}
+.timer-circle {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin-bottom: 2rem;
+}
+.timer-circle svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.timer-circle .background {
+  stroke: var(--glass-border-color);
+  stroke-width: 10;
+  fill: transparent;
+}
+.timer-circle .progress {
+  stroke: var(--color-primary);
+  stroke-width: 10;
+  fill: transparent;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+.timer-display {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4rem;
+  font-weight: 700;
+}
+.rest-timer-overlay h2 {
+  margin-bottom: 1rem;
+}
+.rest-timer-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+
+/* History View */
+.workout-card ul {
+  list-style-type: none;
+  padding-left: 1rem;
+  margin-top: 1rem;
+}
+.workout-card li {
+  margin-bottom: 0.5rem;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--glass-border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+.close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.question-group {
+  margin-bottom: 1.5rem;
+}
+.question-title {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.answer-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.answer-option input[type="radio"] {
+  display: none;
+}
+.answer-option label {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.answer-option input[type="radio"]:checked + label {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+.submit-section {
+  display: flex;
+  flex-direction: column-reverse; /* Stack buttons on mobile */
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+@media (min-width: 600px) {
+  .submit-section {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+}
