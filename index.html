@@ -28,8 +28,20 @@
     <!-- Added Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Added the WebAuthn browser polyfill for biometric authentication -->
-    <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.js"></script>
+    <!-- Register the service worker here. -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
 
     <script type="module" src="./src/main.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
