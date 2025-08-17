@@ -1,105 +1,171 @@
-
 /**
- * @file workout-feedback-modal.js
- * This component provides a pop-up modal to collect exercise-specific feedback from the user.
- * It's designed to be reusable and can display different questions and response options
- * based on the 'feedbackData' property passed to it.
+ * @file workout-session.js
+ * This component handles the core workout experience.
+ * It is responsible for displaying the current workout,
+ * managing user input for sets, reps, and RPE, and
+ * implementing the core adaptive engine logic.
  */
 
 import { LitElement, html, css } from "lit";
+import { saveData } from "../services/api.js";
+import { getCredential } from "../services/google-auth.js";
+import "./workout-feedback-modal.js"; // Import the new modal component
 
-class WorkoutFeedbackModal extends LitElement {
+// A simple workout object for our MVP (Minimum Viable Product)
+const initialWorkout = {
+  name: "Full Body Strength",
+  exercises: [
+    {
+      name: "Barbell Squats",
+      sets: 3,
+      reps: 5,
+      rpe: 8,
+      completedSets: [],
+      notes: "",
+      nextSetSuggestion: {
+        reps: 5,
+        rpe: 8,
+        adjustment: "Start with a warm-up set.",
+      },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Back Soreness": [
+          "Never Got Sore",
+          "Healed a While Ago",
+          "Healed Just on Time",
+          "I'm Still Sore!",
+        ],
+        "Workout Difficulty": [
+          "Easy",
+          "Pretty Good",
+          "Pushed My Limits",
+          "Too Much",
+        ],
+      },
+    },
+    {
+      name: "Dumbbell Bench Press",
+      sets: 3,
+      reps: 8,
+      rpe: 7,
+      completedSets: [],
+      notes: "",
+      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
+        "Workout Difficulty": [
+          "Easy",
+          "Pretty Good",
+          "Pushed My Limits",
+          "Too Much",
+        ],
+      },
+    },
+    {
+      name: "Pull-ups",
+      sets: 3,
+      reps: 8,
+      rpe: 8,
+      completedSets: [],
+      notes: "",
+      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Back Soreness": [
+          "Never Got Sore",
+          "Healed a While Ago",
+          "Healed Just on Time",
+          "I'm Still Sore!",
+        ],
+        "Workout Difficulty": [
+          "Easy",
+          "Pretty Good",
+          "Pushed My Limits",
+          "Too Much",
+        ],
+      },
+    },
+  ],
+};
+
+class WorkoutSession extends LitElement {
   static properties = {
-    // An object containing the questions and options to display.
-    // Example: {
-    //   "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-    //   "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"]
-    // }
-    feedbackData: { type: Object },
-    // An event handler to call when the user submits their feedback.
-    onFeedbackSubmit: { type: Function },
-    // An event handler to call when the user closes the modal without submitting.
-    onClose: { type: Function },
+    workout: { type: Object },
+    isWorkoutCompleted: { type: Boolean },
+    loadingMessage: { type: String },
+    errorMessage: { type: String },
+    // New properties for the feedback modal
+    showFeedbackModal: { type: Boolean },
+    feedbackQuestions: { type: Object },
+    currentFeedbackExerciseIndex: { type: Number },
   };
 
   constructor() {
     super();
-    this.feedbackData = {};
-    this.onFeedbackSubmit = () => {};
-    this.onClose = () => {};
-    // Store selected feedback internally
-    this._selectedFeedback = {};
+    this.workout = initialWorkout;
+    this.isWorkoutCompleted = false;
+    this.loadingMessage = "";
+    this.errorMessage = "";
+    // Initialize new properties
+    this.showFeedbackModal = false;
+    this.feedbackQuestions = {};
+    this.currentFeedbackExerciseIndex = -1;
   }
 
   static styles = css`
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.75);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
+    .container {
+      padding: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
     }
-    .modal-content {
-      background-color: var(--color-background);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow-md);
-      max-width: 500px;
-      width: 90%;
-      position: relative;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    .modal-header h2 {
-      margin: 0;
-    }
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      color: var(--color-text-primary);
-      cursor: pointer;
-    }
-    .feedback-question {
-      margin-bottom: 1.5rem;
-    }
-    .question-title {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      color: var(--color-text-secondary);
-    }
-    .options-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .option-btn {
-      padding: 0.75rem 1.25rem;
+    .exercise-card {
+      background-color: var(--color-surface);
       border: 1px solid var(--color-border);
       border-radius: var(--border-radius);
-      background-color: var(--color-surface);
-      color: var(--color-text-primary);
-      cursor: pointer;
-      transition: all 0.2s ease;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
     }
-    .option-btn:hover {
-      background-color: var(--color-border);
+    .exercise-card h3 {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
     }
-    .option-btn.selected {
+    .exercise-card p {
+      margin-bottom: 0.5rem;
+    }
+    .set-input-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    .set-input-group input {
+      width: 60px;
+      padding: 0.5rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius);
+    }
+    .set-input-group button {
+      padding: 0.5rem 1rem;
       background-color: var(--color-primary);
       color: white;
-      border-color: var(--color-primary);
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
     }
-    .submit-btn {
+    .set-input-group button:hover {
+      background-color: var(--color-primary-hover);
+    }
+    .completed-sets {
+      margin-top: 1rem;
+      border-top: 1px dashed var(--color-border);
+      padding-top: 1rem;
+    }
+    .completed-sets p {
+      margin-bottom: 0.25rem;
+    }
+    .complete-workout-btn {
       width: 100%;
       padding: 1rem;
       background-color: green;
@@ -108,67 +174,258 @@ class WorkoutFeedbackModal extends LitElement {
       border-radius: var(--border-radius);
       cursor: pointer;
       margin-top: 1rem;
+    }
+    .error-message {
+      color: red;
       font-weight: bold;
+      margin-bottom: 1rem;
+    }
+    .suggestion-box {
+      background-color: #e3f2fd;
+      border-left: 5px solid #2196f3;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: var(--border-radius);
+      font-style: italic;
     }
   `;
 
   render() {
-    // Don't render if there's no feedback data
-    if (Object.keys(this.feedbackData).length === 0) {
-      return html``;
+    if (this.isWorkoutCompleted) {
+      return html`
+        <div class="container">
+          <h2>Workout Completed!</h2>
+          <p>
+            You did a great job! Your workout has been saved to your personal
+            Google Sheet.
+          </p>
+          <a href="#" @click=${() => this._goBackToHome()}>Go back to Home</a>
+        </div>
+      `;
     }
 
     return html`
-      <div class="modal-overlay">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>Feedback</h2>
-            <button class="close-btn" @click=${this.onClose}>&times;</button>
-          </div>
-          
-          ${Object.entries(this.feedbackData).map(([question, options]) => html`
-            <div class="feedback-question">
-              <div class="question-title">${question}</div>
-              <div class="options-group">
-                ${options.map(option => html`
-                  <button
-                    class="option-btn ${this._selectedFeedback[question] === option ? 'selected' : ''}"
-                    @click=${() => this._handleOptionSelect(question, option)}
-                  >
-                    ${option}
-                  </button>
-                `)}
+      <div class="container">
+        <h1>${this.workout.name}</h1>
+        ${this.errorMessage
+          ? html`<p class="error-message">${this.errorMessage}</p>`
+          : ""}
+        ${this.workout.exercises.map(
+          (exercise, index) => html`
+            <div class="exercise-card">
+              <h3>${exercise.name}</h3>
+              <p>
+                Target: ${exercise.sets} sets of ${exercise.reps} reps @ RPE
+                ${exercise.rpe}
+              </p>
+              ${exercise.completedSets.length > 0
+                ? html`
+                    <div class="completed-sets">
+                      ${exercise.completedSets.map(
+                        (set, setIndex) => html`
+                          <p>
+                            Completed Set ${setIndex + 1}: ${set.reps} reps @
+                            ${set.rpe} RPE with ${set.weight} lbs
+                          </p>
+                        `
+                      )}
+                    </div>
+                  `
+                : ""}
+
+              <!-- Suggestion for the next set -->
+              <div class="suggestion-box">
+                <p>
+                  Next set suggestion: ${exercise.nextSetSuggestion.reps} reps @
+                  RPE ${exercise.nextSetSuggestion.rpe}
+                </p>
+                <p>Note: ${exercise.nextSetSuggestion.adjustment}</p>
+              </div>
+
+              <div class="set-input-group">
+                <input
+                  type="number"
+                  placeholder="Reps"
+                  data-exercise-index="${index}"
+                  data-input-type="reps"
+                />
+                <input
+                  type="number"
+                  placeholder="Weight (lbs)"
+                  data-exercise-index="${index}"
+                  data-input-type="weight"
+                />
+                <input
+                  type="number"
+                  placeholder="RPE"
+                  data-exercise-index="${index}"
+                  data-input-type="rpe"
+                />
+                <input
+                  type="number"
+                  placeholder="RIR"
+                  data-exercise-index="${index}"
+                  data-input-type="rir"
+                />
+                <button @click=${this._addSet} data-exercise-index="${index}">
+                  Add Set
+                </button>
               </div>
             </div>
-          `)}
-
-          <button class="submit-btn" @click=${this._handleSubmit}>
-            Submit Feedback
-          </button>
-        </div>
+          `
+        )}
+        <button class="complete-workout-btn" @click=${this._completeWorkout}>
+          Complete Workout
+        </button>
       </div>
+
+      <!-- Render the feedback modal if needed -->
+      ${this.showFeedbackModal
+        ? html`
+            <workout-feedback-modal
+              .feedbackData=${this.feedbackQuestions}
+              .onFeedbackSubmit=${this._handleFeedbackSubmit.bind(this)}
+              .onClose=${() => this._closeFeedbackModal()}
+            ></workout-feedback-modal>
+          `
+        : ""}
     `;
   }
 
-  /**
-   * Handles the selection of a feedback option.
-   * @param {string} question - The question being answered.
-   * @param {string} option - The selected option.
-   */
-  _handleOptionSelect(question, option) {
-    this._selectedFeedback = {
-      ...this._selectedFeedback,
-      [question]: option,
+  _addSet(event) {
+    const exerciseIndex = parseInt(event.target.dataset.exerciseIndex);
+    const exercise = this.workout.exercises[exerciseIndex];
+
+    const parent = event.target.closest(".set-input-group");
+    const repsInput = parent.querySelector('input[data-input-type="reps"]');
+    const weightInput = parent.querySelector('input[data-input-type="weight"]');
+    const rpeInput = parent.querySelector('input[data-input-type="rpe"]');
+    const rirInput = parent.querySelector('input[data-input-type="rir"]');
+
+    const newSet = {
+      reps: parseInt(repsInput.value),
+      weight: parseInt(weightInput.value),
+      rpe: parseInt(rpeInput.value),
+      rir: parseInt(rirInput.value),
     };
-    this.requestUpdate();
+
+    if (
+      isNaN(newSet.reps) ||
+      isNaN(newSet.weight) ||
+      isNaN(newSet.rpe) ||
+      isNaN(newSet.rir)
+    ) {
+      this.errorMessage = "Please enter valid numbers for all fields.";
+      return;
+    }
+
+    this.errorMessage = "";
+
+    const updatedExercises = [...this.workout.exercises];
+    updatedExercises[exerciseIndex] = {
+      ...exercise,
+      completedSets: [...exercise.completedSets, newSet],
+    };
+
+    const lastSet = newSet;
+    let nextReps = lastSet.reps;
+    let nextRpe = lastSet.rpe;
+    let adjustment = "You're on track!";
+
+    if (lastSet.rpe > exercise.rpe) {
+      nextReps = Math.max(1, lastSet.reps - 1);
+      nextRpe = Math.max(1, lastSet.rpe - 1);
+      adjustment = "That was a little tough. Let's pull back slightly.";
+    } else if (lastSet.rpe < exercise.rpe) {
+      nextReps = lastSet.reps;
+      nextRpe = lastSet.rpe + 1;
+      adjustment =
+        "That was easier than expected! Let's challenge you a bit more.";
+    } else {
+      nextReps = lastSet.reps;
+      nextRpe = lastSet.rpe;
+    }
+
+    updatedExercises[exerciseIndex].nextSetSuggestion = {
+      reps: nextReps,
+      rpe: nextRpe,
+      adjustment: adjustment,
+    };
+
+    this.workout = { ...this.workout, exercises: updatedExercises };
+
+    repsInput.value = "";
+    weightInput.value = "";
+    rpeInput.value = "";
+    rirInput.value = "";
+
+    // Show the feedback modal for this exercise
+    this.feedbackQuestions = exercise.feedbackRequired;
+    this.currentFeedbackExerciseIndex = exerciseIndex;
+    this.showFeedbackModal = true;
   }
 
   /**
-   * Handles the submission of the feedback.
+   * Handles feedback submitted from the modal and saves it.
+   * @param {Object} feedback - The feedback data submitted by the user.
    */
-  _handleSubmit() {
-    this.onFeedbackSubmit(this._selectedFeedback);
+  _handleFeedbackSubmit(feedback) {
+    // Add the feedback to the last completed set of the current exercise
+    const updatedExercises = [...this.workout.exercises];
+    const currentExercise = updatedExercises[this.currentFeedbackExerciseIndex];
+    const lastSetIndex = currentExercise.completedSets.length - 1;
+
+    if (lastSetIndex >= 0) {
+      currentExercise.completedSets[lastSetIndex].feedback = feedback;
+    }
+
+    this.workout = { ...this.workout, exercises: updatedExercises };
+    this.showFeedbackModal = false; // Hide the modal
+  }
+
+  /**
+   * Hides the feedback modal.
+   */
+  _closeFeedbackModal() {
+    this.showFeedbackModal = false;
+  }
+
+  async _completeWorkout() {
+    this.loadingMessage = "Saving your workout...";
+    this.errorMessage = "";
+
+    try {
+      const token = getCredential().credential;
+      if (!token) {
+        throw new Error("User not authenticated.");
+      }
+
+      const workoutToSave = {
+        date: new Date().toISOString(),
+        exercises: this.workout.exercises.map((exercise) => ({
+          name: exercise.name,
+          completedSets: exercise.completedSets,
+        })),
+      };
+
+      const response = await saveData([workoutToSave], token);
+
+      if (response.success === false) {
+        throw new Error(response.error);
+      }
+
+      this.isWorkoutCompleted = true;
+      this.loadingMessage = "";
+    } catch (error) {
+      console.error("Failed to save workout data:", error);
+      this.errorMessage = "Failed to save your workout. Please try again.";
+      this.loadingMessage = "";
+    }
+  }
+
+  _goBackToHome() {
+    window.location.reload();
   }
 }
 
-customElements.define("workout-feedback-modal", WorkoutFeedbackModal);
+customElements.define("workout-session", WorkoutSession);
