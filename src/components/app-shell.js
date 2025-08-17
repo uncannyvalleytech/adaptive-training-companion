@@ -180,7 +180,7 @@ class AppShell extends LitElement {
         case "home":
           return this.renderHomeScreen();
         case "history":
-          return this.renderHistoryScreen();
+          return html`<history-view .units=${this.units}></history-view>`;
         case "settings":
           return this.renderSettingsScreen();
         default:
