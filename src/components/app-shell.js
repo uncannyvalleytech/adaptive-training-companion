@@ -46,6 +46,13 @@ class AppShell extends LitElement {
     this.waitForGoogleLibrary();
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
+    // Listen for the custom sign-in event
+    window.addEventListener('user-signed-in', () => this.fetchUserData());
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('user-signed-in', this.fetchUserData.bind(this));
   }
 
   waitForGoogleLibrary() {
@@ -64,9 +71,8 @@ class AppShell extends LitElement {
       this.setupSignIn();
     }
 
-    if (changedProperties.has("userCredential") && this.userCredential) {
-      this.fetchUserData();
-    }
+    // The user data is now fetched in response to a custom event
+    // so we can remove the check on userCredential.
   }
 
   setupSignIn() {
@@ -90,6 +96,8 @@ class AppShell extends LitElement {
   _handleSignIn(credential) {
     this.userCredential = credential;
     this._showToast("Successfully signed in!", "success");
+    // Dispatch a custom event to signal that the user has signed in
+    window.dispatchEvent(new CustomEvent('user-signed-in'));
   }
 
   async fetchUserData() {
