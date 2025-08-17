@@ -783,7 +783,7 @@ class WorkoutSession extends LitElement {
 
   _addSet(event) {
     this._triggerHapticFeedback('success');
-    const exerciseIndex = parseInt(event.target.closest('button').dataset.exerciseIndex);
+    const exerciseIndex = parseInt(event.target.closest('button').dataset.exercise-index);
     const exercise = this.workout.exercises[exerciseIndex];
 
     const parent = event.target.closest(".set-input-grid");
