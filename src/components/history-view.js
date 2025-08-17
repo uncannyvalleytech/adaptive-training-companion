@@ -5,6 +5,7 @@
  * renders it as a list.
  */
 
+// Corrected import path for Lit
 import { LitElement, html, css } from "lit";
 import { getData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
