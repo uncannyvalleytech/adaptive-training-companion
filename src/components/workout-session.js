@@ -23,7 +23,8 @@ const initialWorkout = {
       rest: 90, // Rest time in seconds
       completedSets: [],
       notes: "",
-      category: "strength", // New category property
+      category: "strength",
+      muscleGroup: "Legs",
       nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set." },
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
@@ -32,18 +33,52 @@ const initialWorkout = {
       }
     },
     {
-      name: "Dumbbell Bench Press",
+      name: "Deadlifts",
+      sets: 3,
+      reps: 5,
+      rpe: 8,
+      rest: 120,
+      completedSets: [],
+      notes: "",
+      category: "strength",
+      muscleGroup: "Back",
+      nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
+    },
+    {
+      name: "Bench Press",
       sets: 3,
       reps: 8,
       rpe: 7,
       rest: 60,
       completedSets: [],
       notes: "",
-      category: "strength", // New category property
+      category: "strength",
+      muscleGroup: "Chest",
       nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
+    },
+    {
+      name: "Overhead Press",
+      sets: 3,
+      reps: 8,
+      rpe: 7,
+      rest: 60,
+      completedSets: [],
+      notes: "",
+      category: "strength",
+      muscleGroup: "Shoulders",
+      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
       }
     },
@@ -55,7 +90,8 @@ const initialWorkout = {
       rest: 75,
       completedSets: [],
       notes: "",
-      category: "strength", // New category property
+      category: "strength",
+      muscleGroup: "Back",
       nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
@@ -63,6 +99,89 @@ const initialWorkout = {
         "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
       }
     },
+    {
+      name: "Barbell Rows",
+      sets: 3,
+      reps: 8,
+      rpe: 8,
+      rest: 75,
+      completedSets: [],
+      notes: "",
+      category: "strength",
+      muscleGroup: "Back",
+      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
+    },
+    {
+      name: "Bicep Curls",
+      sets: 3,
+      reps: 12,
+      rpe: 7,
+      rest: 45,
+      completedSets: [],
+      notes: "",
+      category: "accessory",
+      muscleGroup: "Arms",
+      nextSetSuggestion: { reps: 12, rpe: 7, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
+    },
+    {
+      name: "Tricep Pushdowns",
+      sets: 3,
+      reps: 12,
+      rpe: 7,
+      rest: 45,
+      completedSets: [],
+      notes: "",
+      category: "accessory",
+      muscleGroup: "Arms",
+      nextSetSuggestion: { reps: 12, rpe: 7, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Tricep Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
+    },
+    {
+      name: "Leg Press",
+      sets: 3,
+      reps: 10,
+      rpe: 8,
+      rest: 60,
+      completedSets: [],
+      notes: "",
+      category: "strength",
+      muscleGroup: "Legs",
+      nextSetSuggestion: { reps: 10, rpe: 8, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
+    },
+    {
+      name: "Leg Curls",
+      sets: 3,
+      reps: 12,
+      rpe: 7,
+      rest: 45,
+      completedSets: [],
+      notes: "",
+      category: "accessory",
+      muscleGroup: "Legs",
+      nextSetSuggestion: { reps: 12, rpe: 7, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
+    }
   ],
 };
 
@@ -386,7 +505,7 @@ class WorkoutSession extends LitElement {
                       (set, setIndex) => html`
                         <div class="completed-set">
                           <span class="checkmark">✓</span>
-                          <p>Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit} with ${set.weight} lbs</p>
+                          <p>Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</p>
                         </div>
                       `
                     )}
@@ -605,6 +724,8 @@ class WorkoutSession extends LitElement {
         exercises: this.workout.exercises.map((exercise) => ({
           name: exercise.name,
           completedSets: exercise.completedSets,
+          category: exercise.category,
+          muscleGroup: exercise.muscleGroup,
         })),
       };
 
