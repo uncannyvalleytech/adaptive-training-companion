@@ -364,6 +364,7 @@ class HistoryView extends LitElement {
 
     const { exerciseData, personalRecords } = this._processDataForCharts();
     const uniqueCategories = [...new Set(this.workouts.flatMap(w => w.exercises.map(e => e.category)))];
+    const uniqueMuscleGroups = [...new Set(this.workouts.flatMap(w => w.exercises.map(e => e.muscleGroup)))];
 
     return html`
       <div class="container">
