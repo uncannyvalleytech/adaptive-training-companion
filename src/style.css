@@ -17,6 +17,34 @@
   --color-state-error: #f56565;
   --color-glow-focus: rgba(0, 191, 255, 0.5);
   --border-color: #4a5568;
+
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.875rem;
+  --font-size-xxl: 2.5rem;
+
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Borders & Shadows */
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
 }
 
 /* Light Theme Overrides */
@@ -35,31 +63,6 @@ body[data-theme="light"] {
   --color-glow-focus: rgba(0, 191, 255, 0.3);
   --border-color: #e2e8f0;
 }
-
-/* Common Tokens */
---font-size-xs: 0.75rem;
---font-size-sm: 0.875rem;
---font-size-md: 1rem;
---font-size-lg: 1.25rem;
---font-size-xl: 1.875rem;
---font-size-xxl: 2.5rem;
-
---font-weight-regular: 400;
---font-weight-medium: 500;
---font-weight-semibold: 600;
---font-weight-bold: 700;
-
---border-radius-md: 8px;
---border-radius-lg: 12px;
---shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
---shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
---shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-
---space-1: 0.25rem;
---space-2: 0.5rem;
---space-4: 1rem;
---space-6: 1.5rem;
---space-8: 2rem;
 
 
 /* =============================================== */
