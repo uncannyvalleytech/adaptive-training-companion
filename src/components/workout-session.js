@@ -6,10 +6,11 @@
  * implementing the core adaptive engine logic.
  */
 
-import { LitElement, html, css } from "lit";
+import { LitElement, html } from "lit";
 import { saveData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
 import "./workout-feedback-modal.js"; // Import the new modal component
+import "../style.css"; // Import the main stylesheet
 
 // A simple workout object for our MVP (Minimum Viable Product)
 const initialWorkout = {
@@ -84,82 +85,7 @@ class WorkoutSession extends LitElement {
     this.currentFeedbackExerciseIndex = -1;
   }
 
-  static styles = css`
-    .container {
-      padding: 1rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .exercise-card {
-      background-color: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--border-radius);
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: var(--shadow-sm);
-    }
-    .exercise-card h3 {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-    }
-    .exercise-card p {
-      margin-bottom: 0.5rem;
-    }
-    .set-input-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-top: 0.5rem;
-    }
-    .set-input-group input {
-      width: 60px;
-      padding: 0.5rem;
-      border: 1px solid var(--color-border);
-      border-radius: var(--border-radius);
-    }
-    .set-input-group button {
-      padding: 0.5rem 1rem;
-      background-color: var(--color-primary);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-    }
-    .set-input-group button:hover {
-      background-color: var(--color-primary-hover);
-    }
-    .completed-sets {
-      margin-top: 1rem;
-      border-top: 1px dashed var(--color-border);
-      padding-top: 1rem;
-    }
-    .completed-sets p {
-      margin-bottom: 0.25rem;
-    }
-    .complete-workout-btn {
-      width: 100%;
-      padding: 1rem;
-      background-color: green;
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      margin-top: 1rem;
-    }
-    .error-message {
-      color: red;
-      font-weight: bold;
-      margin-bottom: 1rem;
-    }
-    .suggestion-box {
-      background-color: #e3f2fd;
-      border-left: 5px solid #2196f3;
-      padding: 0.75rem;
-      margin-top: 0.5rem;
-      border-radius: var(--border-radius);
-      font-style: italic;
-    }
-  `;
+  static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
   render() {
     if (this.isWorkoutCompleted) {
@@ -183,7 +109,7 @@ class WorkoutSession extends LitElement {
           : ""}
         ${this.workout.exercises.map(
           (exercise, index) => html`
-            <div class="exercise-card">
+            <div class="card exercise-card">
               <h3>${exercise.name}</h3>
               <p>
                 Target: ${exercise.sets} sets of ${exercise.reps} reps @ RPE
@@ -259,7 +185,7 @@ class WorkoutSession extends LitElement {
   }
 
   _addSet(event) {
-    const exerciseIndex = parseInt(event.target.dataset.exerciseIndex);
+    const exerciseIndex = parseInt(event.target.dataset.exercise-index);
     const exercise = this.workout.exercises[exerciseIndex];
 
     const parent = event.target.closest(".set-input-group");
