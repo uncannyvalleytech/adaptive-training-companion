@@ -209,9 +209,7 @@ class AppShell extends LitElement {
             @click=${() => this.currentView = 'settings'}
             aria-label="Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"/>
-              <path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" fill="var(--color-accent-primary)" clip-rule="evenodd" fill-rule="evenodd" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 7.4 19a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 5 7.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.82.33z"></path><path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"></path></svg>
           </button>
         </header>
 
@@ -255,7 +253,7 @@ class AppShell extends LitElement {
   renderLoginScreen() {
     return html`
       <div class="login-container">
-        <h1>Adaptive Training Companion</h1>
+        <h1>PROGRESSION</h1>
         <p>Your intelligent workout partner that adapts to you in real-time.</p>
         <div id="google-signin-button" aria-label="Sign in with Google button"></div>
         ${!this.isGoogleLibraryLoaded
@@ -267,19 +265,21 @@ class AppShell extends LitElement {
 
   renderSkeletonHomeScreen() {
     return html`
-      <div class="home-container" aria-live="polite" aria-busy="true">
+      <div class="home-container container" aria-live="polite" aria-busy="true">
         <div class="welcome-message">
-          <div class="skeleton" style="height: var(--font-size-xxl); width: 80%; margin-bottom: var(--space-2);"></div>
-          <div class="skeleton" style="height: var(--font-size-md); width: 60%;"></div>
+          <div class="skeleton skeleton-heading"></div>
+          <div class="skeleton skeleton-text"></div>
         </div>
         <div class="card">
-          <div class="skeleton" style="height: var(--font-size-lg); width: 40%; margin-bottom: var(--space-4);"></div>
-          <div class="skeleton" style="height: 1.5rem; width: 100%; margin-bottom: var(--space-2);"></div>
-          <div class="skeleton" style="height: 1.5rem; width: 100%; margin-bottom: var(--space-2);"></div>
-          <div class="skeleton" style="height: 1.5rem; width: 100%;"></div>
+          <div class="skeleton skeleton-progress-title"></div>
+          <div class="skeleton skeleton-progress-stat"></div>
+          <div class="skeleton skeleton-progress-stat"></div>
+          <div class="skeleton skeleton-progress-stat"></div>
         </div>
-        <div class="action-buttons">
-          <div class="skeleton" style="height: 44px; width: 200px; border-radius: var(--border-radius-md);"></div>
+        <div class="action-buttons-skeleton">
+          <div class="skeleton skeleton-btn"></div>
+          <div class="skeleton skeleton-btn"></div>
+          <div class="skeleton skeleton-btn"></div>
         </div>
       </div>
     `;
@@ -287,7 +287,7 @@ class AppShell extends LitElement {
 
   renderErrorScreen() {
     return html`
-      <div class="error-container" role="alert">
+      <div class="error-container container" role="alert">
         <h2>Oops! Something went wrong</h2>
         <p>${this.errorMessage}</p>
         <button class="btn-primary" @click=${this._retryFetchUserData}>
@@ -332,10 +332,34 @@ class AppShell extends LitElement {
           </div>
         </div>
 
-        <div class="action-buttons">
-          <button class="btn-primary" @click=${this._startWorkout} aria-label="Start a new workout">
-            Start New Workout
-          </button>
+        <div class="home-action-cards">
+          <div class="card link-card action-card" @click=${this._startWorkout}>
+            <div class="card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8m0 0v-8m0 8h8m-8 0H4"></path></svg>
+            </div>
+            <div class="card-text">
+              <h3>Start New Workout</h3>
+              <p>Begin a new session from scratch.</p>
+            </div>
+          </div>
+          <div class="card link-card action-card" @click=${() => this.currentView = 'templates'}>
+            <div class="card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div class="card-text">
+              <h3>My Templates</h3>
+              <p>Create or load a saved workout plan.</p>
+            </div>
+          </div>
+          <div class="card link-card action-card" @click=${() => this.currentView = 'history'}>
+            <div class="card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2L12 3z"></path></svg>
+            </div>
+            <div class="card-text">
+              <h3>Workout History</h3>
+              <p>Review past workouts and track progress.</p>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -376,7 +400,7 @@ class AppShell extends LitElement {
     const navItems = [
       { view: 'home', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`, label: 'Home' },
       { view: 'history', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2L12 3z"></path></svg>`, label: 'History' },
-      { view: 'templates', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`, label: 'Templates' },
+      { view: 'templates', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`, label: 'Templates' },
     ];
 
     return html`
