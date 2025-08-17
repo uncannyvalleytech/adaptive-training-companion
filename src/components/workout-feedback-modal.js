@@ -23,6 +23,14 @@ class WorkoutFeedbackModal extends LitElement {
 
   static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
+  firstUpdated() {
+    // Focus the first radio button when the modal opens
+    const firstRadio = this.shadowRoot.querySelector('input[type="radio"]');
+    if (firstRadio) {
+      firstRadio.focus();
+    }
+  }
+
   render() {
     const questions = Object.keys(this.feedbackData);
     const allQuestionsAnswered = questions.every(question => 
@@ -31,15 +39,19 @@ class WorkoutFeedbackModal extends LitElement {
 
     return html`
       <div class="modal-overlay" @click=${this._handleOverlayClick}>
-        <div class="modal-content glass-card" @click=${this._stopPropagation}>
+        <div class="modal-content glass-card" 
+             role="dialog" 
+             aria-modal="true" 
+             aria-labelledby="modal-title"
+             @keydown=${this._handleKeydown}>
           <div class="modal-header">
-            <h3 class="modal-title">How was that set?</h3>
-            <button class="close-button" @click=${this._handleClose}>×</button>
+            <h3 id="modal-title" class="modal-title">How was that set?</h3>
+            <button class="close-button" @click=${this._handleClose} aria-label="Close feedback modal">×</button>
           </div>
 
           ${questions.map(question => html`
-            <div class="question-group">
-              <div class="question-title">${question}</div>
+            <div class="question-group" role="group" aria-labelledby="question-title-${question}">
+              <div id="question-title-${question}" class="question-title">${question}</div>
               <div class="answer-options">
                 ${this.feedbackData[question].map(option => html`
                   <div class="answer-option">
@@ -106,6 +118,12 @@ class WorkoutFeedbackModal extends LitElement {
 
   _stopPropagation(e) {
     e.stopPropagation();
+  }
+
+  _handleKeydown(e) {
+    if (e.key === 'Escape') {
+      this._handleClose();
+    }
   }
 }
 
