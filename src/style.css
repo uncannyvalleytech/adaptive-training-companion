@@ -30,6 +30,8 @@
   --color-text-secondary: #adb5bd;
   --color-border: #495057;
   --color-glow-primary: rgba(138, 43, 226, 0.5);
+  --color-glow-error: rgba(220, 53, 69, 0.5);
+
 
   /* Other variables */
   --border-radius-sm: 8px;
@@ -348,6 +350,11 @@ p, span, label, input {
 /* =============================================== */
 /* 8. FORMS & INPUTS                               */
 /* =============================================== */
+.input-group {
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
 input[type="number"], input[type="text"] {
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--glass-border-color);
@@ -369,10 +376,15 @@ input[type="number"]:focus, input[type="text"]:focus {
   border-color: var(--color-error);
 }
 
-.error-message {
+.input-error:focus {
+  box-shadow: 0 0 0 3px var(--color-glow-error);
+}
+
+.error-message-text {
   color: var(--color-error);
-  font-size: 0.9rem;
-  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  padding-left: 0.25rem;
+  height: 1.2em; /* Reserve space to prevent layout shift */
 }
 
 
@@ -431,22 +443,25 @@ input[type="number"]:focus, input[type="text"]:focus {
   margin: 1rem 0;
   border-radius: var(--border-radius-sm);
 }
-.set-input-group {
+.set-input-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 1rem;
-  align-items: center;
+  align-items: flex-start; /* Align items to the top */
   margin-top: 1rem;
 }
-.set-input-group button {
+.set-input-grid .add-set-button {
   grid-column: 1 / -1; /* Make button span full width on small screens */
+  margin-top: 1rem;
 }
 @media (min-width: 600px) {
-  .set-input-group {
+  .set-input-grid {
     grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    align-items: center; /* Vertically center on larger screens */
   }
-  .set-input-group button {
+  .set-input-grid .add-set-button {
     grid-column: auto;
+    margin-top: 0;
   }
 }
 
