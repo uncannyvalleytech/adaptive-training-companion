@@ -127,7 +127,7 @@ class AppShell extends LitElement {
   // New method to check for biometric support
   async _checkBiometricsAvailability() {
       if (window.SimpleWebAuthnBrowser) {
-          this.isBiometricsAvailable = await SimpleWebAuthnBrowser.is  WebAuthnAvailable();
+          this.isBiometricsAvailable = await SimpleWebWebAuthnBrowser.isAvailable();
       }
   }
 
