@@ -12,6 +12,7 @@ import "./workout-session.js";
 import "./history-view.js";
 import "./onboarding-flow.js";
 import "./settings-view.js";
+import "./workout-templates.js"; // Import the new workout templates component
 
 class AppShell extends LitElement {
   static properties = {
@@ -181,6 +182,8 @@ class AppShell extends LitElement {
           return this.renderHomeScreen();
         case "history":
           return html`<history-view .units=${this.units}></history-view>`;
+        case "templates":
+          return html`<workout-templates></workout-templates>`;
         case "settings":
           return this.renderSettingsScreen();
         default:
@@ -332,6 +335,14 @@ class AppShell extends LitElement {
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 14.25v4.5A2.25 2.25 0 006 21h12a2.25 2.25 0 002.25-2.25v-4.5M3.75 14.25L12 18.75m0 0L20.25 14.25M12 18.75v-15" /></svg>
           <span>History</span>
+        </button>
+        <button
+          class="nav-button ${this.currentView === 'templates' ? 'active' : ''}"
+          @click=${() => this.currentView = 'templates'}
+          aria-label="Workout Templates"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 100 1.5.75.75 0 000-1.5zM12 12a.75.75 0 100 1.5.75.75 0 000-1.5zM12 17.25a.75.75 0 100 1.5.75.75 0 000-1.5zM12 3a9 9 0 100 18 9 9 0 000-18z" /></svg>
+          <span>Templates</span>
         </button>
         <button 
           class="nav-button ${this.currentView === 'settings' ? 'active' : ''}" 
