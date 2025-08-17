@@ -7,7 +7,7 @@
 
 import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
-import { getData } from "../services/api.js";
+import { getData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
 import "./workout-session.js";
 import "./history-view.js";
 import "./onboarding-flow.js";
@@ -27,6 +27,7 @@ class AppShell extends LitElement {
     showOnboarding: { type: Boolean },
     theme: { type: String },
     units: { type: String },
+    offlineQueueCount: { type: Number },
   };
 
   constructor() {
@@ -42,6 +43,7 @@ class AppShell extends LitElement {
     this.showOnboarding = false;
     this.theme = localStorage.getItem('theme') || 'dark';
     this.units = localStorage.getItem('units') || 'lbs';
+    this.offlineQueueCount = getQueuedWorkoutsCount();
   }
 
   static styles = [];
@@ -51,10 +53,15 @@ class AppShell extends LitElement {
     this.waitForGoogleLibrary();
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
+    this.addEventListener('workout-completed', this._onWorkoutCompleted.bind(this));
     window.addEventListener('user-signed-in', () => this.fetchUserData());
     window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
     window.addEventListener('units-change', (e) => this._handleUnitsChange(e.detail.units));
     this.addEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
+    window.addEventListener('offline-data-queued', (e) => this._handleOfflineQueue(e.detail.count));
+    window.addEventListener('sync-complete', (e) => this._showToast(e.detail.message, e.detail.type));
+    window.addEventListener('sync-failed', (e) => this._showToast(e.detail.message, e.detail.type));
+    window.addEventListener('online', this._handleOnlineStatus.bind(this));
     this._applyTheme();
   }
 
@@ -64,6 +71,10 @@ class AppShell extends LitElement {
     window.removeEventListener('theme-change', this._handleThemeChange.bind(this));
     window.removeEventListener('units-change', this._handleUnitsChange.bind(this));
     this.removeEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
+    window.removeEventListener('offline-data-queued', this._handleOfflineQueue.bind(this));
+    window.removeEventListener('sync-complete', this._showToast.bind(this));
+    window.removeEventListener('sync-failed', this._showToast.bind(this));
+    window.removeEventListener('online', this._handleOnlineStatus.bind(this));
   }
   
   _applyTheme() {
@@ -77,6 +88,16 @@ class AppShell extends LitElement {
   
   _handleUnitsChange(units) {
     this.units = units;
+  }
+  
+  _handleOfflineQueue(count) {
+    this.offlineQueueCount = count;
+    this._showToast(`Workout saved offline. ${count} pending sync.`, "info");
+  }
+
+  _handleOnlineStatus() {
+    this._showToast("Back online! Syncing data...", "info");
+    syncData();
   }
 
   waitForGoogleLibrary() {
@@ -164,6 +185,7 @@ class AppShell extends LitElement {
       ${this.renderToast()}
       ${this._renderCurrentView()}
       ${showNav ? this.renderBottomNav() : ''}
+      ${this.offlineQueueCount > 0 ? this.renderOfflineStatus() : ''}
     `;
   }
   
@@ -199,6 +221,14 @@ class AppShell extends LitElement {
     return html`
       <div class="toast-notification ${this.toast.type}" role="alert">
         ${this.toast.message}
+      </div>
+    `;
+  }
+  
+  renderOfflineStatus() {
+    return html`
+      <div class="offline-status">
+        <p>Offline: ${this.offlineQueueCount} workout(s) pending sync.</p>
       </div>
     `;
   }
@@ -376,10 +406,14 @@ class AppShell extends LitElement {
     this.currentView = "home";
   }
 
-  _onWorkoutCompleted() {
+  _onWorkoutCompleted(event) {
     this.isWorkoutActive = false;
     this.currentView = "home";
-    this._showToast("Workout saved successfully!", "success");
+    this.offlineQueueCount = getQueuedWorkoutsCount();
+    // Use the toast message from the event if available, otherwise default
+    const toastMessage = event.detail?.message || "Workout saved successfully!";
+    const toastType = event.detail?.type || "success";
+    this._showToast(toastMessage, toastType);
     this.fetchUserData();
   }
   
