@@ -11,6 +11,7 @@ import { getData, saveData } from "../services/api.js";
 import "./workout-session.js";
 import "./history-view.js";
 import "./onboarding-flow.js"; // Import the new onboarding component
+import "./settings-view.js"; // Import the new settings component
 
 class AppShell extends LitElement {
   static properties = {
@@ -23,6 +24,8 @@ class AppShell extends LitElement {
     currentView: { type: String },
     toast: { type: Object },
     showOnboarding: { type: Boolean },
+    theme: { type: String },
+    units: { type: String },
   };
 
   constructor() {
@@ -36,6 +39,8 @@ class AppShell extends LitElement {
     this.currentView = "home";
     this.toast = null;
     this.showOnboarding = false;
+    this.theme = localStorage.getItem('theme') || 'dark';
+    this.units = localStorage.getItem('units') || 'lbs';
   }
 
   // This component will use styles from the global stylesheet
@@ -48,11 +53,30 @@ class AppShell extends LitElement {
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
     // Listen for the custom sign-in event
     window.addEventListener('user-signed-in', () => this.fetchUserData());
+    window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
+    window.addEventListener('units-change', (e) => this._handleUnitsChange(e.detail.units));
+    this._applyTheme();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('user-signed-in', this.fetchUserData.bind(this));
+    window.removeEventListener('theme-change', this._handleThemeChange.bind(this));
+    window.removeEventListener('units-change', this._handleUnitsChange.bind(this));
+  }
+  
+  _applyTheme() {
+    document.body.setAttribute('data-theme', this.theme);
+  }
+
+  _handleThemeChange(theme) {
+    this.theme = theme;
+    this._applyTheme();
+  }
+  
+  _handleUnitsChange(units) {
+    this.units = units;
+    // We don't need to do anything else here since child components listen for this event.
   }
 
   waitForGoogleLibrary() {
@@ -165,6 +189,8 @@ class AppShell extends LitElement {
           return this.renderHomeScreen();
         case "history":
           return this.renderHistoryScreen();
+        case "settings":
+          return this.renderSettingsScreen();
         default:
           return this.renderHomeScreen();
       }
@@ -272,6 +298,7 @@ class AppShell extends LitElement {
   renderWorkoutScreen() {
     return html`
       <workout-session 
+        .units=${this.units}
         @workout-completed=${this._onWorkoutCompleted}
         @workout-cancelled=${this._onWorkoutCancelled}>
       </workout-session>
@@ -279,7 +306,20 @@ class AppShell extends LitElement {
   }
 
   renderHistoryScreen() {
-    return html`<history-view></history-view>`;
+    return html`
+      <history-view
+        .units=${this.units}
+      ></history-view>
+    `;
+  }
+  
+  renderSettingsScreen() {
+    return html`
+      <settings-view
+        .theme=${this.theme}
+        .units=${this.units}
+      ></settings-view>
+    `;
   }
 
   renderBottomNav() {
@@ -300,6 +340,14 @@ class AppShell extends LitElement {
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 14.25v4.5A2.25 2.25 0 006 21h12a2.25 2.25 0 002.25-2.25v-4.5M3.75 14.25L12 18.75m0 0L20.25 14.25M12 18.75v-15" /></svg>
           <span>History</span>
+        </button>
+        <button 
+          class="nav-button ${this.currentView === 'settings' ? 'active' : ''}" 
+          @click=${() => this.currentView = 'settings'}
+          aria-label="Settings"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.125 1.125 0 011.97.426c1.558.337 2.25 2.274 1.25 3.593a1.125 1.125 0 01-.426 1.97c1.756.426 1.756 2.924 0 3.35a1.125 1.125 0 01.426 1.97c1.29.92 2.052 2.302 1.25 3.593a1.125 1.125 0 01-.426 1.97c-1.756.426-2.924-1.756-3.35 0a1.125 1.125 0 01-1.97.426c-1.558.337-2.25-2.274-1.25-3.593a1.125 1.125 0 01-.426-1.97c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 01-.426-1.97c-1.29-.92-2.052-2.302-1.25-3.593a1.125 1.125 0 01-.426-1.97c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 01-.426-1.97z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
+          <span>Settings</span>
         </button>
       </nav>
     `;
