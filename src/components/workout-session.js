@@ -7,7 +7,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { saveData } from "../services/api.js";
+import { saveData, generateRecommendation } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
 import "./workout-feedback-modal.js";
 
@@ -625,27 +625,6 @@ class WorkoutSession extends LitElement {
       completedSets: [...exercise.completedSets, newSet],
     };
 
-    const lastSet = newSet;
-    let nextReps = lastSet.reps;
-    let nextRpe = lastSet.rpe;
-    let adjustment = "You're on track!";
-    
-    if (lastSet.rpe > exercise.rpe) {
-      nextReps = Math.max(1, lastSet.reps - 1);
-      nextRpe = Math.max(1, lastSet.rpe - 1);
-      adjustment = "That was a little tough. Let's pull back slightly.";
-    } else if (lastSet.rpe < exercise.rpe) {
-      nextReps = lastSet.reps;
-      nextRpe = lastSet.rpe + 1;
-      adjustment = "That was easier than expected! Let's challenge you a bit more.";
-    }
-    
-    updatedExercises[exerciseIndex].nextSetSuggestion = {
-      reps: nextReps,
-      rpe: nextRpe,
-      adjustment: adjustment,
-    };
-    
     this.workout = { ...this.workout, exercises: updatedExercises };
     this._saveProgressToLocalStorage();
     this._calculateEstimatedTime();
@@ -659,21 +638,9 @@ class WorkoutSession extends LitElement {
     this.feedbackQuestions = exercise.feedbackRequired;
     this.currentFeedbackExerciseIndex = exerciseIndex;
     this.showFeedbackModal = true;
-
-    const isLastSetOfExercise = updatedExercises[exerciseIndex].completedSets.length >= exercise.sets;
-    let nextUp = "Workout Complete!";
-    if (!isLastSetOfExercise) {
-      nextUp = exercise.name;
-    } else if (exerciseIndex + 1 < this.workout.exercises.length) {
-      nextUp = this.workout.exercises[exerciseIndex + 1].name;
-    }
-    
-    if (nextUp !== "Workout Complete!") {
-      this._startRestTimer(exercise.rest, nextUp);
-    }
   }
   
-  _handleFeedbackSubmit(feedback) {
+  async _handleFeedbackSubmit(feedback) {
     const updatedExercises = [...this.workout.exercises];
     const currentExercise = updatedExercises[this.currentFeedbackExerciseIndex];
     const lastSetIndex = currentExercise.completedSets.length - 1;
@@ -682,25 +649,43 @@ class WorkoutSession extends LitElement {
       currentExercise.completedSets[lastSetIndex].feedback = feedback;
     }
 
-    // Now, update the next suggestion based on the 'Workout Difficulty' feedback
-    const difficultyFeedback = feedback["Workout Difficulty"];
-    let newAdjustment = currentExercise.nextSetSuggestion.adjustment;
-
-    if (difficultyFeedback === "Easy") {
-      currentExercise.nextSetSuggestion.rpe = Math.min(10, currentExercise.nextSetSuggestion.rpe + 1);
-      newAdjustment = `Because you found the last set easy, we're increasing the RPE.`;
-    } else if (difficultyFeedback === "Too Much") {
-      currentExercise.nextSetSuggestion.rpe = Math.max(1, currentExercise.nextSetSuggestion.rpe - 1);
-      newAdjustment = `Because you found the last set too difficult, we're decreasing the RPE.`;
-    } else {
-      newAdjustment = `Your feedback helps us fine-tune your next set.`;
+    const isLastSetOfExercise = updatedExercises[this.currentFeedbackExerciseIndex].completedSets.length >= currentExercise.sets;
+    let nextUp = "Workout Complete!";
+    if (!isLastSetOfExercise) {
+      nextUp = currentExercise.name;
+    } else if (this.currentFeedbackExerciseIndex + 1 < this.workout.exercises.length) {
+      nextUp = this.workout.exercises[this.currentFeedbackExerciseIndex + 1].name;
     }
 
-    currentExercise.nextSetSuggestion.adjustment = newAdjustment;
-    
+    // Call the LLM to generate the next recommendation
     this.workout = { ...this.workout, exercises: updatedExercises };
     this._saveProgressToLocalStorage();
+    
+    // We only need to generate the next suggestion if there are more sets to do.
+    if (!isLastSetOfExercise) {
+      const context = {
+        lastSet: currentExercise.completedSets[lastSetIndex],
+        exerciseName: currentExercise.name,
+        targetRpe: currentExercise.rpe,
+      };
+      
+      const recommendation = await generateRecommendation(context);
+      if (recommendation && recommendation.reps && recommendation.rpe) {
+        currentExercise.nextSetSuggestion = {
+          reps: recommendation.reps,
+          rpe: recommendation.rpe,
+          adjustment: recommendation.adjustment,
+        };
+        this.workout = { ...this.workout, exercises: updatedExercises };
+        this._saveProgressToLocalStorage();
+      }
+    }
+    
     this.showFeedbackModal = false;
+
+    if (nextUp !== "Workout Complete!") {
+      this._startRestTimer(currentExercise.rest, nextUp);
+    }
   }
 
   _closeFeedbackModal() {
