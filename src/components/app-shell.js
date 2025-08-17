@@ -13,7 +13,7 @@ import "./history-view.js";
 import "./onboarding-flow.js";
 import "./settings-view.js";
 import "./workout-templates.js";
-import { startAuthentication } from '@simplewebauthn/browser';
+import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
 
 class AppShell extends LitElement {
   static properties = {
@@ -30,6 +30,7 @@ class AppShell extends LitElement {
     units: { type: String },
     offlineQueueCount: { type: Number },
     isBiometricsAvailable: { type: Boolean },
+    lastCompletedWorkout: { type: Object }, // New property to hold the workout data for the summary screen
   };
 
   constructor() {
@@ -47,8 +48,8 @@ class AppShell extends LitElement {
     this.units = localStorage.getItem('units') || 'lbs';
     this.offlineQueueCount = getQueuedWorkoutsCount();
     this.isBiometricsAvailable = false;
+    this.lastCompletedWorkout = null;
     
-    // Check for biometrics support
     this._checkBiometricsAvailability();
   }
 
@@ -123,7 +124,6 @@ class AppShell extends LitElement {
     }
   }
   
-  // New method to check for biometric support
   async _checkBiometricsAvailability() {
       if (window.SimpleWebAuthnBrowser) {
           this.isBiometricsAvailable = await SimpleWebAuthnBrowser.isWebAuthnAvailable();
@@ -212,7 +212,7 @@ class AppShell extends LitElement {
   }
 
   render() {
-    const showNav = this.userCredential && !this.isWorkoutActive && this.userData && !this.showOnboarding;
+    const showNav = this.userCredential && !this.isWorkoutActive && this.userData && !this.showOnboarding && this.currentView !== 'summary';
     return html`
       ${this.renderToast()}
       ${this._renderCurrentView()}
@@ -241,7 +241,7 @@ class AppShell extends LitElement {
             @click=${() => this.currentView = 'settings'}
             aria-label="Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 7.4 19a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 5 7.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.82.33z"></path><path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 7.4 19a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 5 7.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.82.33z"></path><path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"></path></svg>
           </button>
         </header>
 
@@ -401,8 +401,7 @@ class AppShell extends LitElement {
               <p>Share your last workout with friends.</p>
             </div>
             <button class="btn-primary" @click=${() => this._shareWorkout(lastWorkout)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-1a3 3 0 0 1 3-3h13a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H7a3 3 0 0 1-3-3z"></path><path d="M12 2v2"></path><path d="M12 10v-2"></path><path d="M12 22v-2"></path></svg>
-              Share Workout
+                Share This Workout
             </button>
           </div>
         ` : ''}
@@ -452,7 +451,7 @@ class AppShell extends LitElement {
   }
   
   renderWorkoutSummary() {
-    const lastWorkout = this.userData.workouts?.[0];
+    const lastWorkout = this.lastCompletedWorkout;
     if (!lastWorkout) {
         this.currentView = 'home';
         return;
@@ -555,6 +554,7 @@ class AppShell extends LitElement {
   _onWorkoutCompleted(event) {
     this.isWorkoutActive = false;
     this.currentView = "summary";
+    this.lastCompletedWorkout = event.detail.workoutData;
     this.offlineQueueCount = getQueuedWorkoutsCount();
     const toastMessage = event.detail?.message || "Workout saved successfully!";
     const toastType = event.detail?.type || "success";
