@@ -48,8 +48,8 @@ class OnboardingFlow extends LitElement {
     const isLastStep = this.step === this.steps.length - 1;
 
     return html`
-      <div class="onboarding-container">
-        <div class="glass-card">
+      <div class="onboarding-container container">
+        <div class="card onboarding-card">
           <div class="onboarding-icon">${currentStep.icon}</div>
           <h2>${currentStep.title}</h2>
           <p>${currentStep.content}</p>
