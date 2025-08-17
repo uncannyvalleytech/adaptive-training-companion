@@ -23,6 +23,7 @@ const initialWorkout = {
       rest: 90, // Rest time in seconds
       completedSets: [],
       notes: "",
+      category: "strength", // New category property
       nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set." },
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
@@ -38,6 +39,7 @@ const initialWorkout = {
       rest: 60,
       completedSets: [],
       notes: "",
+      category: "strength", // New category property
       nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
@@ -53,6 +55,7 @@ const initialWorkout = {
       rest: 75,
       completedSets: [],
       notes: "",
+      category: "strength", // New category property
       nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
       feedbackRequired: {
         "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
@@ -111,6 +114,17 @@ class WorkoutSession extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this._stopRestTimer();
+  }
+  
+  _getExerciseIcon(category) {
+    // A simple mapping for now. Can be expanded later.
+    const icons = {
+      'strength': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M14 2L6 2v6a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V2zM14 2h6l-6 6a4 4 0 0 0-4-4V2zM14 2h6L14 8a4 4 0 0 0-4-4V2z"></path></svg>`,
+      'cardio': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19zM12 2a9.5 9.5 0 0 0 0 19M12 2a9.5 9.5 0 0 0 0 19zM12 2a9.5 9.5 0 0 0 0 19z"></path></svg>`,
+      'flexibility': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 2v10l-4-4"></path></svg>`,
+      'default': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`
+    };
+    return icons[category] || icons['default'];
   }
 
   _loadProgressFromLocalStorage() {
@@ -340,7 +354,10 @@ class WorkoutSession extends LitElement {
             return html`
               <div class="card" role="region" aria-labelledby="exercise-title-${index}">
                 <div class="exercise-header">
-                  <h3 id="exercise-title-${index}">${exercise.name}</h3>
+                  <div class="exercise-title-group">
+                    <span class="exercise-icon">${this._getExerciseIcon(exercise.category)}</span>
+                    <h3 id="exercise-title-${index}">${exercise.name}</h3>
+                  </div>
                   <span class="set-progress">Set ${Math.min(currentSetNumber, exercise.sets)} of ${exercise.sets}</span>
                 </div>
                 
@@ -348,10 +365,11 @@ class WorkoutSession extends LitElement {
                   <div class="completed-sets">
                     ${exercise.completedSets.map(
                       (set, setIndex) => html`
-                        <p>
-                          ✓ Set ${setIndex + 1}: ${set.reps} reps @ ${set.rpe}
-                          RPE with ${set.weight} lbs
-                        </p>
+                        <div class="completed-set">
+                          <span class="checkmark">✓</span>
+                          <p>Set ${setIndex + 1}: ${set.reps} reps @ ${set.rpe}
+                          RPE with ${set.weight} lbs</p>
+                        </div>
                       `
                     )}
                   </div>
