@@ -9,8 +9,7 @@
 import { LitElement, html } from "lit";
 import { saveData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
-import "./workout-feedback-modal.js"; // Import the new modal component
-// import "../style.css"; // This line is removed to fix the loading error
+import "./workout-feedback-modal.js";
 
 // A simple workout object for our MVP (Minimum Viable Product)
 const initialWorkout = {
@@ -72,7 +71,6 @@ class WorkoutSession extends LitElement {
     showFeedbackModal: { type: Boolean },
     feedbackQuestions: { type: Object },
     currentFeedbackExerciseIndex: { type: Number },
-    // Rest Timer Properties
     isResting: { type: Boolean },
     restTimeRemaining: { type: Number },
     totalRestTime: { type: Number },
@@ -87,7 +85,6 @@ class WorkoutSession extends LitElement {
     this.showFeedbackModal = false;
     this.feedbackQuestions = {};
     this.currentFeedbackExerciseIndex = -1;
-    // Rest Timer
     this.isResting = false;
     this.restTimeRemaining = 0;
     this.totalRestTime = 0;
@@ -192,7 +189,7 @@ class WorkoutSession extends LitElement {
             const isExerciseComplete = currentSetNumber > exercise.sets;
 
             return html`
-              <div class="card exercise-card" role="region" aria-labelledby="exercise-title-${index}">
+              <div class="card" role="region" aria-labelledby="exercise-title-${index}">
                 <div class="exercise-header">
                   <h3 id="exercise-title-${index}">${exercise.name}</h3>
                   <span class="set-progress">Set ${Math.min(currentSetNumber, exercise.sets)} of ${exercise.sets}</span>
@@ -235,10 +232,6 @@ class WorkoutSession extends LitElement {
                             aria-invalid=${!!this.errors[`${index}-${inputType}`]}
                             aria-describedby="${inputType}-error-${index}"
                           />
-                          <div class="stepper-buttons">
-                            <button @click=${() => this._adjustValue(index, inputType, 1)} class="stepper-btn" aria-label="Increase ${inputType}">+</button>
-                            <button @click=${() => this._adjustValue(index, inputType, -1)} class="stepper-btn" aria-label="Decrease ${inputType}">-</button>
-                          </div>
                         </div>
                         <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
                       </div>
@@ -252,7 +245,7 @@ class WorkoutSession extends LitElement {
             `;
           }
         )}
-        <button class="complete-workout-btn btn-primary" @click=${this._completeWorkout} ?disabled=${this.isSaving}>
+        <button class="btn-primary" @click=${this._completeWorkout} ?disabled=${this.isSaving}>
           ${this.isSaving
             ? html`<div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div> Saving...`
             : 'Complete Workout'
@@ -346,7 +339,6 @@ class WorkoutSession extends LitElement {
     this.currentFeedbackExerciseIndex = exerciseIndex;
     this.showFeedbackModal = true;
 
-    // Determine what's next and start rest timer
     const isLastSetOfExercise = updatedExercises[exerciseIndex].completedSets.length >= exercise.sets;
     let nextUp = "Workout Complete!";
     if (!isLastSetOfExercise) {
