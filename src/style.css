@@ -369,6 +369,106 @@ app-shell {
   box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
 }
 
+/* Login Screen */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  padding: var(--space-6);
+}
+
+.login-container h1 {
+  font-size: var(--font-size-xxl);
+  color: var(--color-accent-primary);
+}
+
+.login-container p {
+  margin-bottom: var(--space-8);
+  max-width: 400px;
+}
+
+#google-signin-button {
+  margin-bottom: var(--space-4);
+}
+
+/* Home Screen */
+.home-container {
+  padding-top: var(--space-6);
+}
+
+.home-action-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.home-action-cards .action-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.home-action-cards .action-card .card-icon {
+  background-color: var(--color-surface-tertiary);
+  color: var(--color-accent-primary);
+  border-radius: 50%;
+  padding: var(--space-3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.home-action-cards .action-card .card-text h3 {
+  margin: 0;
+}
+
+.home-action-cards .action-card .card-text p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.social-share-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+}
+
+.social-share-card .btn-primary {
+  width: 100%;
+  max-width: 250px;
+}
+
+.stats-section {
+  text-align: center;
+}
+
+.stats-section .stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stats-section .stat-item:last-child {
+  border-bottom: none;
+}
+
+.stats-section h3 {
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+}
+
+.workout-summary-container {
+  text-align: center;
+}
+
 /* Feedback Modal */
 .modal-overlay {
   position: fixed;
