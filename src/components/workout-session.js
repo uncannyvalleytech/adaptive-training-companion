@@ -261,7 +261,7 @@ class WorkoutSession extends LitElement {
     }
     return weight;
   }
-
+  
   _loadProgressFromLocalStorage() {
     const savedWorkout = localStorage.getItem('currentWorkout');
     if (savedWorkout) {
@@ -333,6 +333,18 @@ class WorkoutSession extends LitElement {
       if (addButton) {
         addButton.click();
       }
+    }
+  }
+  
+  _adjustInput(e) {
+    const { exerciseIndex, inputType, amount } = e.target.dataset;
+    const input = this.shadowRoot.querySelector(`input[data-exercise-index="${exerciseIndex}"][data-input-type="${inputType}"]`);
+    if (input) {
+      let currentValue = parseFloat(input.value) || 0;
+      input.value = Math.max(0, currentValue + parseFloat(amount));
+      // Re-run validation and trigger a change event for Lit to pick it up
+      this._validateInput({ target: input });
+      input.dispatchEvent(new Event('input'));
     }
   }
 
@@ -536,6 +548,10 @@ class WorkoutSession extends LitElement {
                             aria-invalid=${!!this.errors[`${index}-${inputType}`]}
                             aria-describedby="${inputType}-error-${index}"
                           />
+                          <div class="input-stepper">
+                            <button class="step-up" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="1" @click=${this._adjustInput}>+</button>
+                            <button class="step-down" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="-1" @click=${this._adjustInput}>-</button>
+                          </div>
                         </div>
                         <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
                       </div>
