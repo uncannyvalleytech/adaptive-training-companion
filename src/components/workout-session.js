@@ -99,6 +99,42 @@ class WorkoutSession extends LitElement {
     this.errors = { ...this.errors, [errorKey]: errorMessage };
   }
 
+  _handleInputKeydown(e) {
+    if (e.key === 'Enter') {
+      const exerciseIndex = e.target.dataset.exerciseIndex;
+      const addButton = this.shadowRoot.querySelector(`.add-set-button[data-exercise-index="${exerciseIndex}"]`);
+      if (addButton) {
+        addButton.click();
+      }
+    } else {
+      // Auto-focus next input
+      const { exerciseIndex, inputType } = e.target.dataset;
+      if (e.target.value.length > 0) {
+        let nextInputType;
+        switch (inputType) {
+          case 'reps': nextInputType = 'weight'; break;
+          case 'weight': nextInputType = 'rpe'; break;
+          case 'rpe': nextInputType = 'rir'; break;
+          default: return;
+        }
+        const nextInput = this.shadowRoot.querySelector(`input[data-exercise-index="${exerciseIndex}"][data-input-type="${nextInputType}"]`);
+        if (nextInput) {
+          // A small delay helps ensure the value is registered before focus shifts
+          setTimeout(() => nextInput.focus(), 100);
+        }
+      }
+    }
+  }
+
+  _adjustValue(exerciseIndex, inputType, amount) {
+    const input = this.shadowRoot.querySelector(`input[data-exercise-index="${exerciseIndex}"][data-input-type="${inputType}"]`);
+    if (input) {
+      let currentValue = parseFloat(input.value) || 0;
+      input.value = Math.max(0, currentValue + amount);
+      this._validateInput({ target: input }); // Re-validate after change
+    }
+  }
+
   render() {
     return html`
       <div class="container">
@@ -137,70 +173,31 @@ class WorkoutSession extends LitElement {
                 </div>
 
                 <div class="set-input-grid">
-                  <div class="input-group">
-                    <label for="reps-${index}" class="sr-only">Reps for ${exercise.name}</label>
-                    <input
-                      id="reps-${index}"
-                      type="number"
-                      placeholder="Reps"
-                      class=${repsError ? 'input-error' : ''}
-                      data-exercise-index="${index}"
-                      data-input-type="reps"
-                      @input=${this._validateInput}
-                      aria-label="Reps for ${exercise.name}, set ${currentSetNumber}"
-                      aria-invalid=${!!repsError}
-                      aria-describedby="reps-error-${index}"
-                    />
-                    <div id="reps-error-${index}" class="error-message-text" aria-live="polite">${repsError || ''}</div>
-                  </div>
-                  <div class="input-group">
-                    <label for="weight-${index}" class="sr-only">Weight for ${exercise.name}</label>
-                    <input
-                      id="weight-${index}"
-                      type="number"
-                      placeholder="Weight (lbs)"
-                      class=${weightError ? 'input-error' : ''}
-                      data-exercise-index="${index}"
-                      data-input-type="weight"
-                      @input=${this._validateInput}
-                      aria-label="Weight in pounds for ${exercise.name}, set ${currentSetNumber}"
-                      aria-invalid=${!!weightError}
-                      aria-describedby="weight-error-${index}"
-                    />
-                    <div id="weight-error-${index}" class="error-message-text" aria-live="polite">${weightError || ''}</div>
-                  </div>
-                  <div class="input-group">
-                    <label for="rpe-${index}" class="sr-only">RPE for ${exercise.name}</label>
-                    <input
-                      id="rpe-${index}"
-                      type="number"
-                      placeholder="RPE"
-                      class=${rpeError ? 'input-error' : ''}
-                      data-exercise-index="${index}"
-                      data-input-type="rpe"
-                      @input=${this._validateInput}
-                      aria-label="RPE for ${exercise.name}, set ${currentSetNumber}"
-                      aria-invalid=${!!rpeError}
-                      aria-describedby="rpe-error-${index}"
-                    />
-                    <div id="rpe-error-${index}" class="error-message-text" aria-live="polite">${rpeError || ''}</div>
-                  </div>
-                  <div class="input-group">
-                    <label for="rir-${index}" class="sr-only">RIR for ${exercise.name}</label>
-                    <input
-                      id="rir-${index}"
-                      type="number"
-                      placeholder="RIR"
-                      class=${rirError ? 'input-error' : ''}
-                      data-exercise-index="${index}"
-                      data-input-type="rir"
-                      @input=${this._validateInput}
-                      aria-label="RIR for ${exercise.name}, set ${currentSetNumber}"
-                      aria-invalid=${!!rirError}
-                      aria-describedby="rir-error-${index}"
-                    />
-                    <div id="rir-error-${index}" class="error-message-text" aria-live="polite">${rirError || ''}</div>
-                  </div>
+                  ${['reps', 'weight', 'rpe', 'rir'].map(inputType => html`
+                    <div class="input-group">
+                      <label for="${inputType}-${index}" class="sr-only">${inputType.charAt(0).toUpperCase() + inputType.slice(1)} for ${exercise.name}</label>
+                      <div class="input-wrapper">
+                        <input
+                          id="${inputType}-${index}"
+                          type="number"
+                          placeholder="${inputType.charAt(0).toUpperCase() + inputType.slice(1)}"
+                          class=${this.errors[`${index}-${inputType}`] ? 'input-error' : ''}
+                          data-exercise-index="${index}"
+                          data-input-type="${inputType}"
+                          @input=${this._validateInput}
+                          @keydown=${this._handleInputKeydown}
+                          aria-label="${inputType} for ${exercise.name}, set ${currentSetNumber}"
+                          aria-invalid=${!!this.errors[`${index}-${inputType}`]}
+                          aria-describedby="${inputType}-error-${index}"
+                        />
+                        <div class="stepper-buttons">
+                          <button @click=${() => this._adjustValue(index, inputType, 1)} class="stepper-btn" aria-label="Increase ${inputType}">+</button>
+                          <button @click=${() => this._adjustValue(index, inputType, -1)} class="stepper-btn" aria-label="Decrease ${inputType}">-</button>
+                        </div>
+                      </div>
+                      <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
+                    </div>
+                  `)}
                   <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary add-set-button" aria-label="Add set ${currentSetNumber} for ${exercise.name}">
                     Add Set
                   </button>
