@@ -42,6 +42,7 @@ class AppShell extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.waitForGoogleLibrary();
+    this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
   }
 
   waitForGoogleLibrary() {
@@ -151,7 +152,7 @@ class AppShell extends LitElement {
   renderToast() {
     if (!this.toast) return '';
     return html`
-      <div class="toast-notification ${this.toast.type}">
+      <div class="toast-notification ${this.toast.type}" role="alert">
         ${this.toast.message}
       </div>
     `;
@@ -170,9 +171,9 @@ class AppShell extends LitElement {
         <p>Your intelligent workout partner that adapts to you in real-time.</p>
         <br>
         <p>Please sign in to continue.</p>
-        <div id="google-signin-button"></div>
+        <div id="google-signin-button" aria-label="Sign in with Google button"></div>
         ${!this.isGoogleLibraryLoaded
-          ? html`<p><em>Loading Sign-In button...</em></p>`
+          ? html`<p aria-live="polite"><em>Loading Sign-In button...</em></p>`
           : ""}
       </div>
     `;
@@ -186,7 +187,7 @@ class AppShell extends LitElement {
         <div class="shape"></div>
         <div class="shape"></div>
       </div>
-      <div class="home-container">
+      <div class="home-container" aria-live="polite" aria-busy="true">
         <div class="welcome-message">
           <div class="skeleton skeleton-title"></div>
           <div class="skeleton skeleton-text" style="width: 80%;"></div>
@@ -207,7 +208,7 @@ class AppShell extends LitElement {
 
   renderErrorScreen() {
     return html`
-      <div class="error-container">
+      <div class="error-container" role="alert">
         <h2>Oops! Something went wrong</h2>
         <p>${this.errorMessage}</p>
         <button class="retry-button btn-primary" @click=${this._retryFetchUserData}>
@@ -242,8 +243,8 @@ class AppShell extends LitElement {
           <p>Ready to push your limits today?</p>
         </div>
 
-        <div class="glass-card stats-section">
-          <h3 class="stats-title">Your Progress</h3>
+        <div class="glass-card stats-section" role="region" aria-labelledby="progress-title">
+          <h3 id="progress-title" class="stats-title">Your Progress</h3>
           <div class="stat-item">
             <span class="stat-label">Total Workouts</span>
             <span class="stat-value">${workoutCount}</span>
@@ -259,10 +260,10 @@ class AppShell extends LitElement {
         </div>
 
         <div class="action-buttons">
-          <button class="start-workout-btn btn-primary" @click=${this._startWorkout}>
+          <button class="start-workout-btn btn-primary" @click=${this._startWorkout} aria-label="Start a new workout">
             🏋️ Start New Workout
           </button>
-          <button class="view-history-btn btn-secondary" @click=${this._viewHistory}>
+          <button class="view-history-btn btn-secondary" @click=${this._viewHistory} aria-label="View your workout history">
             📊 View Workout History
           </button>
         </div>
@@ -272,7 +273,7 @@ class AppShell extends LitElement {
 
   renderWorkoutScreen() {
     return html`
-      <button class="back-button btn-secondary" @click=${this._exitWorkout}>
+      <button class="back-button btn-secondary" @click=${this._exitWorkout} aria-label="Exit current workout and return to home screen">
         ← Exit Workout
       </button>
       <workout-session 
@@ -284,7 +285,7 @@ class AppShell extends LitElement {
 
   renderHistoryScreen() {
     return html`
-      <button class="back-button btn-secondary" @click=${this._backToHome}>
+      <button class="back-button btn-secondary" @click=${this._backToHome} aria-label="Return to home screen">
         ← Back to Home
       </button>
       <history-view></history-view>
