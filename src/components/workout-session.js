@@ -9,6 +9,7 @@
 import { LitElement, html, css } from "lit";
 import { saveData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
+import "./workout-feedback-modal.js"; // Import the new modal component
 
 // A simple workout object for our MVP (Minimum Viable Product)
 const initialWorkout = {
@@ -21,7 +22,12 @@ const initialWorkout = {
       rpe: 8,
       completedSets: [],
       notes: "",
-      nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set."}
+      nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
     },
     {
       name: "Dumbbell Bench Press",
@@ -30,7 +36,12 @@ const initialWorkout = {
       rpe: 7,
       completedSets: [],
       notes: "",
-      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set."}
+      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
     },
     {
       name: "Pull-ups",
@@ -39,7 +50,12 @@ const initialWorkout = {
       rpe: 8,
       completedSets: [],
       notes: "",
-      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set."}
+      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
+      feedbackRequired: {
+        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
+        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
+        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
+      }
     },
   ],
 };
@@ -50,6 +66,10 @@ class WorkoutSession extends LitElement {
     isWorkoutCompleted: { type: Boolean },
     loadingMessage: { type: String },
     errorMessage: { type: String },
+    // New properties for the feedback modal
+    showFeedbackModal: { type: Boolean },
+    feedbackQuestions: { type: Object },
+    currentFeedbackExerciseIndex: { type: Number },
   };
 
   constructor() {
@@ -58,6 +78,10 @@ class WorkoutSession extends LitElement {
     this.isWorkoutCompleted = false;
     this.loadingMessage = "";
     this.errorMessage = "";
+    // Initialize new properties
+    this.showFeedbackModal = false;
+    this.feedbackQuestions = {};
+    this.currentFeedbackExerciseIndex = -1;
   }
 
   static styles = css`
@@ -178,6 +202,7 @@ class WorkoutSession extends LitElement {
                 </div>
               ` : ''}
               
+              <!-- Suggestion for the next set -->
               <div class="suggestion-box">
                 <p>Next set suggestion: ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
                 <p>Note: ${exercise.nextSetSuggestion.adjustment}</p>
@@ -219,6 +244,17 @@ class WorkoutSession extends LitElement {
           Complete Workout
         </button>
       </div>
+      
+      <!-- Render the feedback modal if needed -->
+      ${this.showFeedbackModal
+        ? html`
+            <workout-feedback-modal
+              .feedbackData=${this.feedbackQuestions}
+              .onFeedbackSubmit=${this._handleFeedbackSubmit.bind(this)}
+              .onClose=${() => this._closeFeedbackModal()}
+            ></workout-feedback-modal>
+          `
+        : ""}
     `;
   }
 
@@ -226,7 +262,6 @@ class WorkoutSession extends LitElement {
     const exerciseIndex = parseInt(event.target.dataset.exerciseIndex);
     const exercise = this.workout.exercises[exerciseIndex];
 
-    // Get the input values
     const parent = event.target.closest(".set-input-group");
     const repsInput = parent.querySelector('input[data-input-type="reps"]');
     const weightInput = parent.querySelector('input[data-input-type="weight"]');
@@ -240,39 +275,33 @@ class WorkoutSession extends LitElement {
       rir: parseInt(rirInput.value),
     };
 
-    // Validate inputs and set an error message
     if (isNaN(newSet.reps) || isNaN(newSet.weight) || isNaN(newSet.rpe) || isNaN(newSet.rir)) {
       this.errorMessage = "Please enter valid numbers for all fields.";
       return;
     }
 
-    this.errorMessage = ""; // Clear any previous error messages
+    this.errorMessage = "";
 
-    // Add the new set to the workout data
     const updatedExercises = [...this.workout.exercises];
     updatedExercises[exerciseIndex] = {
       ...exercise,
       completedSets: [...exercise.completedSets, newSet],
     };
 
-    // Recalculate the next set suggestion based on the last completed set
     const lastSet = newSet;
     let nextReps = lastSet.reps;
     let nextRpe = lastSet.rpe;
     let adjustment = "You're on track!";
     
     if (lastSet.rpe > exercise.rpe) {
-      // The set was harder than expected, suggest a small reduction
       nextReps = Math.max(1, lastSet.reps - 1);
       nextRpe = Math.max(1, lastSet.rpe - 1);
       adjustment = "That was a little tough. Let's pull back slightly.";
     } else if (lastSet.rpe < exercise.rpe) {
-      // The set was easier than expected, suggest a small increase
       nextReps = lastSet.reps;
       nextRpe = lastSet.rpe + 1;
       adjustment = "That was easier than expected! Let's challenge you a bit more.";
     } else {
-      // On track, keep the same target
       nextReps = lastSet.reps;
       nextRpe = lastSet.rpe;
     }
@@ -283,14 +312,42 @@ class WorkoutSession extends LitElement {
       adjustment: adjustment,
     };
     
-    // Update the workout object to trigger a re-render
     this.workout = { ...this.workout, exercises: updatedExercises };
 
-    // Clear inputs
     repsInput.value = "";
     weightInput.value = "";
     rpeInput.value = "";
     rirInput.value = "";
+    
+    // Show the feedback modal for this exercise
+    this.feedbackQuestions = exercise.feedbackRequired;
+    this.currentFeedbackExerciseIndex = exerciseIndex;
+    this.showFeedbackModal = true;
+  }
+  
+  /**
+   * Handles feedback submitted from the modal and saves it.
+   * @param {Object} feedback - The feedback data submitted by the user.
+   */
+  _handleFeedbackSubmit(feedback) {
+    // Add the feedback to the last completed set of the current exercise
+    const updatedExercises = [...this.workout.exercises];
+    const currentExercise = updatedExercises[this.currentFeedbackExerciseIndex];
+    const lastSetIndex = currentExercise.completedSets.length - 1;
+    
+    if (lastSetIndex >= 0) {
+      currentExercise.completedSets[lastSetIndex].feedback = feedback;
+    }
+    
+    this.workout = { ...this.workout, exercises: updatedExercises };
+    this.showFeedbackModal = false; // Hide the modal
+  }
+
+  /**
+   * Hides the feedback modal.
+   */
+  _closeFeedbackModal() {
+    this.showFeedbackModal = false;
   }
 
   async _completeWorkout() {
@@ -298,13 +355,11 @@ class WorkoutSession extends LitElement {
     this.errorMessage = "";
 
     try {
-      // Get the authentication token
       const token = getCredential().credential;
       if (!token) {
         throw new Error("User not authenticated.");
       }
 
-      // Add a timestamp and flatten the workout object for saving
       const workoutToSave = {
         date: new Date().toISOString(),
         exercises: this.workout.exercises.map((exercise) => ({
@@ -313,15 +368,14 @@ class WorkoutSession extends LitElement {
         })),
       };
 
-      // Call the API to save the workout
       const response = await saveData([workoutToSave], token);
 
       if (response.success === false) {
         throw new Error(response.error);
       }
 
-      this.isWorkoutCompleted = true; // Show the completion screen
-      this.loadingMessage = ""; // Clear loading message
+      this.isWorkoutCompleted = true;
+      this.loadingMessage = "";
     } catch (error) {
       console.error("Failed to save workout data:", error);
       this.errorMessage = "Failed to save your workout. Please try again.";
@@ -330,7 +384,6 @@ class WorkoutSession extends LitElement {
   }
 
   _goBackToHome() {
-    // This will reload the app and bring the user back to the home screen
     window.location.reload();
   }
 }
