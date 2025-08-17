@@ -255,3 +255,11 @@ input[type="number"]:focus, input[type="text"]:focus {
 .nav-button { background: none; color: var(--color-text-secondary); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: var(--font-size-xs); }
 .nav-button.active { color: var(--color-accent-primary); }
 .nav-button svg { width: 24px; height: 24px; }
+
+/* Onboarding Flow */
+.onboarding-container { display: flex; align-items: center; justify-content: center; min-height: 80vh; text-align: center; }
+.onboarding-icon { font-size: 3rem; margin-bottom: var(--space-4); }
+.onboarding-nav { margin-top: var(--space-6); }
+.step-indicator { display: flex; justify-content: center; gap: var(--space-2); margin-top: var(--space-4); }
+.dot { width: 10px; height: 10px; background-color: var(--color-surface-tertiary); border-radius: 50%; transition: background-color 0.3s; }
+.dot.active { background-color: var(--color-accent-primary); }
