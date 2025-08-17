@@ -662,3 +662,19 @@ body[data-theme="light"] .bottom-nav { background: rgba(255, 255, 255, 0.7); }
 .step-indicator { display: flex; justify-content: center; gap: var(--space-2); margin-top: var(--space-4); }
 .dot { width: 10px; height: 10px; background-color: var(--color-surface-tertiary); border-radius: 50%; transition: background-color 0.3s; }
 .dot.active { background-color: var(--color-accent-primary); }
+
+/* Offline Status */
+.offline-status {
+  position: fixed;
+  bottom: 80px; /* Above the navigation bar */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-state-warning);
+  color: #fff;
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: 99;
+  font-size: var(--font-size-sm);
+  animation: fadeIn 0.5s forwards;
+}
