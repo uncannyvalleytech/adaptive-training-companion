@@ -2,31 +2,46 @@
 /* 1. GLOBAL VARIABLES (THEME TOKENS)              */
 /* =============================================== */
 :root {
-  --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+  --font-family-sans: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol";
+
+  /* Brand Colors */
+  --color-primary: #8a2be2; /* Blue Violet */
+  --color-secondary: #00d4ff; /* Electric Blue */
+  --color-accent: #ff4500; /* Energetic Orange */
+
+  /* Gradients */
+  --gradient-bg: linear-gradient(135deg, #2b0051 0%, #0a011a 100%);
+  --gradient-btn: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+  --gradient-btn-hover: linear-gradient(45deg, #7b1fa2, #00b0ff);
+
+  /* Glassmorphism */
+  --glass-bg-color: rgba(255, 255, 255, 0.05);
+  --glass-border-color: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 
   /* Light Theme (Default) */
   --color-background: #ffffff;
   --color-surface: #f8f9fa;
-  --color-primary: #0d6efd;
-  --color-primary-hover: #0b5ed7;
   --color-text-primary: #212529;
   --color-text-secondary: #6c757d;
   --color-border: #dee2e6;
+  --color-glow-primary: rgba(138, 43, 226, 0.5);
 
   /* Other variables */
-  --border-radius: 0.5rem;
+  --border-radius-sm: 8px;
+  --border-radius-md: 16px;
+  --border-radius-lg: 24px;
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 /* Dark Theme */
 [data-theme="dark"] {
   --color-background: #121212;
   --color-surface: #1e1e1e;
-  --color-primary: #4dabf7;
-  --color-primary-hover: #74c0fc;
   --color-text-primary: #e9ecef;
   --color-text-secondary: #adb5bd;
   --color-border: #495057;
@@ -35,6 +50,10 @@
 /* =============================================== */
 /* 2. GLOBAL STYLES & RESETS                       */
 /* =============================================== */
+
+/* Import a modern font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 *,
 *::before,
 *::after {
@@ -50,23 +69,181 @@ html {
 
 body {
   font-family: var(--font-family-sans);
-  background-color: var(--color-background);
+  background: var(--gradient-bg);
   color: var(--color-text-primary);
   line-height: 1.6;
   transition: background-color 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden; /* Hide overflow for background shapes */
 }
 
 /* =============================================== */
 /* 3. MAIN APPLICATION LAYOUT                      */
 /* =============================================== */
 
-/* This is the main container for our entire application.
-    It will be centered on the page and have a maximum width
-    to ensure it looks good on all screen sizes.
-  */
+/* This is the main container for our entire application. */
 app-shell {
   display: block;
   max-width: 800px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 2rem 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+/* Base styles for card components */
+.card {
+  background-color: var(--color-surface);
+  border-radius: var(--border-radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Glassmorphism effect for the hero/stats section */
+.glass-card {
+  background: var(--glass-bg-color);
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--glass-border-color);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1.5rem;
+}
+
+/* =============================================== */
+/* 4. BUTTONS & INTERACTIVE ELEMENTS               */
+/* =============================================== */
+
+button {
+  border: none;
+  cursor: pointer;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--gradient-btn);
+  color: white;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:hover {
+  background: var(--gradient-btn-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
+  background: none;
+  border: 2px solid var(--color-text-secondary);
+  color: var(--color-text-secondary);
+  padding: 1rem 1.5rem;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-text-primary);
+  color: var(--color-text-primary);
+}
+
+/* =============================================== */
+/* 5. TYPOGRAPHY                                   */
+/* =============================================== */
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+p, span, label, input {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+/* =============================================== */
+/* 6. DYNAMIC BACKGROUND ANIMATION                 */
+/* =============================================== */
+
+.background-shapes {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.shape {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  animation: float 20s infinite ease-in-out;
+}
+
+.shape:nth-child(1) {
+  width: 150px;
+  height: 150px;
+  top: 10%;
+  left: 15%;
+  animation-delay: 0s;
+  background: rgba(138, 43, 226, 0.2);
+}
+
+.shape:nth-child(2) {
+  width: 80px;
+  height: 80px;
+  top: 60%;
+  left: 80%;
+  animation-delay: 5s;
+  background: rgba(0, 212, 255, 0.2);
+}
+
+.shape:nth-child(3) {
+  width: 200px;
+  height: 200px;
+  top: 80%;
+  left: 30%;
+  animation-delay: 10s;
+  background: rgba(255, 69, 0, 0.2);
+}
+
+.shape:nth-child(4) {
+  width: 120px;
+  height: 120px;
+  top: 25%;
+  left: 70%;
+  animation-delay: 15s;
+  background: rgba(138, 43, 226, 0.2);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+  100% {
+    transform: translateY(0) rotate(360deg);
+  }
 }
