@@ -9,7 +9,6 @@
 import "./components/app-shell.js";
 // Import the new syncData function and getQueuedWorkoutsCount from the API service
 import { syncData, getQueuedWorkoutsCount } from "./services/api.js";
-// Remove this line: import "./style.css";
 
 console.log("Adaptive Training Companion initialized!");
 
