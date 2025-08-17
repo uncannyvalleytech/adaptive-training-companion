@@ -255,11 +255,15 @@ app-shell {
 }
 
 /* Workout Session */
-.workout-header {
+.workout-container {
+  padding-bottom: 0; /* Remove bottom padding to let carousel span full width */
+}
+.workout-header-full {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-4);
+  padding: 0 var(--space-6);
 }
 .stats-card {
   display: flex;
@@ -306,6 +310,7 @@ app-shell {
   display: flex;
   justify-content: space-between;
   margin-top: var(--space-8);
+  padding: 0 var(--space-6);
 }
 .completed-sets {
   margin-top: var(--space-4);
@@ -337,36 +342,31 @@ app-shell {
   height: 100%;
   border: 0;
 }
-
-/* New styles for Exercise Media checklist */
-.exercise-media-controls {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--space-4);
-  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+.pause-btn {
+  margin-left: auto;
+}
+.back-btn {
+  margin-right: auto;
 }
 
-.form-checklist h4 {
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-2);
-}
-
-.form-checklist ul {
-  list-style-type: none;
-  padding-left: 0;
+/* New styles for carousel */
+.exercise-carousel {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  overflow: hidden;
+  position: relative;
 }
 
-.form-checklist li {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  display: flex;
-  align-items: center;
+.exercise-card {
+  flex-shrink: 0; /* Prevents cards from shrinking */
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-6);
+  margin: 0;
+  transition: transform 0.3s ease-in-out;
+}
+
+.exercise-card.is-active {
+  box-shadow: 0 0 20px rgba(0, 191, 255, 0.2);
 }
 
 /* Feedback Modal */
