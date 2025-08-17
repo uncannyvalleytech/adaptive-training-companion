@@ -5,6 +5,7 @@
  */
 
 import { LitElement, html, css } from "lit";
+import "../style.css"; // Import the main stylesheet
 
 class WorkoutFeedbackModal extends LitElement {
   static properties = {
@@ -20,134 +21,7 @@ class WorkoutFeedbackModal extends LitElement {
     this.selectedAnswers = {};
   }
 
-  static styles = css`
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal-content {
-      background-color: var(--color-background, #ffffff);
-      border-radius: var(--border-radius, 0.5rem);
-      padding: 2rem;
-      max-width: 500px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
-
-    .modal-title {
-      margin: 0;
-      color: var(--color-text-primary, #212529);
-    }
-
-    .close-button {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--color-text-secondary, #6c757d);
-      padding: 0;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .close-button:hover {
-      color: var(--color-text-primary, #212529);
-    }
-
-    .question-group {
-      margin-bottom: 1.5rem;
-    }
-
-    .question-title {
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-      color: var(--color-text-primary, #212529);
-    }
-
-    .answer-options {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .answer-option {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .answer-option input[type="radio"] {
-      margin: 0;
-    }
-
-    .answer-option label {
-      cursor: pointer;
-      color: var(--color-text-primary, #212529);
-    }
-
-    .submit-section {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--color-border, #dee2e6);
-    }
-
-    .submit-button {
-      padding: 0.75rem 1.5rem;
-      background-color: var(--color-primary, #0d6efd);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius, 0.5rem);
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .submit-button:hover {
-      background-color: var(--color-primary-hover, #0b5ed7);
-    }
-
-    .submit-button:disabled {
-      background-color: var(--color-text-secondary, #6c757d);
-      cursor: not-allowed;
-    }
-
-    .cancel-button {
-      padding: 0.75rem 1.5rem;
-      background-color: transparent;
-      color: var(--color-text-secondary, #6c757d);
-      border: 1px solid var(--color-border, #dee2e6);
-      border-radius: var(--border-radius, 0.5rem);
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .cancel-button:hover {
-      background-color: var(--color-surface, #f8f9fa);
-    }
-  `;
+  static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
   render() {
     const questions = Object.keys(this.feedbackData);
@@ -157,7 +31,7 @@ class WorkoutFeedbackModal extends LitElement {
 
     return html`
       <div class="modal-overlay" @click=${this._handleOverlayClick}>
-        <div class="modal-content" @click=${this._stopPropagation}>
+        <div class="modal-content glass-card" @click=${this._stopPropagation}>
           <div class="modal-header">
             <h3 class="modal-title">How was that set?</h3>
             <button class="close-button" @click=${this._handleClose}>×</button>
@@ -185,11 +59,11 @@ class WorkoutFeedbackModal extends LitElement {
           `)}
 
           <div class="submit-section">
-            <button class="cancel-button" @click=${this._handleClose}>
+            <button class="cancel-button btn-secondary" @click=${this._handleClose}>
               Skip
             </button>
             <button 
-              class="submit-button" 
+              class="submit-button btn-primary" 
               @click=${this._handleSubmit}
               ?disabled=${!allQuestionsAnswered}
             >
