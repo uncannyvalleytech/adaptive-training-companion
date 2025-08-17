@@ -192,7 +192,7 @@ button:disabled {
 /* Inputs */
 .input-group { position: relative; }
 .input-wrapper { position: relative; }
-input[type="number"], input[type="text"] {
+input[type="number"], input[type="text"], select {
   background-color: var(--color-surface-primary);
   border: 1px solid var(--border-color);
   color: var(--color-text-primary);
@@ -201,7 +201,7 @@ input[type="number"], input[type="text"] {
   font-size: var(--font-size-md);
   width: 100%;
 }
-input[type="number"]:focus, input[type="text"]:focus {
+input[type="number"]:focus, input[type="text"]:focus, select:focus {
   outline: none;
   border-color: var(--color-accent-primary);
   box-shadow: 0 0 0 3px var(--color-glow-focus);
@@ -416,17 +416,53 @@ input[type="number"]:focus, input[type="text"]:focus {
   font-size: var(--font-size-md);
   margin-bottom: var(--space-2);
 }
-
-/* Navigation */
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: rgba(45, 55, 72, 0.7); backdrop-filter: blur(15px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; z-index: 100; }
-.nav-button { background: none; color: var(--color-text-secondary); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: var(--font-size-xs); }
-.nav-button.active { color: var(--color-accent-primary); }
-.nav-button svg { width: 24px; height: 24px; }
-
-/* Onboarding Flow */
-.onboarding-container { display: flex; align-items: center; justify-content: center; min-height: 80vh; text-align: center; }
-.onboarding-icon { font-size: 3rem; margin-bottom: var(--space-4); }
-.onboarding-nav { margin-top: var(--space-6); }
-.step-indicator { display: flex; justify-content: center; gap: var(--space-2); margin-top: var(--space-4); }
-.dot { width: 10px; height: 10px; background-color: var(--color-surface-tertiary); border-radius: 50%; transition: background-color 0.3s; }
-.dot.active { background-color: var(--color-accent-primary); }
+.filter-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.filter-controls .input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.workout-card {
+  cursor: pointer;
+}
+.workout-card .workout-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.workout-name {
+  margin: 0;
+}
+.workout-date {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+.workout-details {
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+  max-height: 0;
+}
+.workout-details.expanded {
+  max-height: 500px; /* A value large enough to fit content */
+}
+.exercise-item {
+  margin-top: var(--space-4);
+}
+.set-list {
+  list-style-type: none;
+  padding: 0;
+  margin-top: var(--space-2);
+}
+.set-item {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.section-title {
+  margin-top: var(--space-8);
+  margin-bottom: var(--space-4);
+}
