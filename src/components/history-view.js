@@ -51,8 +51,8 @@ class HistoryView extends LitElement {
 
       const response = await getData(token);
       if (response && response.data && response.data.workouts) {
-        // Sort workouts by date, oldest to newest
-        const sortedWorkouts = response.data.workouts.sort((a, b) => new Date(a.date) - new Date(b.date));
+        // Sort workouts by date, newest to oldest for display
+        const sortedWorkouts = response.data.workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
         this.workouts = sortedWorkouts;
         this.isLoading = false;
       } else {
@@ -64,6 +64,17 @@ class HistoryView extends LitElement {
         "Failed to load your workout history. Please try again.";
       this.isLoading = false;
     }
+  }
+  
+  _getExerciseIcon(category) {
+    // A simple mapping for now. Can be expanded later.
+    const icons = {
+      'strength': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M14 2L6 2v6a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V2zM14 2h6l-6 6a4 4 0 0 0-4-4V2zM14 2h6L14 8a4 4 0 0 0-4-4V2z"></path></svg>`,
+      'cardio': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 21.5a9.5 9.5 0 1 0 0-19 9.5 9.5 0 0 0 0 19zM12 2a9.5 9.5 0 0 0 0 19M12 2a9.5 9.5 0 0 0 0 19zM12 2a9.5 9.5 0 0 0 0 19z"></path></svg>`,
+      'flexibility': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM12 2v10l-4-4"></path></svg>`,
+      'default': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`
+    };
+    return icons[category] || icons['default'];
   }
 
   updated(changedProperties) {
@@ -192,9 +203,19 @@ class HistoryView extends LitElement {
       <div class="container">
         <h1>Workout History</h1>
         ${this.workouts.length > 0
-          ? Object.keys(exerciseData).map(exerciseName => html`
+          ? html`
+              <div class="summary-card glass-card">
+                <h3>Workout Summary</h3>
+                <p>You have logged <strong>${this.workouts.length}</strong> workouts.</p>
+              </div>
+              ${Object.keys(exerciseData).map(exerciseName => html`
               <div class="card workout-card">
-                <h2>${exerciseName}</h2>
+                <div class="exercise-header">
+                  <div class="exercise-title-group">
+                    <span class="exercise-icon">${this._getExerciseIcon(this.workouts[0].exercises.find(e => e.name === exerciseName)?.category || 'default')}</span>
+                    <h2>${exerciseName}</h2>
+                  </div>
+                </div>
                 <div class="personal-record">
                   <strong>Personal Record:</strong> 
                   ${personalRecords[exerciseName] 
@@ -204,7 +225,7 @@ class HistoryView extends LitElement {
                 </div>
                 <canvas id="chart-${exerciseName.replace(/\s+/g, '-')}"></canvas>
               </div>
-            `)
+            `)}`
           : html`<p>You have no workouts logged yet. Start a new workout to see your progress!</p>`}
       </div>
     `;
