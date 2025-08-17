@@ -139,6 +139,7 @@ class WorkoutSession extends LitElement {
           this._startRestTimer(data.restTimeRemaining, data.nextExerciseName);
         }
         this.workoutStartTime = data.workoutStartTime || Date.now();
+        this.pauseDuration = data.pauseDuration || 0;
         this._calculateEstimatedTime();
       } catch (e) {
         console.error("Failed to parse saved workout data.", e);
@@ -154,6 +155,7 @@ class WorkoutSession extends LitElement {
       restTimeRemaining: this.restTimeRemaining,
       nextExerciseName: this.nextExerciseName,
       workoutStartTime: this.workoutStartTime,
+      pauseDuration: this.pauseDuration,
     };
     localStorage.setItem('currentWorkout', JSON.stringify(dataToSave));
   }
@@ -438,6 +440,15 @@ class WorkoutSession extends LitElement {
     `;
   }
 
+  _calculateVolume() {
+    return this.workout.exercises.reduce((total, exercise) => {
+      const exerciseVolume = exercise.completedSets.reduce((sum, set) => {
+        return sum + (set.reps * set.weight);
+      }, 0);
+      return total + exerciseVolume;
+    }, 0);
+  }
+
   _addSet(event) {
     const exerciseIndex = parseInt(event.target.closest('button').dataset.exerciseIndex);
     const exercise = this.workout.exercises[exerciseIndex];
@@ -567,9 +578,14 @@ class WorkoutSession extends LitElement {
     try {
       const token = getCredential().credential;
       if (!token) { throw new Error("User not authenticated."); }
+      
+      const totalDuration = Math.floor((Date.now() - this.workoutStartTime) / 1000) - (this.pauseDuration / 1000);
+      const totalVolume = this._calculateVolume();
 
       const workoutToSave = {
         date: new Date().toISOString(),
+        durationInSeconds: totalDuration,
+        totalVolume: totalVolume,
         exercises: this.workout.exercises.map((exercise) => ({
           name: exercise.name,
           completedSets: exercise.completedSets,
