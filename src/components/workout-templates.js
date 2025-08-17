@@ -128,7 +128,9 @@ class WorkoutTemplates extends LitElement {
 
     return html`
       <div class="container">
-        <h1>Workout Templates</h1>
+        <header class="app-header">
+          <h1>Workout Templates</h1>
+        </header>
         ${this.showNewTemplateForm ? this._renderNewTemplateForm() : this._renderTemplateList()}
       </div>
     `;
