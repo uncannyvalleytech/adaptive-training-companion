@@ -1,92 +1,323 @@
 /**
- * @file api.js
- * This service module is responsible for all communication
- * with our Google Apps Script backend. It centralizes the logic for
- * fetching and saving user data, ensuring that every request is
- * authenticated with the user's secure token.
+ * @file app-shell.js
+ * This is the main Lit component that acts as the shell for the entire application.
+ * It orchestrates the display of different views (like login, home, workout)
+ * based on the application's state, primarily the user's authentication status.
  */
 
-// --- CONFIGURATION ---
-// Replace this with the Web App URL you got after deploying the script.
-const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbylU-b34I6Vxe5Ik22pV4Jr_xXQpEugTDIgiOnJahOTSU-yD_RYdKvTS5U4EmtoT1u5/exec";
+import { LitElement, html } from "lit";
+import { initializeSignIn, getCredential } from "../services/google-auth.js";
+import { getData, saveData } from "../services/api.js";
+import "./workout-session.js";
+import "./history-view.js";
+import "./onboarding-flow.js"; // Import the new onboarding component
 
-/**
- * A generic function to make a secure, authenticated request to our backend.
- * @param {string} action - The name of the action to perform (e.g., 'getData').
- * @param {string} token - The user's secure ID token from Google Sign-In.
- * @param {object} [payload] - Optional data to send with the request (for saving).
- * @returns {Promise<object>} The JSON response from the backend.
- */
-async function makeApiRequest(action, token, payload = {}) {
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === "YOUR_WEB_APP_URL_HERE") {
-    console.error("API URL is not configured in src/services/api.js");
-    return { success: false, error: "API URL is not configured." };
-  }
-  if (!token) {
-    return { success: false, error: "Authentication token is missing." };
-  }
+class AppShell extends LitElement {
+  static properties = {
+    userCredential: { type: Object },
+    isGoogleLibraryLoaded: { type: Boolean },
+    userData: { type: Object },
+    loadingMessage: { type: String },
+    errorMessage: { type: String },
+    isWorkoutActive: { type: Boolean },
+    currentView: { type: String },
+    toast: { type: Object },
+    showOnboarding: { type: Boolean },
+  };
 
-  try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
-      body: JSON.stringify({
-        action: action,
-        token: token,
-        payload: payload,
-      }),
-      redirect: "follow",
-    });
-
-    // Now we can properly read the JSON response from the Apps Script.
-    return await response.json();
-  } catch (error) {
-    console.error("API Request Failed:", error);
-    return { success: false, error: error.message };
-  }
-}
-
-/**
- * Fetches the user's initial data from the backend.
- * @param {string} authToken - The user's secure ID token.
- */
-export async function getData(authToken) {
-  return makeApiRequest("getData", authToken);
-}
-
-/**
- * Saves data to the backend.
- * @param {object} data - The data payload to save.
- * @param {string} authToken - The user's secure ID token.
- */
-export async function saveData(data, authToken) {
-  // Check if the browser is offline
-  if (!navigator.onLine) {
-    console.log("Offline mode: Queueing workout for later sync.");
-    const queuedWorkouts = JSON.parse(localStorage.getItem('queuedWorkouts') || '[]');
-    queuedWorkouts.push({ data, authToken });
-    localStorage.setItem('queuedWorkouts', JSON.stringify(queuedWorkouts));
-    return { success: true }; // Return a success message for the user
+  constructor() {
+    super();
+    this.userCredential = null;
+    this.isGoogleLibraryLoaded = false;
+    this.userData = null;
+    this.loadingMessage = "Initializing...";
+    this.errorMessage = "";
+    this.isWorkoutActive = false;
+    this.currentView = "home";
+    this.toast = null;
+    this.showOnboarding = false;
   }
 
-  return makeApiRequest("saveData", authToken, { data });
-}
+  // This component will use styles from the global stylesheet
+  static styles = [];
 
-/**
- * Syncs any pending workout data from localStorage to the backend.
- */
-export async function syncData() {
-  const queuedWorkouts = JSON.parse(localStorage.getItem('queuedWorkouts') || '[]');
-  if (queuedWorkouts.length > 0 && navigator.onLine) {
-    console.log("Online: Syncing queued workouts...");
-    for (const workout of queuedWorkouts) {
-      // Re-use makeApiRequest for each queued workout
-      await makeApiRequest("saveData", workout.authToken, { data: workout.data });
+  connectedCallback() {
+    super.connectedCallback();
+    this.waitForGoogleLibrary();
+    this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
+    this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
+  }
+
+  waitForGoogleLibrary() {
+    if (window.google && window.google.accounts) {
+      this.isGoogleLibraryLoaded = true;
+    } else {
+      setTimeout(() => this.waitForGoogleLibrary(), 100);
     }
-    localStorage.removeItem('queuedWorkouts'); // Clear the queue after successful sync
-    console.log("Sync complete.");
+  }
+
+  updated(changedProperties) {
+    if (
+      changedProperties.has("isGoogleLibraryLoaded") &&
+      this.isGoogleLibraryLoaded
+    ) {
+      this.setupSignIn();
+    }
+
+    if (changedProperties.has("userCredential") && this.userCredential) {
+      this.fetchUserData();
+    }
+  }
+
+  setupSignIn() {
+    const signInButtonContainer = this.shadowRoot.querySelector(
+      "#google-signin-button"
+    );
+    if (signInButtonContainer) {
+      initializeSignIn(signInButtonContainer, (credential) => {
+        this._handleSignIn(credential);
+      });
+    }
+  }
+
+  _showToast(message, type = 'success', duration = 3000) {
+    this.toast = { message, type };
+    setTimeout(() => {
+      this.toast = null;
+    }, duration);
+  }
+
+  _handleSignIn(credential) {
+    this.userCredential = credential;
+    this._showToast("Successfully signed in!", "success");
+  }
+
+  async fetchUserData() {
+    this.loadingMessage = "Fetching your data...";
+    this.errorMessage = "";
+    try {
+      const token = getCredential().credential;
+      const response = await getData(token);
+      
+      if (response && response.data) {
+        setTimeout(() => {
+          this.userData = response.data;
+          // Check if user is new (no workouts) and onboarding hasn't been completed
+          if (!this.userData.workouts || this.userData.workouts.length === 0) {
+              if (localStorage.getItem('onboardingComplete') !== 'true') {
+                  this.showOnboarding = true;
+              }
+          }
+          this.loadingMessage = "";
+        }, 1000);
+      } else {
+        throw new Error(response.error || "Unexpected API response format.");
+      }
+    } catch (error) {
+      console.error("Failed to fetch user data:", error);
+      this.errorMessage = "Failed to load your data. Please try again.";
+      this._showToast(this.errorMessage, "error");
+      this.loadingMessage = "";
+    }
+  }
+
+  _handleOnboardingComplete() {
+      localStorage.setItem('onboardingComplete', 'true');
+      this.showOnboarding = false;
+  }
+
+  _retryFetchUserData() {
+    this.errorMessage = "";
+    this.fetchUserData();
+  }
+
+  render() {
+    const showNav = this.userCredential && !this.isWorkoutActive && this.userData && !this.showOnboarding;
+    return html`
+      ${this.renderToast()}
+      ${this._renderCurrentView()}
+      ${showNav ? this.renderBottomNav() : ''}
+    `;
+  }
+  
+  _renderCurrentView() {
+    if (!this.userCredential) {
+      return this.renderLoginScreen();
+    } else if (this.errorMessage) {
+      return this.renderErrorScreen();
+    } else if (!this.userData) {
+      return this.renderSkeletonHomeScreen();
+    } else if (this.showOnboarding) {
+        return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
+    } else if (this.isWorkoutActive) {
+      return this.renderWorkoutScreen();
+    } else {
+      switch (this.currentView) {
+        case "home":
+          return this.renderHomeScreen();
+        case "history":
+          return this.renderHistoryScreen();
+        default:
+          return this.renderHomeScreen();
+      }
+    }
+  }
+
+  renderToast() {
+    if (!this.toast) return '';
+    return html`
+      <div class="toast-notification ${this.toast.type}" role="alert">
+        ${this.toast.message}
+      </div>
+    `;
+  }
+
+  renderLoginScreen() {
+    return html`
+      <div class="login-container">
+        <h1>Adaptive Training Companion</h1>
+        <p>Your intelligent workout partner that adapts to you in real-time.</p>
+        <div id="google-signin-button" aria-label="Sign in with Google button"></div>
+        ${!this.isGoogleLibraryLoaded
+          ? html`<p aria-live="polite"><em>Loading Sign-In button...</em></p>`
+          : ""}
+      </div>
+    `;
+  }
+
+  renderSkeletonHomeScreen() {
+    return html`
+      <div class="home-container" aria-live="polite" aria-busy="true">
+        <div class="welcome-message">
+          <div class="skeleton" style="height: var(--font-size-xxl); width: 80%; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="height: var(--font-size-md); width: 60%;"></div>
+        </div>
+        <div class="glass-card">
+          <div class="skeleton" style="height: var(--font-size-lg); width: 40%; margin-bottom: var(--space-4);"></div>
+          <div class="skeleton" style="height: 1.5rem; width: 100%; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="height: 1.5rem; width: 100%; margin-bottom: var(--space-2);"></div>
+          <div class="skeleton" style="height: 1.5rem; width: 100%;"></div>
+        </div>
+        <div class="action-buttons">
+          <div class="skeleton" style="height: 44px; width: 200px; border-radius: var(--border-radius-md);"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderErrorScreen() {
+    return html`
+      <div class="error-container" role="alert">
+        <h2>Oops! Something went wrong</h2>
+        <p>${this.errorMessage}</p>
+        <button class="btn-primary" @click=${this._retryFetchUserData}>
+          Retry
+        </button>
+      </div>
+    `;
+  }
+
+  renderHomeScreen() {
+    const workoutCount = this.userData.workouts?.length || 0;
+    const totalSets = this.userData.workouts?.reduce((total, workout) => {
+      return total + workout.exercises.reduce((exerciseTotal, exercise) => {
+        return exerciseTotal + (exercise.completedSets?.length || 0);
+      }, 0);
+    }, 0) || 0;
+
+    const lastWorkoutDate = workoutCount > 0 
+      ? new Date(this.userData.workouts[workoutCount - 1].date).toLocaleDateString()
+      : "Never";
+
+    return html`
+      <div class="home-container">
+        <div class="welcome-message">
+          <h1>Welcome Back, ${this.userData.userEmail?.split('@')[0] || 'Athlete'}!</h1>
+          <p>Ready to push your limits today?</p>
+        </div>
+
+        <div class="glass-card stats-section" role="region" aria-labelledby="progress-title">
+          <h3 id="progress-title">Your Progress</h3>
+          <div class="stat-item">
+            <span>Total Workouts</span>
+            <span>${workoutCount}</span>
+          </div>
+          <div class="stat-item">
+            <span>Total Sets Completed</span>
+            <span>${totalSets}</span>
+          </div>
+          <div class="stat-item">
+            <span>Last Workout</span>
+            <span>${lastWorkoutDate}</span>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn-primary" @click=${this._startWorkout} aria-label="Start a new workout">
+            Start New Workout
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  renderWorkoutScreen() {
+    return html`
+      <workout-session 
+        @workout-completed=${this._onWorkoutCompleted}
+        @workout-cancelled=${this._onWorkoutCancelled}>
+      </workout-session>
+    `;
+  }
+
+  renderHistoryScreen() {
+    return html`<history-view></history-view>`;
+  }
+
+  renderBottomNav() {
+    return html`
+      <nav class="bottom-nav">
+        <button 
+          class="nav-button ${this.currentView === 'home' ? 'active' : ''}" 
+          @click=${() => this.currentView = 'home'}
+          aria-label="Home"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+          <span>Home</span>
+        </button>
+        <button 
+          class="nav-button ${this.currentView === 'history' ? 'active' : ''}" 
+          @click=${() => this.currentView = 'history'}
+          aria-label="History"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 14.25v4.5A2.25 2.25 0 006 21h12a2.25 2.25 0 002.25-2.25v-4.5M3.75 14.25L12 18.75m0 0L20.25 14.25M12 18.75v-15" /></svg>
+          <span>History</span>
+        </button>
+      </nav>
+    `;
+  }
+
+  _startWorkout() {
+    this.isWorkoutActive = true;
+  }
+
+  _exitWorkout() {
+    this.isWorkoutActive = false;
+    this.currentView = "home";
+  }
+
+  _onWorkoutCompleted() {
+    this.isWorkoutActive = false;
+    this.currentView = "home";
+    this._showToast("Workout saved successfully!", "success");
+    this.fetchUserData();
+  }
+  
+  _onWorkoutCancelled() {
+    this.isWorkoutActive = false;
+    this.currentView = "home";
+    this._showToast("Workout discarded.", "info");
   }
 }
+
+customElements.define("app-shell", AppShell);
