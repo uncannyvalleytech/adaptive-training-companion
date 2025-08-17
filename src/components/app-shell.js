@@ -201,18 +201,37 @@ class AppShell extends LitElement {
     } else if (this.isWorkoutActive) {
       return this.renderWorkoutScreen();
     } else {
-      switch (this.currentView) {
-        case "home":
-          return this.renderHomeScreen();
-        case "history":
-          return html`<history-view .units=${this.units}></history-view>`;
-        case "templates":
-          return html`<workout-templates></workout-templates>`;
-        case "settings":
-          return this.renderSettingsScreen();
-        default:
-          return this.renderHomeScreen();
-      }
+      return html`
+        <header class="app-header">
+          <h1>PROGRESSION</h1>
+          <button 
+            class="icon-btn" 
+            @click=${() => this.currentView = 'settings'}
+            aria-label="Settings"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"/>
+              <path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" fill="var(--color-accent-primary)" clip-rule="evenodd" fill-rule="evenodd" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="main-content">
+          ${(() => {
+            switch (this.currentView) {
+              case "home":
+                return this.renderHomeScreen();
+              case "history":
+                return html`<history-view .units=${this.units}></history-view>`;
+              case "templates":
+                return html`<workout-templates></workout-templates>`;
+              case "settings":
+                return this.renderSettingsScreen();
+              default:
+                return this.renderHomeScreen();
+            }
+          })()}
+        </div>
+      `;
     }
   }
 
@@ -253,7 +272,7 @@ class AppShell extends LitElement {
           <div class="skeleton" style="height: var(--font-size-xxl); width: 80%; margin-bottom: var(--space-2);"></div>
           <div class="skeleton" style="height: var(--font-size-md); width: 60%;"></div>
         </div>
-        <div class="glass-card">
+        <div class="card">
           <div class="skeleton" style="height: var(--font-size-lg); width: 40%; margin-bottom: var(--space-4);"></div>
           <div class="skeleton" style="height: 1.5rem; width: 100%; margin-bottom: var(--space-2);"></div>
           <div class="skeleton" style="height: 1.5rem; width: 100%; margin-bottom: var(--space-2);"></div>
@@ -289,15 +308,15 @@ class AppShell extends LitElement {
     const lastWorkoutDate = workoutCount > 0 
       ? new Date(this.userData.workouts[workoutCount - 1].date).toLocaleDateString()
       : "Never";
-
+      
     return html`
-      <div class="home-container">
+      <div class="home-container container">
         <div class="welcome-message">
-          <h1>Welcome Back, ${this.userData.userEmail?.split('@')[0] || 'Athlete'}!</h1>
+          <h2>Welcome Back, ${this.userData.userEmail?.split('@')[0] || 'Athlete'}!</h2>
           <p>Ready to push your limits today?</p>
         </div>
 
-        <div class="glass-card stats-section" role="region" aria-labelledby="progress-title">
+        <div class="card stats-section" role="region" aria-labelledby="progress-title">
           <h3 id="progress-title">Your Progress</h3>
           <div class="stat-item">
             <span>Total Workouts</span>
@@ -352,40 +371,26 @@ class AppShell extends LitElement {
   }
 
   renderBottomNav() {
+    const currentPath = window.location.hash.substring(1);
+    const getIconColor = (view) => this.currentView === view ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)';
+    const navItems = [
+      { view: 'home', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`, label: 'Home' },
+      { view: 'history', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2L12 3z"></path></svg>`, label: 'History' },
+      { view: 'templates', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>`, label: 'Templates' },
+    ];
+
     return html`
       <nav class="bottom-nav">
-        <button 
-          class="nav-button ${this.currentView === 'home' ? 'active' : ''}" 
-          @click=${() => this.currentView = 'home'}
-          aria-label="Home"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
-          <span>Home</span>
-        </button>
-        <button 
-          class="nav-button ${this.currentView === 'history' ? 'active' : ''}" 
-          @click=${() => this.currentView = 'history'}
-          aria-label="History"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h12A2.25 2.25 0 0020.25 14.25V3M3.75 14.25v4.5A2.25 2.25 0 006 21h12a2.25 2.25 0 002.25-2.25v-4.5M3.75 14.25L12 18.75m0 0L20.25 14.25M12 18.75v-15" /></svg>
-          <span>History</span>
-        </button>
-        <button
-          class="nav-button ${this.currentView === 'templates' ? 'active' : ''}"
-          @click=${() => this.currentView = 'templates'}
-          aria-label="Workout Templates"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 100 1.5.75.75 0 000-1.5zM12 12a.75.75 0 100 1.5.75.75 0 000-1.5zM12 17.25a.75.75 0 100 1.5.75.75 0 000-1.5zM12 3a9 9 0 100 18 9 9 0 000-18z" /></svg>
-          <span>Templates</span>
-        </button>
-        <button 
-          class="nav-button ${this.currentView === 'settings' ? 'active' : ''}" 
-          @click=${() => this.currentView = 'settings'}
-          aria-label="Settings"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.125 1.125 0 011.97.426c1.558.337 2.25 2.274 1.25 3.593a1.125 1.125 0 01-.426 1.97c1.756.426 1.756 2.924 0 3.35a1.125 1.125 0 01.426 1.97c1.29.92 2.052 2.302 1.25 3.593a1.125 1.125 0 01-.426 1.97c-1.756.426-2.924-1.756-3.35 0a1.125 1.125 0 01-1.97.426c-1.558.337-2.25-2.274-1.25-3.593a1.125 1.125 0 01-.426-1.97c-1.756-.426-1.756-2.924 0-3.35a1.125 1.125 0 01-.426-1.97c-1.29-.92-2.052-2.302-1.25-3.593a1.125 1.125 0 01-.426-1.97z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" /></svg>
-          <span>Settings</span>
-        </button>
+        ${navItems.map(item => html`
+          <button 
+            class="nav-button ${this.currentView === item.view ? 'active' : ''}" 
+            @click=${() => this.currentView = item.view}
+            aria-label=${item.label}
+          >
+            ${item.icon}
+            <span>${item.label}</span>
+          </button>
+        `)}
       </nav>
     `;
   }
