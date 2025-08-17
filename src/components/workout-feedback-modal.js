@@ -5,7 +5,7 @@
  */
 
 import { LitElement, html, css } from "lit";
-import "../style.css"; // Import the main stylesheet
+// import "../style.css"; // This line is removed to fix the loading error
 
 class WorkoutFeedbackModal extends LitElement {
   static properties = {
