@@ -71,6 +71,7 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden; /* Hide horizontal overflow */
+  padding-bottom: 80px; /* Add padding to prevent content from being hidden by the nav bar */
 }
 
 /* =============================================== */
@@ -738,4 +739,45 @@ input[type="number"]:focus, input[type="text"]:focus {
     flex-direction: row;
     justify-content: flex-end;
   }
+}
+
+/* =============================================== */
+/* 10. NAVIGATION                                  */
+/* =============================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: var(--glass-bg-color);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-top: 1px solid var(--glass-border-color);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+.nav-button.active {
+  color: var(--color-primary);
+}
+
+.nav-button svg {
+  width: 24px;
+  height: 24px;
 }
