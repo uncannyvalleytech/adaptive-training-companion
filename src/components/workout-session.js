@@ -64,9 +64,7 @@ const initialWorkout = {
 class WorkoutSession extends LitElement {
   static properties = {
     workout: { type: Object },
-    isWorkoutCompleted: { type: Boolean },
-    loadingMessage: { type: String },
-    errorMessage: { type: String },
+    isSaving: { type: Boolean },
     // New properties for the feedback modal
     showFeedbackModal: { type: Boolean },
     feedbackQuestions: { type: Object },
@@ -76,9 +74,7 @@ class WorkoutSession extends LitElement {
   constructor() {
     super();
     this.workout = initialWorkout;
-    this.isWorkoutCompleted = false;
-    this.loadingMessage = "";
-    this.errorMessage = "";
+    this.isSaving = false;
     // Initialize new properties
     this.showFeedbackModal = false;
     this.feedbackQuestions = {};
@@ -88,25 +84,9 @@ class WorkoutSession extends LitElement {
   static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
   render() {
-    if (this.isWorkoutCompleted) {
-      return html`
-        <div class="container">
-          <h2>Workout Completed!</h2>
-          <p>
-            You did a great job! Your workout has been saved to your personal
-            Google Sheet.
-          </p>
-          <a href="#" @click=${() => this._goBackToHome()}>Go back to Home</a>
-        </div>
-      `;
-    }
-
     return html`
       <div class="container">
         <h1>${this.workout.name}</h1>
-        ${this.errorMessage
-          ? html`<p class="error-message">${this.errorMessage}</p>`
-          : ""}
         ${this.workout.exercises.map(
           (exercise, index) => html`
             <div class="card exercise-card">
@@ -130,8 +110,8 @@ class WorkoutSession extends LitElement {
               
               <!-- Suggestion for the next set -->
               <div class="suggestion-box">
-                <p>Next set suggestion: ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
-                <p>Note: ${exercise.nextSetSuggestion.adjustment}</p>
+                <p><strong>Next set:</strong> ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
+                <p><em>${exercise.nextSetSuggestion.adjustment}</em></p>
               </div>
 
               <div class="set-input-group">
@@ -159,15 +139,18 @@ class WorkoutSession extends LitElement {
                   data-exercise-index="${index}"
                   data-input-type="rir"
                 />
-                <button @click=${this._addSet} data-exercise-index="${index}">
+                <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary">
                   Add Set
                 </button>
               </div>
             </div>
           `
         )}
-        <button class="complete-workout-btn" @click=${this._completeWorkout}>
-          Complete Workout
+        <button class="complete-workout-btn btn-primary" @click=${this._completeWorkout} ?disabled=${this.isSaving}>
+          ${this.isSaving
+            ? html`<div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div> Saving...`
+            : 'Complete Workout'
+          }
         </button>
       </div>
       
@@ -185,7 +168,7 @@ class WorkoutSession extends LitElement {
   }
 
   _addSet(event) {
-    const exerciseIndex = parseInt(event.target.dataset.exercise-index);
+    const exerciseIndex = parseInt(event.target.closest('button').dataset.exerciseIndex);
     const exercise = this.workout.exercises[exerciseIndex];
 
     const parent = event.target.closest(".set-input-group");
@@ -202,11 +185,14 @@ class WorkoutSession extends LitElement {
     };
 
     if (isNaN(newSet.reps) || isNaN(newSet.weight) || isNaN(newSet.rpe) || isNaN(newSet.rir)) {
-      this.errorMessage = "Please enter valid numbers for all fields.";
+      // This is where a toast notification would be shown from the app-shell
+      this.dispatchEvent(new CustomEvent('show-toast', { 
+        detail: { message: 'Please enter valid numbers for all fields.', type: 'error' },
+        bubbles: true, 
+        composed: true 
+      }));
       return;
     }
-
-    this.errorMessage = "";
 
     const updatedExercises = [...this.workout.exercises];
     updatedExercises[exerciseIndex] = {
@@ -277,8 +263,7 @@ class WorkoutSession extends LitElement {
   }
 
   async _completeWorkout() {
-    this.loadingMessage = "Saving your workout...";
-    this.errorMessage = "";
+    this.isSaving = true;
 
     try {
       const token = getCredential().credential;
@@ -300,17 +285,18 @@ class WorkoutSession extends LitElement {
         throw new Error(response.error);
       }
 
-      this.isWorkoutCompleted = true;
-      this.loadingMessage = "";
+      this.dispatchEvent(new CustomEvent('workout-completed', { bubbles: true, composed: true }));
+
     } catch (error) {
       console.error("Failed to save workout data:", error);
-      this.errorMessage = "Failed to save your workout. Please try again.";
-      this.loadingMessage = "";
+      this.dispatchEvent(new CustomEvent('show-toast', { 
+        detail: { message: 'Failed to save your workout. Please try again.', type: 'error' },
+        bubbles: true, 
+        composed: true 
+      }));
+    } finally {
+      this.isSaving = false;
     }
-  }
-
-  _goBackToHome() {
-    window.location.reload();
   }
 }
 
