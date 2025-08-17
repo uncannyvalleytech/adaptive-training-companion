@@ -127,6 +127,7 @@ class HistoryView extends LitElement {
   _processDataForCharts() {
     const exerciseData = {};
     const personalRecords = {};
+    const unitLabel = this.units === 'lbs' ? 'lbs' : 'kg';
 
     this.workouts.forEach(workout => {
       const workoutDate = new Date(workout.date).toLocaleDateString();
@@ -417,7 +418,7 @@ class HistoryView extends LitElement {
                 <div class="personal-record">
                   <strong>Personal Record:</strong> 
                   ${personalRecords[exerciseName] 
-                    ? `${personalRecords[exerciseName].weight} lbs x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} lbs) on ${personalRecords[exerciseName].date}`
+                    ? `${personalRecords[exerciseName].weight} ${this.units} x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} ${this.units}) on ${personalRecords[exerciseName].date}`
                     : 'No records yet.'
                   }
                 </div>
