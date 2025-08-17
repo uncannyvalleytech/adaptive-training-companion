@@ -75,6 +75,10 @@ class WorkoutSession extends LitElement {
     restTimeRemaining: { type: Number },
     totalRestTime: { type: Number },
     nextExerciseName: { type: String },
+    isPaused: { type: Boolean },
+    pauseDuration: { type: Number },
+    estimatedTimeRemaining: { type: Number },
+    showExitModal: { type: Boolean },
   };
 
   constructor() {
@@ -90,9 +94,71 @@ class WorkoutSession extends LitElement {
     this.totalRestTime = 0;
     this.nextExerciseName = '';
     this.restTimerInterval = null;
+    this.isPaused = false;
+    this.pauseDuration = 0;
+    this.estimatedTimeRemaining = 0;
+    this.showExitModal = false;
+    this.workoutStartTime = Date.now();
   }
 
   static styles = [];
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._loadProgressFromLocalStorage();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._stopRestTimer();
+  }
+
+  _loadProgressFromLocalStorage() {
+    const savedWorkout = localStorage.getItem('currentWorkout');
+    if (savedWorkout) {
+      try {
+        const data = JSON.parse(savedWorkout);
+        this.workout = data.workout;
+        // Restore timers and state if needed, though this is a basic implementation
+        // For now, we'll just check if a rest was active.
+        if (data.isResting && data.restTimeRemaining > 0) {
+          this._startRestTimer(data.restTimeRemaining, data.nextExerciseName);
+        }
+        this.workoutStartTime = data.workoutStartTime || Date.now();
+        this._calculateEstimatedTime();
+      } catch (e) {
+        console.error("Failed to parse saved workout data.", e);
+        localStorage.removeItem('currentWorkout');
+      }
+    }
+  }
+
+  _saveProgressToLocalStorage() {
+    const dataToSave = {
+      workout: this.workout,
+      isResting: this.isResting,
+      restTimeRemaining: this.restTimeRemaining,
+      nextExerciseName: this.nextExerciseName,
+      workoutStartTime: this.workoutStartTime,
+    };
+    localStorage.setItem('currentWorkout', JSON.stringify(dataToSave));
+  }
+
+  _calculateEstimatedTime() {
+    let remainingTime = 0;
+    for (let i = 0; i < this.workout.exercises.length; i++) {
+      const exercise = this.workout.exercises[i];
+      const setsToComplete = exercise.sets - exercise.completedSets.length;
+      if (setsToComplete > 0) {
+        // Estimate 1 minute per set, plus the prescribed rest time
+        remainingTime += setsToComplete * 60; 
+        if (i < this.workout.exercises.length - 1) {
+          remainingTime += exercise.rest;
+        }
+      }
+    }
+    this.estimatedTimeRemaining = remainingTime;
+  }
 
   _validateInput(e) {
     const input = e.target;
@@ -119,25 +185,20 @@ class WorkoutSession extends LitElement {
     }
   }
 
-  _adjustValue(exerciseIndex, inputType, amount) {
-    const input = this.shadowRoot.querySelector(`input[data-exercise-index="${exerciseIndex}"][data-input-type="${inputType}"]`);
-    if (input) {
-      let currentValue = parseFloat(input.value) || 0;
-      input.value = Math.max(0, currentValue + amount);
-      this._validateInput({ target: input });
-    }
-  }
-
   _startRestTimer(duration, nextExerciseName) {
     this.totalRestTime = duration;
     this.restTimeRemaining = duration;
     this.nextExerciseName = nextExerciseName;
     this.isResting = true;
+    this._saveProgressToLocalStorage();
 
     this.restTimerInterval = setInterval(() => {
-      this.restTimeRemaining -= 1;
-      if (this.restTimeRemaining <= 0) {
-        this._stopRestTimer();
+      if (!this.isPaused) {
+        this.restTimeRemaining -= 1;
+        this._saveProgressToLocalStorage();
+        if (this.restTimeRemaining <= 0) {
+          this._stopRestTimer();
+        }
       }
     }, 1000);
   }
@@ -145,11 +206,48 @@ class WorkoutSession extends LitElement {
   _stopRestTimer() {
     clearInterval(this.restTimerInterval);
     this.isResting = false;
+    this._saveProgressToLocalStorage();
   }
 
   _adjustRestTime(seconds) {
     this.restTimeRemaining += seconds;
     if (this.restTimeRemaining < 0) this.restTimeRemaining = 0;
+  }
+
+  _pauseWorkout() {
+    this.isPaused = true;
+    this.pauseStartTime = Date.now();
+  }
+
+  _resumeWorkout() {
+    this.isPaused = false;
+    if (this.pauseStartTime) {
+      this.pauseDuration += Date.now() - this.pauseStartTime;
+      this.pauseStartTime = null;
+    }
+    // Automatically focus on the next input field after resuming
+    const nextInput = this.shadowRoot.querySelector('input:not([disabled])');
+    if (nextInput) {
+      nextInput.focus();
+    }
+  }
+
+  _showExitModal() {
+    this.showExitModal = true;
+  }
+
+  _closeExitModal() {
+    this.showExitModal = false;
+  }
+  
+  _exitWorkoutAndSave() {
+    // This will trigger the _completeWorkout method with a flag to save and exit.
+    this.shadowRoot.querySelector('.complete-workout-button').click();
+  }
+  
+  _discardWorkout() {
+    localStorage.removeItem('currentWorkout');
+    this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }));
   }
 
   renderRestTimer() {
@@ -177,12 +275,63 @@ class WorkoutSession extends LitElement {
       </div>
     `;
   }
+  
+  renderPauseOverlay() {
+    return html`
+      <div class="pause-overlay">
+        <h2>Workout Paused</h2>
+        <button class="btn-primary" @click=${this._resumeWorkout}>Resume</button>
+      </div>
+    `;
+  }
+
+  renderExitModal() {
+    return html`
+      <div class="modal-overlay" @click=${this._closeExitModal}>
+        <div class="glass-card modal-content" role="dialog" aria-modal="true">
+          <h3>Exit Workout?</h3>
+          <p>Are you sure you want to exit? You can save your progress or discard it completely.</p>
+          <div class="modal-actions">
+            <button class="btn-secondary" @click=${this._discardWorkout}>Discard Workout</button>
+            <button class="btn-primary" @click=${this._exitWorkoutAndSave}>Save and Exit</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   render() {
+    const isWorkoutComplete = this.workout.exercises.every(ex => ex.completedSets.length >= ex.sets);
+    const totalWorkoutDuration = Date.now() - this.workoutStartTime - (this.pauseDuration || 0);
+    const totalMinutes = Math.floor(totalWorkoutDuration / 60000);
+    const totalSeconds = Math.floor((totalWorkoutDuration % 60000) / 1000);
+
     return html`
       ${this.isResting ? this.renderRestTimer() : ''}
+      ${this.isPaused ? this.renderPauseOverlay() : ''}
+      ${this.showExitModal ? this.renderExitModal() : ''}
+
       <div class="container">
-        <h1>${this.workout.name}</h1>
+        <div class="workout-header">
+          <h1>${this.workout.name}</h1>
+          <button @click=${this._pauseWorkout} class="btn-icon" aria-label="Pause workout">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
+            </svg>
+          </button>
+        </div>
+        
+        <div class="stats-card glass-card">
+          <div class="stat-item">
+            <span>Time Elapsed</span>
+            <span>${totalMinutes}:${totalSeconds < 10 ? '0' : ''}${totalSeconds}</span>
+          </div>
+          <div class="stat-item">
+            <span>Est. Time Remaining</span>
+            <span>~${Math.floor(this.estimatedTimeRemaining / 60)} min</span>
+          </div>
+        </div>
+        
         ${this.workout.exercises.map(
           (exercise, index) => {
             const currentSetNumber = exercise.completedSets.length + 1;
@@ -245,12 +394,18 @@ class WorkoutSession extends LitElement {
             `;
           }
         )}
-        <button class="btn-primary" @click=${this._completeWorkout} ?disabled=${this.isSaving}>
-          ${this.isSaving
-            ? html`<div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div> Saving...`
-            : 'Complete Workout'
-          }
-        </button>
+        
+        <div class="workout-action-buttons">
+          <button class="btn-secondary" @click=${this._showExitModal}>
+            Exit Workout
+          </button>
+          <button class="btn-primary complete-workout-button" @click=${this._completeWorkout} ?disabled=${this.isSaving || !isWorkoutComplete}>
+            ${this.isSaving
+              ? html`<div class="loading-spinner" style="width: 20px; height: 20px; border-width: 3px;"></div> Saving...`
+              : 'Complete Workout'
+            }
+          </button>
+        </div>
       </div>
       
       ${this.showFeedbackModal
@@ -328,6 +483,8 @@ class WorkoutSession extends LitElement {
     };
     
     this.workout = { ...this.workout, exercises: updatedExercises };
+    this._saveProgressToLocalStorage();
+    this._calculateEstimatedTime();
 
     repsInput.value = "";
     weightInput.value = "";
@@ -362,6 +519,7 @@ class WorkoutSession extends LitElement {
     }
     
     this.workout = { ...this.workout, exercises: updatedExercises };
+    this._saveProgressToLocalStorage();
     this.showFeedbackModal = false;
   }
 
@@ -387,6 +545,9 @@ class WorkoutSession extends LitElement {
       const response = await saveData([workoutToSave], token);
 
       if (response.success === false) { throw new Error(response.error); }
+      
+      // Clear localStorage on successful save
+      localStorage.removeItem('currentWorkout');
 
       this.dispatchEvent(new CustomEvent('workout-completed', { bubbles: true, composed: true }));
 
