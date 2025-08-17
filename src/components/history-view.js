@@ -100,6 +100,15 @@ class HistoryView extends LitElement {
     return weight * (1 + reps / 30);
   }
 
+  _calculateVolume(exercises) {
+    return exercises.reduce((total, exercise) => {
+      const exerciseVolume = exercise.completedSets.reduce((sum, set) => {
+        return sum + (set.reps * set.weight);
+      }, 0);
+      return total + exerciseVolume;
+    }, 0);
+  }
+  
   _processDataForCharts() {
     const exerciseData = {};
     const personalRecords = {};
@@ -239,7 +248,13 @@ class HistoryView extends LitElement {
       [index]: !this.expandedWorkouts[index]
     };
   }
-
+  
+  _formatDuration(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes} min ${remainingSeconds} sec`;
+  }
+  
   _groupAndRenderWorkouts() {
     if (this.groupBy === "workout") {
       return this.filteredWorkouts.map((workout, workoutIndex) => html`
@@ -249,6 +264,10 @@ class HistoryView extends LitElement {
             <span class="workout-date">${new Date(workout.date).toLocaleDateString()}</span>
           </div>
           <div class="workout-details ${this.expandedWorkouts[workoutIndex] ? 'expanded' : 'collapsed'}">
+            <div class="workout-metrics">
+              <p>Total Volume: ${this._calculateVolume(workout.exercises)} lbs</p>
+              <p>Duration: ${this._formatDuration(workout.durationInSeconds)}</p>
+            </div>
             ${workout.exercises.map(exercise => html`
               <div class="exercise-item">
                 <div class="exercise-header">
@@ -280,6 +299,8 @@ class HistoryView extends LitElement {
             date: new Date(workout.date).toLocaleDateString(),
             completedSets: exercise.completedSets,
             category: exercise.category,
+            // Include workout duration to link sets to a specific workout session
+            duration: workout.durationInSeconds,
           });
         });
       });
