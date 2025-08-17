@@ -54,6 +54,7 @@ class AppShell extends LitElement {
     window.addEventListener('user-signed-in', () => this.fetchUserData());
     window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
     window.addEventListener('units-change', (e) => this._handleUnitsChange(e.detail.units));
+    this.addEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
     this._applyTheme();
   }
 
@@ -62,6 +63,7 @@ class AppShell extends LitElement {
     window.removeEventListener('user-signed-in', this.fetchUserData.bind(this));
     window.removeEventListener('theme-change', this._handleThemeChange.bind(this));
     window.removeEventListener('units-change', this._handleUnitsChange.bind(this));
+    this.removeEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
   }
   
   _applyTheme() {
@@ -291,9 +293,11 @@ class AppShell extends LitElement {
   }
 
   renderWorkoutScreen() {
+    // Pass the workout object to the workout-session component
     return html`
       <workout-session 
         .units=${this.units}
+        .workout=${this.workout}
         @workout-completed=${this._onWorkoutCompleted}
         @workout-cancelled=${this._onWorkoutCancelled}>
       </workout-session>
@@ -357,6 +361,13 @@ class AppShell extends LitElement {
   }
 
   _startWorkout() {
+    this.isWorkoutActive = true;
+    this.workout = { ...initialWorkout };
+  }
+  
+  _startWorkoutWithTemplate(event) {
+    const template = event.detail.template;
+    this.workout = { ...template };
     this.isWorkoutActive = true;
   }
 
