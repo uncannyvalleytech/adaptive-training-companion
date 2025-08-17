@@ -6,9 +6,10 @@
  */
 
 // Corrected import path for Lit
-import { LitElement, html, css } from "lit";
+import { LitElement, html } from "lit";
 import { getData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
+import "../style.css"; // Import the main stylesheet
 
 class HistoryView extends LitElement {
   static properties = {
@@ -25,32 +26,7 @@ class HistoryView extends LitElement {
     this.fetchWorkoutHistory();
   }
 
-  static styles = css`
-    .container {
-      padding: 1rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .workout-card {
-      background-color: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--border-radius);
-      padding: 1rem;
-      margin-bottom: 1rem;
-      box-shadow: var(--shadow-sm);
-    }
-    h2 {
-      margin-top: 0;
-      margin-bottom: 0.5rem;
-    }
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      margin-bottom: 0.5rem;
-    }
-  `;
+  static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
   async fetchWorkoutHistory() {
     this.loadingMessage = "Fetching your workout history...";
@@ -101,7 +77,7 @@ class HistoryView extends LitElement {
           ? html`
               ${this.workouts.map(
                 (workout, index) => html`
-                  <div class="workout-card">
+                  <div class="card workout-card">
                     <h2>
                       Workout on ${new Date(workout.date).toLocaleDateString()}
                     </h2>
