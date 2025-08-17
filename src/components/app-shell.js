@@ -22,6 +22,7 @@ class AppShell extends LitElement {
     errorMessage: { type: String },
     isWorkoutActive: { type: Boolean },
     currentView: { type: String },
+    toast: { type: Object },
   };
 
   constructor() {
@@ -33,6 +34,7 @@ class AppShell extends LitElement {
     this.errorMessage = "";
     this.isWorkoutActive = false;
     this.currentView = "home";
+    this.toast = null; // { message: '', type: 'success' | 'error' }
   }
 
   static styles = []; // The component's styles will now be handled by the imported stylesheet.
@@ -74,8 +76,16 @@ class AppShell extends LitElement {
     }
   }
 
+  _showToast(message, type = 'success', duration = 3000) {
+    this.toast = { message, type };
+    setTimeout(() => {
+      this.toast = null;
+    }, duration);
+  }
+
   _handleSignIn(credential) {
     this.userCredential = credential;
+    this._showToast("Successfully signed in!", "success");
     console.log("User has been passed to the app shell:", this.userCredential);
   }
 
@@ -89,14 +99,18 @@ class AppShell extends LitElement {
       console.log("API Response:", response);
       
       if (response && response.data) {
-        this.userData = response.data;
-        this.loadingMessage = "";
+        // Simulate a short delay to show the skeleton loader
+        setTimeout(() => {
+          this.userData = response.data;
+          this.loadingMessage = "";
+        }, 1000);
       } else {
         throw new Error(response.error || "Unexpected API response format.");
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       this.errorMessage = "Failed to load your data. Please try again.";
+      this._showToast(this.errorMessage, "error");
       this.loadingMessage = "";
     }
   }
@@ -107,12 +121,19 @@ class AppShell extends LitElement {
   }
 
   render() {
+    return html`
+      ${this.renderToast()}
+      ${this._renderCurrentView()}
+    `;
+  }
+  
+  _renderCurrentView() {
     if (!this.userCredential) {
       return this.renderLoginScreen();
     } else if (this.errorMessage) {
       return this.renderErrorScreen();
     } else if (!this.userData) {
-      return this.renderLoadingScreen();
+      return this.renderSkeletonHomeScreen(); // Use skeleton loader
     } else if (this.isWorkoutActive) {
       return this.renderWorkoutScreen();
     } else {
@@ -125,6 +146,15 @@ class AppShell extends LitElement {
           return this.renderHomeScreen();
       }
     }
+  }
+
+  renderToast() {
+    if (!this.toast) return '';
+    return html`
+      <div class="toast-notification ${this.toast.type}">
+        ${this.toast.message}
+      </div>
+    `;
   }
 
   renderLoginScreen() {
@@ -148,11 +178,29 @@ class AppShell extends LitElement {
     `;
   }
 
-  renderLoadingScreen() {
+  renderSkeletonHomeScreen() {
     return html`
-      <div class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>${this.loadingMessage}</p>
+      <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+      </div>
+      <div class="home-container">
+        <div class="welcome-message">
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text" style="width: 80%;"></div>
+        </div>
+        <div class="glass-card stats-section">
+          <div class="skeleton skeleton-text" style="width: 40%;"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text"></div>
+        </div>
+        <div class="action-buttons">
+          <div class="skeleton skeleton-card" style="width: 200px; height: 50px;"></div>
+          <div class="skeleton skeleton-card" style="width: 200px; height: 50px;"></div>
+        </div>
       </div>
     `;
   }
@@ -162,7 +210,7 @@ class AppShell extends LitElement {
       <div class="error-container">
         <h2>Oops! Something went wrong</h2>
         <p>${this.errorMessage}</p>
-        <button class="retry-button" @click=${this._retryFetchUserData}>
+        <button class="retry-button btn-primary" @click=${this._retryFetchUserData}>
           Retry
         </button>
       </div>
@@ -224,8 +272,8 @@ class AppShell extends LitElement {
 
   renderWorkoutScreen() {
     return html`
-      <button class="back-button" @click=${this._exitWorkout}>
-        ← Back to Home
+      <button class="back-button btn-secondary" @click=${this._exitWorkout}>
+        ← Exit Workout
       </button>
       <workout-session 
         @workout-completed=${this._onWorkoutCompleted}
@@ -236,7 +284,7 @@ class AppShell extends LitElement {
 
   renderHistoryScreen() {
     return html`
-      <button class="back-button" @click=${this._backToHome}>
+      <button class="back-button btn-secondary" @click=${this._backToHome}>
         ← Back to Home
       </button>
       <history-view></history-view>
@@ -255,6 +303,7 @@ class AppShell extends LitElement {
   _onWorkoutCompleted() {
     this.isWorkoutActive = false;
     this.currentView = "home";
+    this._showToast("Workout saved successfully!", "success");
     // Refresh user data to show updated stats
     this.fetchUserData();
   }
