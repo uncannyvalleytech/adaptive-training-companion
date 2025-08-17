@@ -11,10 +11,15 @@ export default defineConfig({
     },
     // This is the updated part that fixes the new "Blocked request" error.
     // It tells Vite to trust the NEW preview window's address.
-    allowedHosts: ["wqz6c2-5173.csb.app"],
+    allowedHosts: ["wqz6c2-5174.csb.app"],
   },
-  // We're adding a base path for the deployment to GitHub Pages.
-  // This is critical for ensuring that the app's assets (like CSS and JS)
-  // are loaded correctly from the sub-folder where GitHub Pages will host it.
-  base: "./",
+  // Critical for GitHub Pages deployment
+  // This tells Vite that your app will be served from /adaptive-training-companion/
+  base: "/adaptive-training-companion/",
+
+  // Build configuration for GitHub Pages
+  build: {
+    outDir: "dist",
+    assetsDir: "assets",
+  },
 });
