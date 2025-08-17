@@ -6,9 +6,10 @@
  */
 
 // We have updated the import path for Lit to work correctly with Vite.
-import { LitElement, html, css } from "lit";
+import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
 import { getData } from "../services/api.js";
+import "../style.css"; // Import the main stylesheet
 import "./workout-session.js";
 import "./history-view.js";
 
@@ -34,172 +35,7 @@ class AppShell extends LitElement {
     this.currentView = "home";
   }
 
-  static styles = css`
-    :host {
-      display: block;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-
-    .login-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-    }
-
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-    }
-
-    .error-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      text-align: center;
-      color: red;
-    }
-
-    .home-container {
-      padding: 1rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .welcome-message {
-      margin-bottom: 2rem;
-    }
-
-    .stats-section {
-      background-color: var(--color-surface, #f8f9fa);
-      border: 1px solid var(--color-border, #dee2e6);
-      border-radius: var(--border-radius, 0.5rem);
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
-    }
-
-    .stats-title {
-      margin: 0 0 1rem 0;
-      color: var(--color-text-primary, #212529);
-    }
-
-    .stat-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid var(--color-border, #dee2e6);
-    }
-
-    .stat-item:last-child {
-      border-bottom: none;
-    }
-
-    .stat-label {
-      color: var(--color-text-secondary, #6c757d);
-    }
-
-    .stat-value {
-      font-weight: 600;
-      color: var(--color-text-primary, #212529);
-    }
-
-    .action-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .start-workout-btn {
-      width: 100%;
-      padding: 1rem;
-      background-color: var(--color-primary, #0d6efd);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius, 0.5rem);
-      cursor: pointer;
-      font-size: 1.1rem;
-      font-weight: 600;
-      transition: background-color 0.2s ease;
-    }
-
-    .start-workout-btn:hover {
-      background-color: var(--color-primary-hover, #0b5ed7);
-    }
-
-    .view-history-btn {
-      width: 100%;
-      padding: 1rem;
-      background-color: var(--color-surface, #f8f9fa);
-      color: var(--color-text-primary, #212529);
-      border: 1px solid var(--color-border, #dee2e6);
-      border-radius: var(--border-radius, 0.5rem);
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: 500;
-      transition: background-color 0.2s ease;
-    }
-
-    .view-history-btn:hover {
-      background-color: var(--color-border, #dee2e6);
-    }
-
-    .back-button {
-      background: none;
-      border: none;
-      color: var(--color-primary, #0d6efd);
-      cursor: pointer;
-      font-size: 1rem;
-      padding: 0.5rem 0;
-      margin-bottom: 1rem;
-      text-decoration: underline;
-    }
-
-    .back-button:hover {
-      color: var(--color-primary-hover, #0b5ed7);
-    }
-
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid var(--color-border, #dee2e6);
-      border-radius: 50%;
-      border-top-color: var(--color-primary, #0d6efd);
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 0.5rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .retry-button {
-      margin-top: 1rem;
-      padding: 0.75rem 1.5rem;
-      background-color: var(--color-primary, #0d6efd);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius, 0.5rem);
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .retry-button:hover {
-      background-color: var(--color-primary-hover, #0b5ed7);
-    }
-  `;
+  static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
   connectedCallback() {
     super.connectedCallback();
@@ -293,6 +129,12 @@ class AppShell extends LitElement {
 
   renderLoginScreen() {
     return html`
+      <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+      </div>
       <div class="login-container">
         <h1>Welcome to the Adaptive Training Companion</h1>
         <p>Your intelligent workout partner that adapts to you in real-time.</p>
@@ -340,13 +182,19 @@ class AppShell extends LitElement {
       : "Never";
 
     return html`
+      <div class="background-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+      </div>
       <div class="home-container">
         <div class="welcome-message">
           <h1>Welcome Back, ${this.userData.userEmail?.split('@')[0] || 'Athlete'}!</h1>
           <p>Ready to push your limits today?</p>
         </div>
 
-        <div class="stats-section">
+        <div class="glass-card stats-section">
           <h3 class="stats-title">Your Progress</h3>
           <div class="stat-item">
             <span class="stat-label">Total Workouts</span>
@@ -363,10 +211,10 @@ class AppShell extends LitElement {
         </div>
 
         <div class="action-buttons">
-          <button class="start-workout-btn" @click=${this._startWorkout}>
+          <button class="start-workout-btn btn-primary" @click=${this._startWorkout}>
             🏋️ Start New Workout
           </button>
-          <button class="view-history-btn" @click=${this._viewHistory}>
+          <button class="view-history-btn btn-secondary" @click=${this._viewHistory}>
             📊 View Workout History
           </button>
         </div>
