@@ -137,15 +137,20 @@ class WorkoutTemplates extends LitElement {
   _renderTemplateList() {
     return html`
       <button class="btn-primary" @click=${() => this.showNewTemplateForm = true}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
         Create New Template
       </button>
       <div class="templates-list">
         ${this.templates.length === 0 ? html`<p class="no-data">No templates saved yet. Create your first one!</p>` : ''}
         ${this.templates.map(template => html`
-          <div class="card template-card">
-            <h3>${template.name}</h3>
-            <p>${template.exercises.length} exercises</p>
-            <button class="btn-primary" @click=${() => this._loadTemplate(template)}>Start Workout</button>
+          <div class="card link-card template-card">
+            <div class="template-info" @click=${() => this._loadTemplate(template)}>
+              <h3>${template.name}</h3>
+              <p>${template.exercises.length} exercises</p>
+            </div>
+            <button class="btn-icon" aria-label="Load template">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            </button>
           </div>
         `)}
       </div>
@@ -154,7 +159,7 @@ class WorkoutTemplates extends LitElement {
   
   _renderNewTemplateForm() {
     return html`
-      <div class="new-template-form glass-card">
+      <div class="new-template-form card">
         <h3>Create New Template</h3>
         <div class="input-group">
           <label for="template-name">Template Name:</label>
@@ -169,7 +174,7 @@ class WorkoutTemplates extends LitElement {
         
         <div class="exercise-list">
           ${this.newTemplateExercises.map((exercise, index) => html`
-            <div class="exercise-editor">
+            <div class="exercise-editor card">
               <div class="exercise-editor-header">
                 <input
                   type="text"
@@ -178,7 +183,7 @@ class WorkoutTemplates extends LitElement {
                   placeholder="Exercise Name"
                 />
                 <button class="btn-icon" @click=${() => this._removeExercise(index)}>
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9.75L9.75 14.74" /><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 14.74L9.75 9.75" /></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
               </div>
               <div class="exercise-details">
@@ -191,7 +196,10 @@ class WorkoutTemplates extends LitElement {
         </div>
         
         <div class="form-actions">
-          <button class="btn-secondary" @click=${this._addExerciseToTemplate}>Add Exercise</button>
+          <button class="btn-secondary" @click=${this._addExerciseToTemplate}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Exercise
+          </button>
           <button class="btn-primary" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.newTemplateExercises.length === 0 || this.isSaving}>
             ${this.isSaving ? 'Saving...' : 'Save Template'}
           </button>
