@@ -29,6 +29,27 @@ class WorkoutFeedbackModal extends LitElement {
     }
   }
 
+  _getOptionIcon(option) {
+    const icons = {
+      'None': '😊',
+      'Low Pain': '😐',
+      'Moderate Pain': '😟',
+      'A Lot of Pain': '😫',
+      'Never Got Sore': '💪',
+      'Healed a While Ago': '👌',
+      'Healed Just on Time': '👍',
+      'I\'m Still Sore!': '😩',
+      'Low Pump': '💧',
+      'Moderate Pump': '💦',
+      'Amazing Pump': '🔥',
+      'Easy': '😌',
+      'Pretty Good': '🙂',
+      'Pushed My Limits': '🥵',
+      'Too Much': '😵',
+    };
+    return icons[option] || '';
+  }
+
   render() {
     const questions = Object.keys(this.feedbackData);
     const allQuestionsAnswered = questions.every(question => 
@@ -61,7 +82,10 @@ class WorkoutFeedbackModal extends LitElement {
                       @change=${(e) => this._handleAnswerChange(question, e.target.value)}
                       .checked=${this.selectedAnswers[question] === option}
                     />
-                    <label for="${this._getInputId(question, option)}">${option}</label>
+                    <label for="${this._getInputId(question, option)}">
+                      <span class="option-icon">${this._getOptionIcon(option)}</span>
+                      <span class="option-text">${option}</span>
+                    </label>
                   </div>
                 `)}
               </div>
