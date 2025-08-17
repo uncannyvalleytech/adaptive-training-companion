@@ -338,6 +338,37 @@ app-shell {
   border: 0;
 }
 
+/* New styles for Exercise Media checklist */
+.exercise-media-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-4);
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0));
+}
+
+.form-checklist h4 {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-2);
+}
+
+.form-checklist ul {
+  list-style-type: none;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-checklist li {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  display: flex;
+  align-items: center;
+}
+
 /* Feedback Modal */
 .modal-overlay {
   position: fixed;
@@ -737,3 +768,4 @@ input[type="number"]::-webkit-outer-spin-button {
 .toast-notification.success { background-color: var(--color-state-success); }
 .toast-notification.error { background-color: var(--color-state-error); }
 .toast-notification.info { background-color: var(--color-text-tertiary); }
+}
