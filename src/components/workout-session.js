@@ -33,7 +33,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/irA7MTz96ho?si=K-Lq-055i5r-13iC'
+        url: 'https://www.youtube.com/embed/SW_C1A_tdoI'
       }
     },
     {
@@ -54,7 +54,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/McCDaAsSeRc?si=nK5Xp8xR5d7dFwQo'
+        url: 'https://www.youtube.com/embed/r4MzQanp65I'
       }
     },
     {
@@ -75,7 +75,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/0cXAp6WhSj4?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/gW715_V9T-Y'
       }
     },
     {
@@ -95,7 +95,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/F3QY5vMz_6I?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/B-dh1L_uD7o'
       }
     },
     {
@@ -116,7 +116,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/eGo4IYlbE5g?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/eGo4IYFdE2s'
       }
     },
     {
@@ -137,7 +137,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/Nqh7q3zDCoQ?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/9B_T9f-e_4M'
       }
     },
     {
@@ -158,7 +158,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/9xEPQwUDNuI?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/ya_Lz4pQ4A8'
       }
     },
     {
@@ -179,7 +179,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/2-LAMcpzODU?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/2-dhz5i-k1s'
       }
     },
     {
@@ -199,7 +199,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/sSj-Q25vJkU?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/V6M-QeE5vJk'
       }
     },
     {
@@ -219,7 +219,7 @@ const initialWorkout = {
       },
       media: {
         type: 'youtube',
-        url: 'https://www.youtube.com/embed/5xR8tvg4-yM?si=6mG3B1xK2d7d5Qk'
+        url: 'https://www.youtube.com/embed/l5_O-52I1n8'
       }
     }
   ],
@@ -606,6 +606,16 @@ class WorkoutSession extends LitElement {
                       allowfullscreen
                       class="exercise-media-frame"
                     ></iframe>
+                    <div class="exercise-media-controls">
+                      <div class="form-checklist">
+                        <h4>Form Checklist:</h4>
+                        <ul>
+                          <li>Keep your back straight.</li>
+                          <li>Control the movement.</li>
+                          <li>Engage your core.</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 ` : ''}
 
