@@ -13,7 +13,7 @@ import "./history-view.js";
 import "./onboarding-flow.js";
 import "./settings-view.js";
 import "./workout-templates.js";
-import { startAuthentication, startRegistration } from '@simplewebauthn/browser';
+import { startAuthentication } from '@simplewebauthn/browser';
 
 class AppShell extends LitElement {
   static properties = {
@@ -29,7 +29,6 @@ class AppShell extends LitElement {
     theme: { type: String },
     units: { type: String },
     offlineQueueCount: { type: Number },
-    // New properties for biometric authentication
     isBiometricsAvailable: { type: Boolean },
   };
 
@@ -127,7 +126,7 @@ class AppShell extends LitElement {
   // New method to check for biometric support
   async _checkBiometricsAvailability() {
       if (window.SimpleWebAuthnBrowser) {
-          this.isBiometricsAvailable = await SimpleWebWebAuthnBrowser.isAvailable();
+          this.isBiometricsAvailable = await SimpleWebAuthnBrowser.isWebAuthnAvailable();
       }
   }
 
@@ -192,6 +191,25 @@ class AppShell extends LitElement {
     this.errorMessage = "";
     this.fetchUserData();
   }
+  
+  async _shareWorkout(workout) {
+      if (navigator.share) {
+          try {
+              const shareData = {
+                  title: 'Workout Complete!',
+                  text: `I just crushed my workout: "${workout.name}"! I completed it in ${Math.floor(workout.durationInSeconds / 60)} minutes with a total volume of ${workout.totalVolume} ${this.units}.`,
+                  url: 'https://adaptive-training-companion.com', // Replace with your app's URL
+              };
+              await navigator.share(shareData);
+              this._showToast("Workout shared successfully!", "success");
+          } catch (err) {
+              console.error('Error sharing:', err);
+              this._showToast("Sharing failed.", "error");
+          }
+      } else {
+          this._showToast("Web Share API is not supported in this browser.", "info");
+      }
+  }
 
   render() {
     const showNav = this.userCredential && !this.isWorkoutActive && this.userData && !this.showOnboarding;
@@ -223,7 +241,7 @@ class AppShell extends LitElement {
             @click=${() => this.currentView = 'settings'}
             aria-label="Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 7.4 19a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 5 7.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.82.33z"></path><path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 7.4 19a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 5 7.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.82.33z"></path><path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"></path></svg>
           </button>
         </header>
 
@@ -238,6 +256,8 @@ class AppShell extends LitElement {
                 return html`<workout-templates></workout-templates>`;
               case "settings":
                 return this.renderSettingsScreen();
+              case "summary":
+                return this.renderWorkoutSummary();
               default:
                 return this.renderHomeScreen();
             }
@@ -287,20 +307,17 @@ class AppShell extends LitElement {
     `;
   }
   
-  // New biometric login method
   async _loginWithBiometrics() {
       try {
           const authResponse = await startAuthentication({
-              challenge: 'your_biometric_challenge', // Replace with a secure, server-generated challenge
+              challenge: 'your_biometric_challenge', 
               rpId: window.location.hostname,
               userVerification: 'preferred',
           });
           
-          // Here, you would send authResponse to your server to verify the signature.
-          // For this demo, we'll simulate a successful login.
           console.log("Biometric authentication successful!", authResponse);
           this._showToast("Signed in with biometrics!", "success");
-          this._handleSignIn({ credential: 'biometric-token' }); // Simulate a credential
+          this._handleSignIn({ credential: 'biometric-token' });
       } catch (error) {
           console.error("Biometric authentication failed:", error);
           this._showToast("Biometric sign-in failed. Please try again.", "error");
@@ -349,8 +366,9 @@ class AppShell extends LitElement {
       }, 0);
     }, 0) || 0;
 
-    const lastWorkoutDate = workoutCount > 0 
-      ? new Date(this.userData.workouts[workoutCount - 1].date).toLocaleDateString()
+    const lastWorkout = this.userData.workouts?.[0];
+    const lastWorkoutDate = lastWorkout 
+      ? new Date(lastWorkout.date).toLocaleDateString()
       : "Never";
       
     return html`
@@ -375,6 +393,19 @@ class AppShell extends LitElement {
             <span>${lastWorkoutDate}</span>
           </div>
         </div>
+        
+        ${lastWorkout ? html`
+          <div class="card action-card social-share-card">
+            <div class="card-text">
+              <h3>Celebrate Your Progress!</h3>
+              <p>Share your last workout with friends.</p>
+            </div>
+            <button class="btn-primary" @click=${() => this._shareWorkout(lastWorkout)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-1a3 3 0 0 1 3-3h13a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H7a3 3 0 0 1-3-3z"></path><path d="M12 2v2"></path><path d="M12 10v-2"></path><path d="M12 22v-2"></path></svg>
+              Share Workout
+            </button>
+          </div>
+        ` : ''}
 
         <div class="home-action-cards">
           <div class="card link-card action-card" @click=${this._startWorkout}>
@@ -410,7 +441,6 @@ class AppShell extends LitElement {
   }
 
   renderWorkoutScreen() {
-    // Pass the workout object to the workout-session component
     return html`
       <workout-session 
         .units=${this.units}
@@ -420,6 +450,51 @@ class AppShell extends LitElement {
       </workout-session>
     `;
   }
+  
+  renderWorkoutSummary() {
+    const lastWorkout = this.userData.workouts?.[0];
+    if (!lastWorkout) {
+        this.currentView = 'home';
+        return;
+    }
+    const workoutDate = new Date(lastWorkout.date).toLocaleDateString();
+
+    return html`
+        <div class="container workout-summary-container">
+            <header class="app-header">
+                <h1>Workout Complete!</h1>
+                <p>On ${workoutDate}</p>
+            </header>
+
+            <div class="card stats-section">
+                <h3>Summary</h3>
+                <div class="stat-item">
+                    <span>Total Volume</span>
+                    <span>${lastWorkout.totalVolume} ${this.units}</span>
+                </div>
+                <div class="stat-item">
+                    <span>Duration</span>
+                    <span>${Math.floor(lastWorkout.durationInSeconds / 60)} minutes</span>
+                </div>
+                <div class="stat-item">
+                    <span>Total Sets</span>
+                    <span>${lastWorkout.exercises.reduce((total, ex) => total + ex.completedSets.length, 0)}</span>
+                </div>
+            </div>
+
+            <div class="card actions-section">
+              <button class="btn-primary" @click=${() => this._shareWorkout(lastWorkout)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-1a3 3 0 0 1 3-3h13a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H7a3 3 0 0 1-3-3z"></path><path d="M12 2v2"></path><path d="M12 10v-2"></path><path d="M12 22v-2"></path></svg>
+                Share This Workout
+              </button>
+              <button class="btn-secondary" @click=${() => this.currentView = 'home'}>
+                Back to Home
+              </button>
+            </div>
+        </div>
+    `;
+  }
+
 
   renderHistoryScreen() {
     return html`
@@ -439,8 +514,6 @@ class AppShell extends LitElement {
   }
 
   renderBottomNav() {
-    const currentPath = window.location.hash.substring(1);
-    const getIconColor = (view) => this.currentView === view ? 'var(--color-accent-primary)' : 'var(--color-text-tertiary)';
     const navItems = [
       { view: 'home', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`, label: 'Home' },
       { view: 'history', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2L12 3z"></path></svg>`, label: 'History' },
@@ -481,9 +554,8 @@ class AppShell extends LitElement {
 
   _onWorkoutCompleted(event) {
     this.isWorkoutActive = false;
-    this.currentView = "home";
+    this.currentView = "summary";
     this.offlineQueueCount = getQueuedWorkoutsCount();
-    // Use the toast message from the event if available, otherwise default
     const toastMessage = event.detail?.message || "Workout saved successfully!";
     const toastType = event.detail?.type || "success";
     this._showToast(toastMessage, toastType);
