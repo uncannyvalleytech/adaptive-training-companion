@@ -82,6 +82,7 @@ class WorkoutSession extends LitElement {
     pauseDuration: { type: Number },
     estimatedTimeRemaining: { type: Number },
     showExitModal: { type: Boolean },
+    units: { type: String },
   };
 
   constructor() {
@@ -101,6 +102,7 @@ class WorkoutSession extends LitElement {
     this.pauseDuration = 0;
     this.estimatedTimeRemaining = 0;
     this.showExitModal = false;
+    this.units = 'lbs';
     this.workoutStartTime = Date.now();
   }
 
@@ -109,13 +111,20 @@ class WorkoutSession extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this._loadProgressFromLocalStorage();
+    window.addEventListener('units-change', (e) => this._handleUnitsChange(e.detail.units));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this._stopRestTimer();
+    window.removeEventListener('units-change', this._handleUnitsChange.bind(this));
   }
   
+  _handleUnitsChange(units) {
+    this.units = units;
+    this.requestUpdate();
+  }
+
   _getExerciseIcon(category) {
     // A simple mapping for now. Can be expanded later.
     const icons = {
@@ -125,6 +134,13 @@ class WorkoutSession extends LitElement {
       'default': html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`
     };
     return icons[category] || icons['default'];
+  }
+
+  _convertWeight(weight) {
+    if (this.units === 'kg') {
+      return (weight * 0.453592).toFixed(1);
+    }
+    return weight;
   }
 
   _loadProgressFromLocalStorage() {
@@ -321,6 +337,7 @@ class WorkoutSession extends LitElement {
     const totalWorkoutDuration = Date.now() - this.workoutStartTime - (this.pauseDuration || 0);
     const totalMinutes = Math.floor(totalWorkoutDuration / 60000);
     const totalSeconds = Math.floor((totalWorkoutDuration % 60000) / 1000);
+    const weightUnit = this.units === 'lbs' ? 'lbs' : 'kg';
 
     return html`
       ${this.isResting ? this.renderRestTimer() : ''}
@@ -369,8 +386,7 @@ class WorkoutSession extends LitElement {
                       (set, setIndex) => html`
                         <div class="completed-set">
                           <span class="checkmark">✓</span>
-                          <p>Set ${setIndex + 1}: ${set.reps} reps @ ${set.rpe}
-                          RPE with ${set.weight} lbs</p>
+                          <p>Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit} with ${set.weight} lbs</p>
                         </div>
                       `
                     )}
