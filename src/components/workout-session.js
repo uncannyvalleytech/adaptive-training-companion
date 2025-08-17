@@ -178,7 +178,6 @@ class WorkoutSession extends LitElement {
                 </div>
               ` : ''}
               
-              <!-- Suggestion for the next set -->
               <div class="suggestion-box">
                 <p>Next set suggestion: ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
                 <p>Note: ${exercise.nextSetSuggestion.adjustment}</p>
@@ -203,6 +202,12 @@ class WorkoutSession extends LitElement {
                   data-exercise-index="${index}"
                   data-input-type="rpe"
                 />
+                <input
+                  type="number"
+                  placeholder="RIR"
+                  data-exercise-index="${index}"
+                  data-input-type="rir"
+                />
                 <button @click=${this._addSet} data-exercise-index="${index}">
                   Add Set
                 </button>
@@ -226,15 +231,17 @@ class WorkoutSession extends LitElement {
     const repsInput = parent.querySelector('input[data-input-type="reps"]');
     const weightInput = parent.querySelector('input[data-input-type="weight"]');
     const rpeInput = parent.querySelector('input[data-input-type="rpe"]');
+    const rirInput = parent.querySelector('input[data-input-type="rir"]');
 
     const newSet = {
       reps: parseInt(repsInput.value),
       weight: parseInt(weightInput.value),
       rpe: parseInt(rpeInput.value),
+      rir: parseInt(rirInput.value),
     };
 
     // Validate inputs and set an error message
-    if (isNaN(newSet.reps) || isNaN(newSet.weight) || isNaN(newSet.rpe)) {
+    if (isNaN(newSet.reps) || isNaN(newSet.weight) || isNaN(newSet.rpe) || isNaN(newSet.rir)) {
       this.errorMessage = "Please enter valid numbers for all fields.";
       return;
     }
@@ -283,6 +290,7 @@ class WorkoutSession extends LitElement {
     repsInput.value = "";
     weightInput.value = "";
     rpeInput.value = "";
+    rirInput.value = "";
   }
 
   async _completeWorkout() {
