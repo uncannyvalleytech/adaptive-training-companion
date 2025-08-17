@@ -45,6 +45,7 @@ class AppShell extends LitElement {
     super.connectedCallback();
     this.waitForGoogleLibrary();
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
+    this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
   }
 
   waitForGoogleLibrary() {
@@ -264,7 +265,7 @@ class AppShell extends LitElement {
     return html`
       <workout-session 
         @workout-completed=${this._onWorkoutCompleted}
-        @workout-cancelled=${this._exitWorkout}>
+        @workout-cancelled=${this._onWorkoutCancelled}>
       </workout-session>
     `;
   }
@@ -310,6 +311,12 @@ class AppShell extends LitElement {
     this.currentView = "home";
     this._showToast("Workout saved successfully!", "success");
     this.fetchUserData();
+  }
+  
+  _onWorkoutCancelled() {
+    this.isWorkoutActive = false;
+    this.currentView = "home";
+    this._showToast("Workout discarded.", "info");
   }
 }
 
