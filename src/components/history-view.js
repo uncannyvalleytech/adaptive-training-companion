@@ -401,6 +401,18 @@ class HistoryView extends LitElement {
         </div>
       `;
     }
+    
+    if (this.workouts.length === 0) {
+      return html`
+        <div class="container empty-state-container">
+          <h1>Workout History</h1>
+          <div class="glass-card">
+            <h3>No Workouts Logged Yet</h3>
+            <p>Once you complete a workout, your history and progress charts will appear here.</p>
+          </div>
+        </div>
+      `;
+    }
 
     const { exerciseData, personalRecords } = this._processDataForCharts();
     const uniqueCategories = [...new Set(this.workouts.flatMap(w => w.exercises.map(e => e.category)))];
@@ -409,63 +421,60 @@ class HistoryView extends LitElement {
     return html`
       <div class="container">
         <h1>Workout History</h1>
-        ${this.workouts.length > 0
-          ? html`
-              <div class="summary-card glass-card">
-                <h3>Workout Summary</h3>
-                <p>You have logged <strong>${this.workouts.length}</strong> workouts.</p>
-                <button class="btn-secondary" @click=${this._exportData}>Export to CSV</button>
-              </div>
+        <div class="summary-card glass-card">
+          <h3>Workout Summary</h3>
+          <p>You have logged <strong>${this.workouts.length}</strong> workouts.</p>
+          <button class="btn-secondary" @click=${this._exportData}>Export to CSV</button>
+        </div>
 
-              <div class="filter-controls glass-card">
-                <div class="input-group">
-                  <label for="search-bar" class="sr-only">Search</label>
-                  <input
-                    id="search-bar"
-                    type="text"
-                    placeholder="Search exercises..."
-                    @input=${this._handleSearch}
-                    .value=${this.searchTerm}
-                  />
-                </div>
-                <div class="input-group">
-                  <label for="filter-select">Filter:</label>
-                  <select id="filter-select" @change=${this._handleFilter}>
-                    <option value="all">All Categories</option>
-                    ${uniqueCategories.map(cat => html`<option value="${cat}">${cat}</option>`)}
-                  </select>
-                </div>
-                <div class="input-group">
-                  <label for="group-by-select">Group by:</label>
-                  <select id="group-by-select" @change=${this._handleGroupBy}>
-                    <option value="workout">Workout</option>
-                    <option value="muscle-group">Muscle Group</option>
-                  </select>
-                </div>
-              </div>
+        <div class="filter-controls glass-card">
+          <div class="input-group">
+            <label for="search-bar" class="sr-only">Search</label>
+            <input
+              id="search-bar"
+              type="text"
+              placeholder="Search exercises..."
+              @input=${this._handleSearch}
+              .value=${this.searchTerm}
+            />
+          </div>
+          <div class="input-group">
+            <label for="filter-select">Filter:</label>
+            <select id="filter-select" @change=${this._handleFilter}>
+              <option value="all">All Categories</option>
+              ${uniqueCategories.map(cat => html`<option value="${cat}">${cat}</option>`)}
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="group-by-select">Group by:</label>
+            <select id="group-by-select" @change=${this._handleGroupBy}>
+              <option value="workout">Workout</option>
+              <option value="muscle-group">Muscle Group</option>
+            </select>
+          </div>
+        </div>
 
-              ${this._groupAndRenderWorkouts()}
+        ${this._groupAndRenderWorkouts()}
 
-              <h2 class="section-title">Strength Progress</h2>
-              ${Object.keys(exerciseData).map(exerciseName => html`
-              <div class="card workout-card">
-                <div class="exercise-header">
-                  <div class="exercise-title-group">
-                    <span class="exercise-icon">${this._getExerciseIcon(this.workouts[0].exercises.find(e => e.name === exerciseName)?.category || 'default')}</span>
-                    <h2>${exerciseName}</h2>
-                  </div>
-                </div>
-                <div class="personal-record">
-                  <strong>Personal Record:</strong> 
-                  ${personalRecords[exerciseName] 
-                    ? `${personalRecords[exerciseName].weight} ${this.units} x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} ${this.units}) on ${personalRecords[exerciseName].date}`
-                    : 'No records yet.'
-                  }
-                </div>
-                <canvas id="chart-${exerciseName.replace(/\s+/g, '-')}"></canvas>
-              </div>
-            `)}`
-          : html`<p>You have no workouts logged yet. Start a new workout to see your progress!</p>`}
+        <h2 class="section-title">Strength Progress</h2>
+        ${Object.keys(exerciseData).map(exerciseName => html`
+        <div class="card workout-card">
+          <div class="exercise-header">
+            <div class="exercise-title-group">
+              <span class="exercise-icon">${this._getExerciseIcon(this.workouts[0].exercises.find(e => e.name === exerciseName)?.category || 'default')}</span>
+              <h2>${exerciseName}</h2>
+            </div>
+          </div>
+          <div class="personal-record">
+            <strong>Personal Record:</strong> 
+            ${personalRecords[exerciseName] 
+              ? `${personalRecords[exerciseName].weight} ${this.units} x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} ${this.units}) on ${personalRecords[exerciseName].date}`
+              : 'No records yet.'
+            }
+          </div>
+          <canvas id="chart-${exerciseName.replace(/\s+/g, '-')}"></canvas>
+        </div>
+      `)}
       </div>
     `;
   }
