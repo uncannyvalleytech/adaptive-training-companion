@@ -347,6 +347,46 @@ class HistoryView extends LitElement {
     }
     return html``;
   }
+  
+  _exportData() {
+    // Flatten workout data into a CSV format
+    const headers = ["date", "workoutName", "exerciseName", "category", "muscleGroup", "setNumber", "reps", "weight_lbs", "weight_kg", "rpe", "rir"];
+    let csvContent = headers.join(",") + "\n";
+
+    this.workouts.forEach(workout => {
+      const workoutDate = new Date(workout.date).toLocaleDateString();
+      workout.exercises.forEach(exercise => {
+        exercise.completedSets.forEach((set, setIndex) => {
+          const row = [
+            `"${workoutDate}"`,
+            `"${workout.name}"`,
+            `"${exercise.name}"`,
+            `"${exercise.category}"`,
+            `"${exercise.muscleGroup}"`,
+            setIndex + 1,
+            set.reps,
+            set.weight,
+            (set.weight * 0.453592).toFixed(1),
+            set.rpe,
+            set.rir
+          ];
+          csvContent += row.join(",") + "\n";
+        });
+      });
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `workout-data-${new Date().toISOString().slice(0, 10)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
 
   render() {
     if (this.isLoading) {
@@ -374,6 +414,7 @@ class HistoryView extends LitElement {
               <div class="summary-card glass-card">
                 <h3>Workout Summary</h3>
                 <p>You have logged <strong>${this.workouts.length}</strong> workouts.</p>
+                <button class="btn-secondary" @click=${this._exportData}>Export to CSV</button>
               </div>
 
               <div class="filter-controls glass-card">
