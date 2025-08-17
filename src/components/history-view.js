@@ -13,17 +13,27 @@ import { getCredential } from "../services/google-auth.js";
 class HistoryView extends LitElement {
   static properties = {
     workouts: { type: Array },
+    filteredWorkouts: { type: Array },
     isLoading: { type: Boolean },
     errorMessage: { type: String },
     chartInstances: { type: Object },
+    expandedWorkouts: { type: Object },
+    searchTerm: { type: String },
+    filterTerm: { type: String },
+    groupBy: { type: String },
   };
 
   constructor() {
     super();
     this.workouts = [];
+    this.filteredWorkouts = [];
     this.isLoading = true;
     this.errorMessage = "";
     this.chartInstances = {};
+    this.expandedWorkouts = {};
+    this.searchTerm = "";
+    this.filterTerm = "all";
+    this.groupBy = "workout";
   }
   
   connectedCallback() {
@@ -54,6 +64,7 @@ class HistoryView extends LitElement {
         // Sort workouts by date, newest to oldest for display
         const sortedWorkouts = response.data.workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
         this.workouts = sortedWorkouts;
+        this.filteredWorkouts = this._applyFilters();
         this.isLoading = false;
       } else {
         throw new Error(response.error || "Unexpected API response format.");
@@ -65,7 +76,7 @@ class HistoryView extends LitElement {
       this.isLoading = false;
     }
   }
-  
+
   _getExerciseIcon(category) {
     // A simple mapping for now. Can be expanded later.
     const icons = {
@@ -78,7 +89,7 @@ class HistoryView extends LitElement {
   }
 
   updated(changedProperties) {
-    if (changedProperties.has('workouts') && !this.isLoading) {
+    if (changedProperties.has('workouts') || changedProperties.has('filteredWorkouts')) {
       this.createCharts();
     }
   }
@@ -134,7 +145,7 @@ class HistoryView extends LitElement {
   createCharts() {
     const { exerciseData } = this._processDataForCharts();
     
-    Object.keys(this.chartInstances).forEach(key => this.chartInstances[key].destroy());
+    Object.values(this.chartInstances).forEach(chart => chart.destroy());
     this.chartInstances = {};
 
     for (const exerciseName in exerciseData) {
@@ -183,6 +194,123 @@ class HistoryView extends LitElement {
     }
   }
 
+  _handleSearch(e) {
+    this.searchTerm = e.target.value.toLowerCase();
+    this.filteredWorkouts = this._applyFilters();
+  }
+
+  _handleFilter(e) {
+    this.filterTerm = e.target.value;
+    this.filteredWorkouts = this._applyFilters();
+  }
+
+  _handleGroupBy(e) {
+    this.groupBy = e.target.value;
+    this.filteredWorkouts = this._applyFilters();
+  }
+
+  _applyFilters() {
+    let tempWorkouts = this.workouts;
+
+    if (this.searchTerm) {
+      tempWorkouts = tempWorkouts.map(workout => ({
+        ...workout,
+        exercises: workout.exercises.filter(exercise =>
+          exercise.name.toLowerCase().includes(this.searchTerm)
+        )
+      })).filter(workout => workout.exercises.length > 0);
+    }
+
+    if (this.filterTerm !== "all") {
+      tempWorkouts = tempWorkouts.map(workout => ({
+        ...workout,
+        exercises: workout.exercises.filter(exercise =>
+          exercise.category === this.filterTerm
+        )
+      })).filter(workout => workout.exercises.length > 0);
+    }
+    
+    return tempWorkouts;
+  }
+  
+  _toggleExpand(index) {
+    this.expandedWorkouts = {
+      ...this.expandedWorkouts,
+      [index]: !this.expandedWorkouts[index]
+    };
+  }
+
+  _groupAndRenderWorkouts() {
+    if (this.groupBy === "workout") {
+      return this.filteredWorkouts.map((workout, workoutIndex) => html`
+        <div class="card workout-card" @click=${() => this._toggleExpand(workoutIndex)}>
+          <div class="workout-summary">
+            <h3 class="workout-name">${workout.name}</h3>
+            <span class="workout-date">${new Date(workout.date).toLocaleDateString()}</span>
+          </div>
+          <div class="workout-details ${this.expandedWorkouts[workoutIndex] ? 'expanded' : 'collapsed'}">
+            ${workout.exercises.map(exercise => html`
+              <div class="exercise-item">
+                <div class="exercise-header">
+                  <div class="exercise-title-group">
+                    <span class="exercise-icon">${this._getExerciseIcon(exercise.category)}</span>
+                    <h4 class="exercise-name">${exercise.name}</h4>
+                  </div>
+                </div>
+                <ul class="set-list">
+                  ${exercise.completedSets.map((set, setIndex) => html`
+                    <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${set.weight} lbs</li>
+                  `)}
+                </ul>
+              </div>
+            `)}
+          </div>
+        </div>
+      `);
+    } else if (this.groupBy === "muscle-group") {
+      // Logic for grouping by muscle group would go here, which requires more data
+      // For now, we'll just group by exercise name as a proxy
+      const exercisesByName = {};
+      this.filteredWorkouts.forEach(workout => {
+        workout.exercises.forEach(exercise => {
+          if (!exercisesByName[exercise.name]) {
+            exercisesByName[exercise.name] = [];
+          }
+          exercisesByName[exercise.name].push({
+            date: new Date(workout.date).toLocaleDateString(),
+            completedSets: exercise.completedSets,
+            category: exercise.category,
+          });
+        });
+      });
+      
+      return Object.keys(exercisesByName).map(exerciseName => html`
+        <div class="card workout-card" @click=${() => this._toggleExpand(exerciseName)}>
+          <div class="workout-summary">
+            <h3 class="workout-name">
+              <span class="exercise-icon">${this._getExerciseIcon(exercisesByName[exerciseName][0].category)}</span>
+              ${exerciseName}
+            </h3>
+            <span class="workout-count">(${exercisesByName[exerciseName].length} workouts)</span>
+          </div>
+          <div class="workout-details ${this.expandedWorkouts[exerciseName] ? 'expanded' : 'collapsed'}">
+            ${exercisesByName[exerciseName].map(ex => html`
+              <div class="exercise-item">
+                <h4 class="exercise-name">${ex.date}</h4>
+                <ul class="set-list">
+                  ${ex.completedSets.map((set, setIndex) => html`
+                    <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${set.weight} lbs</li>
+                  `)}
+                </ul>
+              </div>
+            `)}
+          </div>
+        </div>
+      `);
+    }
+    return html``;
+  }
+
   render() {
     if (this.isLoading) {
       return this.renderSkeleton();
@@ -198,6 +326,7 @@ class HistoryView extends LitElement {
     }
 
     const { exerciseData, personalRecords } = this._processDataForCharts();
+    const uniqueCategories = [...new Set(this.workouts.flatMap(w => w.exercises.map(e => e.category)))];
 
     return html`
       <div class="container">
@@ -208,6 +337,37 @@ class HistoryView extends LitElement {
                 <h3>Workout Summary</h3>
                 <p>You have logged <strong>${this.workouts.length}</strong> workouts.</p>
               </div>
+
+              <div class="filter-controls glass-card">
+                <div class="input-group">
+                  <label for="search-bar" class="sr-only">Search</label>
+                  <input
+                    id="search-bar"
+                    type="text"
+                    placeholder="Search exercises..."
+                    @input=${this._handleSearch}
+                    .value=${this.searchTerm}
+                  />
+                </div>
+                <div class="input-group">
+                  <label for="filter-select">Filter:</label>
+                  <select id="filter-select" @change=${this._handleFilter}>
+                    <option value="all">All Categories</option>
+                    ${uniqueCategories.map(cat => html`<option value="${cat}">${cat}</option>`)}
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="group-by-select">Group by:</label>
+                  <select id="group-by-select" @change=${this._handleGroupBy}>
+                    <option value="workout">Workout</option>
+                    <option value="muscle-group">Exercise</option>
+                  </select>
+                </div>
+              </div>
+
+              ${this._groupAndRenderWorkouts()}
+
+              <h2 class="section-title">Strength Progress</h2>
               ${Object.keys(exerciseData).map(exerciseName => html`
               <div class="card workout-card">
                 <div class="exercise-header">
