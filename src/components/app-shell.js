@@ -12,7 +12,7 @@ import "./workout-session.js";
 import "./history-view.js";
 import "./onboarding-flow.js";
 import "./settings-view.js";
-import "./workout-templates.js"; // Import the new workout templates component
+import "./workout-templates.js";
 
 class AppShell extends LitElement {
   static properties = {
