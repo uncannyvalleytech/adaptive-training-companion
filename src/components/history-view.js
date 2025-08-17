@@ -14,22 +14,26 @@ import "../style.css"; // Import the main stylesheet
 class HistoryView extends LitElement {
   static properties = {
     workouts: { type: Array },
-    loadingMessage: { type: String },
+    isLoading: { type: Boolean },
     errorMessage: { type: String },
   };
 
   constructor() {
     super();
     this.workouts = [];
-    this.loadingMessage = "Loading workout history...";
+    this.isLoading = true;
     this.errorMessage = "";
+  }
+  
+  connectedCallback() {
+    super.connectedCallback();
     this.fetchWorkoutHistory();
   }
 
   static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
   async fetchWorkoutHistory() {
-    this.loadingMessage = "Fetching your workout history...";
+    this.isLoading = true;
     this.errorMessage = "";
 
     try {
@@ -40,8 +44,11 @@ class HistoryView extends LitElement {
 
       const response = await getData(token);
       if (response && response.data && response.data.workouts) {
-        this.workouts = response.data.workouts;
-        this.loadingMessage = "";
+        // Simulate a delay to show the skeleton loader
+        setTimeout(() => {
+          this.workouts = response.data.workouts;
+          this.isLoading = false;
+        }, 1000);
       } else {
         throw new Error(response.error || "Unexpected API response format.");
       }
@@ -49,23 +56,20 @@ class HistoryView extends LitElement {
       console.error("Failed to fetch workout history:", error);
       this.errorMessage =
         "Failed to load your workout history. Please try again.";
-      this.loadingMessage = "";
+      this.isLoading = false;
     }
   }
 
   render() {
-    if (this.loadingMessage) {
-      return html`
-        <div class="container">
-          <p>${this.loadingMessage}</p>
-        </div>
-      `;
+    if (this.isLoading) {
+      return this.renderSkeleton();
     }
 
     if (this.errorMessage) {
       return html`
-        <div class="container">
+        <div class="container error-container">
           <p class="error-message">${this.errorMessage}</p>
+          <button @click=${this.fetchWorkoutHistory} class="btn-primary">Retry</button>
         </div>
       `;
     }
@@ -76,7 +80,7 @@ class HistoryView extends LitElement {
         ${this.workouts.length > 0
           ? html`
               ${this.workouts.map(
-                (workout, index) => html`
+                (workout) => html`
                   <div class="card workout-card">
                     <h2>
                       Workout on ${new Date(workout.date).toLocaleDateString()}
@@ -105,6 +109,22 @@ class HistoryView extends LitElement {
               )}
             `
           : html`<p>You have no workouts logged yet. Start a new workout!</p>`}
+      </div>
+    `;
+  }
+
+  renderSkeleton() {
+    return html`
+      <div class="container">
+        <h1>Workout History</h1>
+        ${[...Array(3)].map(() => html`
+          <div class="card">
+            <div class="skeleton skeleton-title" style="width: 70%;"></div>
+            <div class="skeleton skeleton-text" style="width: 50%;"></div>
+            <div class="skeleton skeleton-text" style="width: 80%;"></div>
+            <div class="skeleton skeleton-text" style="width: 60%;"></div>
+          </div>
+        `)}
       </div>
     `;
   }
