@@ -63,5 +63,30 @@ export async function getData(authToken) {
  * @param {string} authToken - The user's secure ID token.
  */
 export async function saveData(data, authToken) {
+  // Check if the browser is offline
+  if (!navigator.onLine) {
+    console.log("Offline mode: Queueing workout for later sync.");
+    const queuedWorkouts = JSON.parse(localStorage.getItem('queuedWorkouts') || '[]');
+    queuedWorkouts.push({ data, authToken });
+    localStorage.setItem('queuedWorkouts', JSON.stringify(queuedWorkouts));
+    return { success: true }; // Return a success message for the user
+  }
+
   return makeApiRequest("saveData", authToken, { data });
+}
+
+/**
+ * Syncs any pending workout data from localStorage to the backend.
+ */
+export async function syncData() {
+  const queuedWorkouts = JSON.parse(localStorage.getItem('queuedWorkouts') || '[]');
+  if (queuedWorkouts.length > 0 && navigator.onLine) {
+    console.log("Online: Syncing queued workouts...");
+    for (const workout of queuedWorkouts) {
+      // Re-use makeApiRequest for each queued workout
+      await makeApiRequest("saveData", workout.authToken, { data: workout.data });
+    }
+    localStorage.removeItem('queuedWorkouts'); // Clear the queue after successful sync
+    console.log("Sync complete.");
+  }
 }
