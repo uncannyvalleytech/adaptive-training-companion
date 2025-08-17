@@ -42,9 +42,9 @@ class SettingsView extends LitElement {
 
   render() {
     return html`
-      <div class="settings-container">
+      <div class="settings-container container">
         <h1>Settings</h1>
-        <div class="glass-card settings-group">
+        <div class="card settings-group">
           <h3>Appearance</h3>
           <div class="setting-item">
             <label for="theme-select">Theme:</label>
@@ -55,7 +55,7 @@ class SettingsView extends LitElement {
           </div>
         </div>
 
-        <div class="glass-card settings-group">
+        <div class="card settings-group">
           <h3>Workout Preferences</h3>
           <div class="setting-item">
             <label for="units-select">Units:</label>
