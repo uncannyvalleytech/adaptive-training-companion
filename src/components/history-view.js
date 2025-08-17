@@ -9,7 +9,7 @@
 import { LitElement, html } from "lit";
 import { getData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
-import "../style.css"; // Import the main stylesheet
+// import "../style.css"; // This line is removed to fix the loading error
 
 class HistoryView extends LitElement {
   static properties = {
