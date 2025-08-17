@@ -10,7 +10,7 @@ import { LitElement, html } from "lit";
 import { saveData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
 import "./workout-feedback-modal.js"; // Import the new modal component
-import "../style.css"; // Import the main stylesheet
+// import "../style.css"; // This line is removed to fix the loading error
 
 // A simple workout object for our MVP (Minimum Viable Product)
 const initialWorkout = {
