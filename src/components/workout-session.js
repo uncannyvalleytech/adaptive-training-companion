@@ -109,10 +109,11 @@ class WorkoutSession extends LitElement {
             const weightError = this.errors[`${index}-weight`];
             const rpeError = this.errors[`${index}-rpe`];
             const rirError = this.errors[`${index}-rir`];
+            const currentSetNumber = exercise.completedSets.length + 1;
 
             return html`
-              <div class="card exercise-card">
-                <h3>${exercise.name}</h3>
+              <div class="card exercise-card" role="region" aria-labelledby="exercise-title-${index}">
+                <h3 id="exercise-title-${index}">${exercise.name}</h3>
                 <p>
                   Target: ${exercise.sets} sets of ${exercise.reps} reps @ RPE
                   ${exercise.rpe}
@@ -137,50 +138,70 @@ class WorkoutSession extends LitElement {
 
                 <div class="set-input-grid">
                   <div class="input-group">
+                    <label for="reps-${index}" class="sr-only">Reps for ${exercise.name}</label>
                     <input
+                      id="reps-${index}"
                       type="number"
                       placeholder="Reps"
                       class=${repsError ? 'input-error' : ''}
                       data-exercise-index="${index}"
                       data-input-type="reps"
                       @input=${this._validateInput}
+                      aria-label="Reps for ${exercise.name}, set ${currentSetNumber}"
+                      aria-invalid=${!!repsError}
+                      aria-describedby="reps-error-${index}"
                     />
-                    <div class="error-message-text">${repsError || ''}</div>
+                    <div id="reps-error-${index}" class="error-message-text" aria-live="polite">${repsError || ''}</div>
                   </div>
                   <div class="input-group">
+                    <label for="weight-${index}" class="sr-only">Weight for ${exercise.name}</label>
                     <input
+                      id="weight-${index}"
                       type="number"
                       placeholder="Weight (lbs)"
                       class=${weightError ? 'input-error' : ''}
                       data-exercise-index="${index}"
                       data-input-type="weight"
                       @input=${this._validateInput}
+                      aria-label="Weight in pounds for ${exercise.name}, set ${currentSetNumber}"
+                      aria-invalid=${!!weightError}
+                      aria-describedby="weight-error-${index}"
                     />
-                    <div class="error-message-text">${weightError || ''}</div>
+                    <div id="weight-error-${index}" class="error-message-text" aria-live="polite">${weightError || ''}</div>
                   </div>
                   <div class="input-group">
+                    <label for="rpe-${index}" class="sr-only">RPE for ${exercise.name}</label>
                     <input
+                      id="rpe-${index}"
                       type="number"
                       placeholder="RPE"
                       class=${rpeError ? 'input-error' : ''}
                       data-exercise-index="${index}"
                       data-input-type="rpe"
                       @input=${this._validateInput}
+                      aria-label="RPE for ${exercise.name}, set ${currentSetNumber}"
+                      aria-invalid=${!!rpeError}
+                      aria-describedby="rpe-error-${index}"
                     />
-                    <div class="error-message-text">${rpeError || ''}</div>
+                    <div id="rpe-error-${index}" class="error-message-text" aria-live="polite">${rpeError || ''}</div>
                   </div>
                   <div class="input-group">
+                    <label for="rir-${index}" class="sr-only">RIR for ${exercise.name}</label>
                     <input
+                      id="rir-${index}"
                       type="number"
                       placeholder="RIR"
                       class=${rirError ? 'input-error' : ''}
                       data-exercise-index="${index}"
                       data-input-type="rir"
                       @input=${this._validateInput}
+                      aria-label="RIR for ${exercise.name}, set ${currentSetNumber}"
+                      aria-invalid=${!!rirError}
+                      aria-describedby="rir-error-${index}"
                     />
-                    <div class="error-message-text">${rirError || ''}</div>
+                    <div id="rir-error-${index}" class="error-message-text" aria-live="polite">${rirError || ''}</div>
                   </div>
-                  <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary add-set-button">
+                  <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary add-set-button" aria-label="Add set ${currentSetNumber} for ${exercise.name}">
                     Add Set
                   </button>
                 </div>
@@ -225,20 +246,20 @@ class WorkoutSession extends LitElement {
     const rir = parseFloat(rirInput.value);
 
     let hasError = false;
-    if (isNaN(reps) || reps < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-reps`]: 'Invalid number.' };
+    if (repsInput.value === '' || isNaN(reps) || reps < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-reps`]: 'Required.' };
       hasError = true;
     }
-    if (isNaN(weight) || weight < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-weight`]: 'Invalid number.' };
+    if (weightInput.value === '' || isNaN(weight) || weight < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-weight`]: 'Required.' };
       hasError = true;
     }
-    if (isNaN(rpe) || rpe < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-rpe`]: 'Invalid number.' };
+    if (rpeInput.value === '' || isNaN(rpe) || rpe < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-rpe`]: 'Required.' };
       hasError = true;
     }
-    if (isNaN(rir) || rir < 0) {
-      this.errors = { ...this.errors, [`${exerciseIndex}-rir`]: 'Invalid number.' };
+    if (rirInput.value === '' || isNaN(rir) || rir < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-rir`]: 'Required.' };
       hasError = true;
     }
 
