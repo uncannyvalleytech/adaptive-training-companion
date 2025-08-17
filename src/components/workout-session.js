@@ -499,6 +499,12 @@ class WorkoutSession extends LitElement {
         <h2>Resting...</h2>
         <div class="timer-circle">
           <svg>
+            <defs>
+              <linearGradient id="timer-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:var(--color-accent-primary-hover);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:var(--color-accent-primary);stop-opacity:1" />
+              </linearGradient>
+            </defs>
             <circle class="background" cx="100" cy="100" r="${radius}"></circle>
             <circle class="progress" cx="100" cy="100" r="${radius}" style="stroke-dasharray: ${circumference}; stroke-dashoffset: ${offset};"></circle>
           </svg>
@@ -525,7 +531,7 @@ class WorkoutSession extends LitElement {
   renderExitModal() {
     return html`
       <div class="modal-overlay" @click=${this._closeExitModal}>
-        <div class="glass-card modal-content" role="dialog" aria-modal="true">
+        <div class="modal-content" role="dialog" aria-modal="true">
           <h3>Exit Workout?</h3>
           <p>Are you sure you want to exit? You can save your progress or discard it completely.</p>
           <div class="modal-actions">
@@ -549,23 +555,24 @@ class WorkoutSession extends LitElement {
       ${this.isPaused ? this.renderPauseOverlay() : ''}
       ${this.showExitModal ? this.renderExitModal() : ''}
 
-      <div class="container">
-        <div class="workout-header">
-          <h1>${this.workout.name}</h1>
-          <button @click=${this._pauseWorkout} class="btn-icon" aria-label="Pause workout">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
-            </svg>
+      <div class="container workout-container">
+        <header class="workout-header-full">
+          <button class="icon-btn back-btn" @click=${this._showExitModal}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
           </button>
-        </div>
+          <h1>${this.workout.name}</h1>
+          <button @click=${this._pauseWorkout} class="icon-btn pause-btn" aria-label="Pause workout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+          </button>
+        </header>
         
-        <div class="stats-card glass-card">
+        <div class="card stats-card">
           <div class="stat-item">
-            <span>Time Elapsed</span>
+            <span>Time</span>
             <span>${totalMinutes}:${totalSeconds < 10 ? '0' : ''}${totalSeconds}</span>
           </div>
           <div class="stat-item">
-            <span>Est. Time Remaining</span>
+            <span>Est. Left</span>
             <span>~${Math.floor(this.estimatedTimeRemaining / 60)} min</span>
           </div>
         </div>
@@ -579,7 +586,7 @@ class WorkoutSession extends LitElement {
             const hasInputValue = this.inputReps > 0 || this.inputWeight > 0 || this.inputRpe > 0 || this.inputRir > 0;
 
             return html`
-              <div class="card" role="region" aria-labelledby="exercise-title-${index}">
+              <div class="card exercise-card" role="region" aria-labelledby="exercise-title-${index}">
                 <div class="exercise-header">
                   <div class="exercise-title-group">
                     <span class="exercise-icon">${this._getExerciseIcon(exercise.category)}</span>
@@ -640,8 +647,12 @@ class WorkoutSession extends LitElement {
                             aria-describedby="${inputType}-error-${index}"
                           />
                           <div class="input-stepper">
-                            <button class="step-up" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="1" @click=${this._adjustInput}>+</button>
-                            <button class="step-down" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="-1" @click=${this._adjustInput}>-</button>
+                            <button class="step-up" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="1" @click=${this._adjustInput}>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            </button>
+                            <button class="step-down" data-exercise-index="${index}" data-input-type="${inputType}" data-amount="-1" @click=${this._adjustInput}>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </button>
                           </div>
                         </div>
                         <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
