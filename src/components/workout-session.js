@@ -65,6 +65,7 @@ class WorkoutSession extends LitElement {
   static properties = {
     workout: { type: Object },
     isSaving: { type: Boolean },
+    errors: { type: Object },
     // New properties for the feedback modal
     showFeedbackModal: { type: Boolean },
     feedbackQuestions: { type: Object },
@@ -75,6 +76,7 @@ class WorkoutSession extends LitElement {
     super();
     this.workout = initialWorkout;
     this.isSaving = false;
+    this.errors = {}; // To store validation errors
     // Initialize new properties
     this.showFeedbackModal = false;
     this.feedbackQuestions = {};
@@ -83,68 +85,108 @@ class WorkoutSession extends LitElement {
 
   static styles = []; // The component's styles will now be handled by the imported stylesheet.
 
+  _validateInput(e) {
+    const input = e.target;
+    const { exerciseIndex, inputType } = input.dataset;
+    const value = parseFloat(input.value);
+    const errorKey = `${exerciseIndex}-${inputType}`;
+    let errorMessage = '';
+
+    if (input.value !== '' && (isNaN(value) || value < 0)) {
+      errorMessage = 'Must be a positive number.';
+    }
+
+    this.errors = { ...this.errors, [errorKey]: errorMessage };
+  }
+
   render() {
     return html`
       <div class="container">
         <h1>${this.workout.name}</h1>
         ${this.workout.exercises.map(
-          (exercise, index) => html`
-            <div class="card exercise-card">
-              <h3>${exercise.name}</h3>
-              <p>
-                Target: ${exercise.sets} sets of ${exercise.reps} reps @ RPE
-                ${exercise.rpe}
-              </p>
-              ${exercise.completedSets.length > 0 ? html`
-                <div class="completed-sets">
-                  ${exercise.completedSets.map(
-                    (set, setIndex) => html`
-                      <p>
-                        Completed Set ${setIndex + 1}: ${set.reps} reps @ ${set.rpe}
-                        RPE with ${set.weight} lbs
-                      </p>
-                    `
-                  )}
-                </div>
-              ` : ''}
-              
-              <!-- Suggestion for the next set -->
-              <div class="suggestion-box">
-                <p><strong>Next set:</strong> ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
-                <p><em>${exercise.nextSetSuggestion.adjustment}</em></p>
-              </div>
+          (exercise, index) => {
+            const repsError = this.errors[`${index}-reps`];
+            const weightError = this.errors[`${index}-weight`];
+            const rpeError = this.errors[`${index}-rpe`];
+            const rirError = this.errors[`${index}-rir`];
 
-              <div class="set-input-group">
-                <input
-                  type="number"
-                  placeholder="Reps"
-                  data-exercise-index="${index}"
-                  data-input-type="reps"
-                />
-                <input
-                  type="number"
-                  placeholder="Weight (lbs)"
-                  data-exercise-index="${index}"
-                  data-input-type="weight"
-                />
-                <input
-                  type="number"
-                  placeholder="RPE"
-                  data-exercise-index="${index}"
-                  data-input-type="rpe"
-                />
-                <input
-                  type="number"
-                  placeholder="RIR"
-                  data-exercise-index="${index}"
-                  data-input-type="rir"
-                />
-                <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary">
-                  Add Set
-                </button>
+            return html`
+              <div class="card exercise-card">
+                <h3>${exercise.name}</h3>
+                <p>
+                  Target: ${exercise.sets} sets of ${exercise.reps} reps @ RPE
+                  ${exercise.rpe}
+                </p>
+                ${exercise.completedSets.length > 0 ? html`
+                  <div class="completed-sets">
+                    ${exercise.completedSets.map(
+                      (set, setIndex) => html`
+                        <p>
+                          Completed Set ${setIndex + 1}: ${set.reps} reps @ ${set.rpe}
+                          RPE with ${set.weight} lbs
+                        </p>
+                      `
+                    )}
+                  </div>
+                ` : ''}
+                
+                <div class="suggestion-box">
+                  <p><strong>Next set:</strong> ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
+                  <p><em>${exercise.nextSetSuggestion.adjustment}</em></p>
+                </div>
+
+                <div class="set-input-grid">
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      placeholder="Reps"
+                      class=${repsError ? 'input-error' : ''}
+                      data-exercise-index="${index}"
+                      data-input-type="reps"
+                      @input=${this._validateInput}
+                    />
+                    <div class="error-message-text">${repsError || ''}</div>
+                  </div>
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      placeholder="Weight (lbs)"
+                      class=${weightError ? 'input-error' : ''}
+                      data-exercise-index="${index}"
+                      data-input-type="weight"
+                      @input=${this._validateInput}
+                    />
+                    <div class="error-message-text">${weightError || ''}</div>
+                  </div>
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      placeholder="RPE"
+                      class=${rpeError ? 'input-error' : ''}
+                      data-exercise-index="${index}"
+                      data-input-type="rpe"
+                      @input=${this._validateInput}
+                    />
+                    <div class="error-message-text">${rpeError || ''}</div>
+                  </div>
+                  <div class="input-group">
+                    <input
+                      type="number"
+                      placeholder="RIR"
+                      class=${rirError ? 'input-error' : ''}
+                      data-exercise-index="${index}"
+                      data-input-type="rir"
+                      @input=${this._validateInput}
+                    />
+                    <div class="error-message-text">${rirError || ''}</div>
+                  </div>
+                  <button @click=${this._addSet} data-exercise-index="${index}" class="btn-primary add-set-button">
+                    Add Set
+                  </button>
+                </div>
               </div>
-            </div>
-          `
+            `;
+          }
         )}
         <button class="complete-workout-btn btn-primary" @click=${this._completeWorkout} ?disabled=${this.isSaving}>
           ${this.isSaving
@@ -154,7 +196,6 @@ class WorkoutSession extends LitElement {
         </button>
       </div>
       
-      <!-- Render the feedback modal if needed -->
       ${this.showFeedbackModal
         ? html`
             <workout-feedback-modal
@@ -171,28 +212,42 @@ class WorkoutSession extends LitElement {
     const exerciseIndex = parseInt(event.target.closest('button').dataset.exerciseIndex);
     const exercise = this.workout.exercises[exerciseIndex];
 
-    const parent = event.target.closest(".set-input-group");
+    const parent = event.target.closest(".set-input-grid");
     const repsInput = parent.querySelector('input[data-input-type="reps"]');
     const weightInput = parent.querySelector('input[data-input-type="weight"]');
     const rpeInput = parent.querySelector('input[data-input-type="rpe"]');
     const rirInput = parent.querySelector('input[data-input-type="rir"]');
 
-    const newSet = {
-      reps: parseInt(repsInput.value),
-      weight: parseInt(weightInput.value),
-      rpe: parseInt(rpeInput.value),
-      rir: parseInt(rirInput.value),
-    };
+    // Final validation check before adding the set
+    const reps = parseFloat(repsInput.value);
+    const weight = parseFloat(weightInput.value);
+    const rpe = parseFloat(rpeInput.value);
+    const rir = parseFloat(rirInput.value);
 
-    if (isNaN(newSet.reps) || isNaN(newSet.weight) || isNaN(newSet.rpe) || isNaN(newSet.rir)) {
-      // This is where a toast notification would be shown from the app-shell
-      this.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Please enter valid numbers for all fields.', type: 'error' },
-        bubbles: true, 
-        composed: true 
-      }));
+    let hasError = false;
+    if (isNaN(reps) || reps < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-reps`]: 'Invalid number.' };
+      hasError = true;
+    }
+    if (isNaN(weight) || weight < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-weight`]: 'Invalid number.' };
+      hasError = true;
+    }
+    if (isNaN(rpe) || rpe < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-rpe`]: 'Invalid number.' };
+      hasError = true;
+    }
+    if (isNaN(rir) || rir < 0) {
+      this.errors = { ...this.errors, [`${exerciseIndex}-rir`]: 'Invalid number.' };
+      hasError = true;
+    }
+
+    if (hasError) {
+      this.requestUpdate();
       return;
     }
+
+    const newSet = { reps, weight, rpe, rir };
 
     const updatedExercises = [...this.workout.exercises];
     updatedExercises[exerciseIndex] = {
@@ -213,9 +268,6 @@ class WorkoutSession extends LitElement {
       nextReps = lastSet.reps;
       nextRpe = lastSet.rpe + 1;
       adjustment = "That was easier than expected! Let's challenge you a bit more.";
-    } else {
-      nextReps = lastSet.reps;
-      nextRpe = lastSet.rpe;
     }
     
     updatedExercises[exerciseIndex].nextSetSuggestion = {
@@ -230,19 +282,14 @@ class WorkoutSession extends LitElement {
     weightInput.value = "";
     rpeInput.value = "";
     rirInput.value = "";
+    this.errors = {}; // Clear errors after successful submission
     
-    // Show the feedback modal for this exercise
     this.feedbackQuestions = exercise.feedbackRequired;
     this.currentFeedbackExerciseIndex = exerciseIndex;
     this.showFeedbackModal = true;
   }
   
-  /**
-   * Handles feedback submitted from the modal and saves it.
-   * @param {Object} feedback - The feedback data submitted by the user.
-   */
   _handleFeedbackSubmit(feedback) {
-    // Add the feedback to the last completed set of the current exercise
     const updatedExercises = [...this.workout.exercises];
     const currentExercise = updatedExercises[this.currentFeedbackExerciseIndex];
     const lastSetIndex = currentExercise.completedSets.length - 1;
@@ -252,12 +299,9 @@ class WorkoutSession extends LitElement {
     }
     
     this.workout = { ...this.workout, exercises: updatedExercises };
-    this.showFeedbackModal = false; // Hide the modal
+    this.showFeedbackModal = false;
   }
 
-  /**
-   * Hides the feedback modal.
-   */
   _closeFeedbackModal() {
     this.showFeedbackModal = false;
   }
