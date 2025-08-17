@@ -136,15 +136,18 @@ class HistoryView extends LitElement {
           exerciseData[exercise.name] = {
             labels: [],
             data: [],
+            volumeData: [],
           };
         }
         
         let dailyMax1RM = 0;
+        let dailyVolume = 0;
         exercise.completedSets.forEach(set => {
           const estimated1RM = this._calculate1RM(set.weight, set.reps);
           if (estimated1RM > dailyMax1RM) {
             dailyMax1RM = estimated1RM;
           }
+          dailyVolume += set.reps * set.weight;
 
           // Update personal records
           if (!personalRecords[exercise.name] || estimated1RM > personalRecords[exercise.name].oneRepMax) {
@@ -160,6 +163,7 @@ class HistoryView extends LitElement {
         if (dailyMax1RM > 0) {
           exerciseData[exercise.name].labels.push(workoutDate);
           exerciseData[exercise.name].data.push(this._convertWeight(dailyMax1RM));
+          exerciseData[exercise.name].volumeData.push(this._convertWeight(dailyVolume));
         }
       });
     });
@@ -175,10 +179,11 @@ class HistoryView extends LitElement {
     this.chartInstances = {};
 
     for (const exerciseName in exerciseData) {
-      const canvas = this.shadowRoot.querySelector(`#chart-${exerciseName.replace(/\s+/g, '-')}`);
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        this.chartInstances[exerciseName] = new Chart(ctx, {
+      // 1RM Chart
+      const canvas1RM = this.shadowRoot.querySelector(`#chart-1rm-${exerciseName.replace(/\s+/g, '-')}`);
+      if (canvas1RM) {
+        const ctx = canvas1RM.getContext('2d');
+        this.chartInstances[`1rm-${exerciseName}`] = new Chart(ctx, {
           type: 'line',
           data: {
             labels: exerciseData[exerciseName].labels,
@@ -204,7 +209,7 @@ class HistoryView extends LitElement {
                 display: false
               },
               tooltip: {
-                backgroundColor: 'var(--color-surface-tertiary)',
+                backgroundColor: 'var(--color-surface-secondary)',
                 titleColor: 'var(--color-text-primary)',
                 bodyColor: 'var(--color-text-secondary)',
                 borderColor: 'var(--border-color)',
@@ -230,6 +235,70 @@ class HistoryView extends LitElement {
                 title: {
                   display: true,
                   text: `Est. 1RM (${unitLabel})`,
+                  color: 'var(--color-text-secondary)'
+                },
+                grid: {
+                  color: 'var(--border-color)'
+                },
+                ticks: {
+                  color: 'var(--color-text-secondary)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Volume Chart
+      const canvasVolume = this.shadowRoot.querySelector(`#chart-volume-${exerciseName.replace(/\s+/g, '-')}`);
+      if (canvasVolume) {
+        const ctx = canvasVolume.getContext('2d');
+        this.chartInstances[`volume-${exerciseName}`] = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: exerciseData[exerciseName].labels,
+            datasets: [{
+              label: `Total Volume (${unitLabel})`,
+              data: exerciseData[exerciseName].volumeData,
+              backgroundColor: 'rgba(0, 191, 255, 0.6)',
+              borderColor: 'var(--color-accent-primary)',
+              borderWidth: 1,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'var(--color-surface-secondary)',
+                titleColor: 'var(--color-text-primary)',
+                bodyColor: 'var(--color-text-secondary)',
+                borderColor: 'var(--border-color)',
+                borderWidth: 1,
+                callbacks: {
+                  label: (context) => {
+                    return `Volume: ${Math.round(context.raw)} ${unitLabel}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: 'var(--border-color)'
+                },
+                ticks: {
+                  color: 'var(--color-text-secondary)'
+                }
+              },
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: `Total Volume (${unitLabel})`,
                   color: 'var(--color-text-secondary)'
                 },
                 grid: {
@@ -508,7 +577,8 @@ class HistoryView extends LitElement {
             }
           </div>
           <div class="chart-container">
-            <canvas id="chart-${exerciseName.replace(/\s+/g, '-')}"></canvas>
+            <canvas id="chart-1rm-${exerciseName.replace(/\s+/g, '-')}"></canvas>
+            <canvas id="chart-volume-${exerciseName.replace(/\s+/g, '-')}"></canvas>
           </div>
         </div>
       `)}
