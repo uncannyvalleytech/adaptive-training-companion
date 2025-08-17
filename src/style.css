@@ -178,6 +178,13 @@ button:disabled {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Accessibility Focus Styles */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--color-glow-primary);
+}
+
+
 /* =============================================== */
 /* 5. TYPOGRAPHY                                   */
 /* =============================================== */
