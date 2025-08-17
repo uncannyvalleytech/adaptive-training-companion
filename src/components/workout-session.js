@@ -21,11 +21,7 @@ const initialWorkout = {
       rpe: 8,
       completedSets: [],
       notes: "",
-      nextSetSuggestion: {
-        reps: 5,
-        rpe: 8,
-        adjustment: "Start with a warm-up set.",
-      },
+      nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set."}
     },
     {
       name: "Dumbbell Bench Press",
@@ -34,7 +30,7 @@ const initialWorkout = {
       rpe: 7,
       completedSets: [],
       notes: "",
-      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
+      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set."}
     },
     {
       name: "Pull-ups",
@@ -43,7 +39,7 @@ const initialWorkout = {
       rpe: 8,
       completedSets: [],
       notes: "",
-      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
+      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set."}
     },
   ],
 };
@@ -169,27 +165,22 @@ class WorkoutSession extends LitElement {
                 Target: ${exercise.sets} sets of ${exercise.reps} reps @ RPE
                 ${exercise.rpe}
               </p>
-              ${exercise.completedSets.length > 0
-                ? html`
-                    <div class="completed-sets">
-                      ${exercise.completedSets.map(
-                        (set, setIndex) => html`
-                          <p>
-                            Completed Set ${setIndex + 1}: ${set.reps} reps @
-                            ${set.rpe} RPE with ${set.weight} lbs
-                          </p>
-                        `
-                      )}
-                    </div>
-                  `
-                : ""}
-
+              ${exercise.completedSets.length > 0 ? html`
+                <div class="completed-sets">
+                  ${exercise.completedSets.map(
+                    (set, setIndex) => html`
+                      <p>
+                        Completed Set ${setIndex + 1}: ${set.reps} reps @ ${set.rpe}
+                        RPE with ${set.weight} lbs
+                      </p>
+                    `
+                  )}
+                </div>
+              ` : ''}
+              
               <!-- Suggestion for the next set -->
               <div class="suggestion-box">
-                <p>
-                  Next set suggestion: ${exercise.nextSetSuggestion.reps} reps @
-                  RPE ${exercise.nextSetSuggestion.rpe}
-                </p>
+                <p>Next set suggestion: ${exercise.nextSetSuggestion.reps} reps @ RPE ${exercise.nextSetSuggestion.rpe}</p>
                 <p>Note: ${exercise.nextSetSuggestion.adjustment}</p>
               </div>
 
@@ -262,7 +253,7 @@ class WorkoutSession extends LitElement {
     let nextReps = lastSet.reps;
     let nextRpe = lastSet.rpe;
     let adjustment = "You're on track!";
-
+    
     if (lastSet.rpe > exercise.rpe) {
       // The set was harder than expected, suggest a small reduction
       nextReps = Math.max(1, lastSet.reps - 1);
@@ -272,20 +263,19 @@ class WorkoutSession extends LitElement {
       // The set was easier than expected, suggest a small increase
       nextReps = lastSet.reps;
       nextRpe = lastSet.rpe + 1;
-      adjustment =
-        "That was easier than expected! Let's challenge you a bit more.";
+      adjustment = "That was easier than expected! Let's challenge you a bit more.";
     } else {
       // On track, keep the same target
       nextReps = lastSet.reps;
       nextRpe = lastSet.rpe;
     }
-
+    
     updatedExercises[exerciseIndex].nextSetSuggestion = {
       reps: nextReps,
       rpe: nextRpe,
       adjustment: adjustment,
     };
-
+    
     // Update the workout object to trigger a re-render
     this.workout = { ...this.workout, exercises: updatedExercises };
 
