@@ -9,7 +9,6 @@
       content="An intelligent workout app that adapts to you in real-time."
     />
     
-    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -20,14 +19,28 @@
       {
         "imports": {
           "lit": "https://cdn.skypack.dev/lit@3",
-          "lit/": "https://cdn.skypack.dev/lit@3/"
+          "lit/": "https://cdn.skypack.dev/lit@3/",
+          "@simplewebauthn/browser": "https://cdn.skypack.dev/@simplewebauthn/browser"
         }
       }
     </script>
     
-    <!-- Added Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
+
     <script type="module" src="./src/main.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
