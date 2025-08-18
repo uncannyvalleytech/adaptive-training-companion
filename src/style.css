@@ -155,6 +155,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
   box-shadow: 
     inset 5px 5px 10px var(--shadow-dark), 
     inset -5px -5px 10px var(--shadow-light);
+  transition: box-shadow 0.3s ease; /* Added for smoother transitions */
 }
 
 /* --- Progress Ring --- */
@@ -461,7 +462,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     padding: 0.75rem 1.5rem;
     border-radius: var(--border-radius-md);
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: box-shadow 0.2s ease, transform 0.2s ease; /* Performance Optimization */
     font-size: 1.125rem;
     text-align: center;
     font-weight: var(--font-weight-bold);
@@ -470,6 +471,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     box-shadow: 
         5px 5px 10px var(--shadow-dark), 
         -5px -5px 10px var(--shadow-light);
+    will-change: transform; /* Performance Optimization */
 }
 .cta-button:active, .secondary-button:active, .home-nav-btn:active, .home-icon-btn:active, .btn-secondary:active, .btn-danger:active, .toggle-btn:active {
     box-shadow: 
