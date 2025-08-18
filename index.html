@@ -27,10 +27,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Load the main.js module with defer to fix the race condition -->
-    <script type="module" src="./src/main.js" defer></script>
-    
     <script>
+      // Service Worker registration with better error handling
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./service-worker.js')
@@ -48,7 +46,9 @@
     <main>
       <app-shell></app-shell>
     </main>
-    <!-- The Google library is now called from main.js after it has loaded -->
+    <!-- Load Google library asynchronously -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Load the main.js module after everything else -->
+    <script type="module" src="./src/main.js"></script>
   </body>
 </html>
