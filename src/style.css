@@ -115,6 +115,26 @@ app-shell {
   padding: var(--space-6);
 }
 
+/* --- New styles for app shell header --- */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+.app-header h1 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: normal;
+}
+.app-header .icon-btn {
+  color: var(--color-text-secondary);
+}
+.app-header .icon-btn:hover {
+  color: var(--color-accent-primary);
+}
+
 
 /* =============================================== */
 /* 5. COMPONENTS                                   */
@@ -862,3 +882,29 @@ input[type="number"]::-webkit-outer-spin-button {
 .toast-notification.success { background-color: var(--color-state-success); }
 .toast-notification.error { background-color: var(--color-state-error); }
 .toast-notification.info { background-color: var(--color-text-tertiary); }
+
+/* Confetti Styles for Gamification */
+.confetti-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 500;
+}
+
+.pr-congrats {
+  text-align: center;
+  margin: var(--space-8) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent-primary);
+  text-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+  animation: scale-up 0.5s ease-out;
+}
+
+@keyframes scale-up {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
