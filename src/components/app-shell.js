@@ -1,6 +1,7 @@
 import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
-import { getData, saveData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
+import { getData, saveData } from "../services/api.js";
+import { WorkoutEngine } from "../services/workout-engine.js"; // Corrected import
 import "./workout-session.js";
 import "./history-view.js";
 import "./onboarding-flow.js";
@@ -9,12 +10,6 @@ import "./workout-templates.js";
 import "./achievements-view.js"; 
 import { startAuthentication } from '@simplewebauthn/browser';
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
-
-// This is a placeholder for the workout plan that will be generated after onboarding.
-const initialWorkout = {
-  name: "Generated Workout Plan",
-  exercises: [],
-};
 
 class AppShell extends LitElement {
   static properties = {
@@ -28,9 +23,9 @@ class AppShell extends LitElement {
     showOnboarding: { type: Boolean },
     theme: { type: String },
     units: { type: String },
-    offlineQueueCount: { type: Number },
     isBiometricsAvailable: { type: Boolean },
     lastCompletedWorkout: { type: Object },
+    workout: { type: Object },
   };
 
   constructor() {
@@ -45,9 +40,9 @@ class AppShell extends LitElement {
     this.showOnboarding = false;
     this.theme = localStorage.getItem('theme') || 'dark';
     this.units = localStorage.getItem('units') || 'lbs';
-    this.offlineQueueCount = getQueuedWorkoutsCount();
     this.isBiometricsAvailable = false;
     this.lastCompletedWorkout = null;
+    this.workout = null;
     
     this._checkBiometricsAvailability();
   }
@@ -84,7 +79,6 @@ class AppShell extends LitElement {
   }
 
   setupSignIn() {
-    // Access the button from the light DOM since createRenderRoot() is used
     const signInButtonContainer = this.querySelector("#google-signin-button");
     if (signInButtonContainer) {
       initializeSignIn(signInButtonContainer, (credential) => {
@@ -116,7 +110,6 @@ class AppShell extends LitElement {
       if (response && response.data) {
         setTimeout(() => {
           this.userData = response.data;
-          // Check if onboarding data exists
           if (!this.userData.onboardingComplete) {
               this.showOnboarding = true;
           }
@@ -134,9 +127,23 @@ class AppShell extends LitElement {
 
   _handleOnboardingComplete(e) {
       const onboardingData = e.detail.userData;
-      this.userData = { ...this.userData, ...onboardingData, onboardingComplete: true };
+      const fullUserData = { ...this.userData, ...onboardingData, onboardingComplete: true };
       
-      // Save the updated user data (including onboarding answers) to the backend
+      // Initialize the workout engine with the new user profile
+      const engine = new WorkoutEngine(fullUserData);
+      
+      // For now, let's generate a plan for a few key muscle groups
+      const muscleGroups = ['chest', 'back', 'legs', 'shoulders', 'arms'];
+      const mesocycle = engine.generateMesocycle(muscleGroups);
+
+      // Store the full user data and the generated plan
+      this.userData = {
+        ...fullUserData,
+        mesocycle: mesocycle,
+        currentWeek: 1, // Start at week 1
+      };
+      
+      // Save the updated user data to the backend
       const token = getCredential().credential;
       saveData(this.userData, token);
       
@@ -181,7 +188,6 @@ class AppShell extends LitElement {
       return this.renderWorkoutScreen();
     }
 
-    // Main view router
     switch (this.currentView) {
         case "home":
             return this.renderHomeScreen();
@@ -270,7 +276,7 @@ class AppShell extends LitElement {
       <workout-session 
         .workout=${this.workout}
         @workout-completed=${this._onWorkoutCompleted}
-        @workout-cancelled=${this._onWorkoutCancelled}
+        @workout-cancelled=${this._exitWorkout}
         @setView=${e => this.currentView = e.detail.view}>
       </workout-session>
     `;
@@ -314,9 +320,26 @@ class AppShell extends LitElement {
   }
 
   _startWorkout() {
-    this.isWorkoutActive = true;
-    // In a real app, this workout would be dynamically generated or selected.
-    this.workout = initialWorkout;
+    // This now needs to be smarter. It should select the next workout from the mesocycle.
+    // For now, we'll just grab the first workout of the current week.
+    if (this.userData && this.userData.mesocycle) {
+        // A real implementation would track which workout of the week is next.
+        // We'll simulate this by just creating a workout for the day.
+        const currentWeekPlan = this.userData.mesocycle.weeks[this.userData.currentWeek - 1];
+        
+        // This is a simplified workout generation. A full implementation would be more complex.
+        this.workout = {
+            name: `Week ${this.userData.currentWeek} - Day 1`,
+            exercises: [
+                { name: 'Bench Press', sets: [{weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}], targetReps: 8, category: 'strength' },
+                { name: 'Barbell Row', sets: [{weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}], targetReps: 8, category: 'strength' },
+                { name: 'Overhead Press', sets: [{weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}], targetReps: 10, category: 'strength' },
+            ]
+        };
+        this.isWorkoutActive = true;
+    } else {
+        this._showToast("No workout plan found. Please complete onboarding.", "error");
+    }
   }
   
   _startWorkoutWithTemplate(event) {
@@ -337,12 +360,9 @@ class AppShell extends LitElement {
     if (this.lastCompletedWorkout.newPRs?.length > 0) {
         this._triggerConfetti();
     }
-
-    // After a workout is completed and saved, refetch data to update history
     this.fetchUserData();
   }
 
-  // To prevent re-rendering the entire component tree, we make sure this component doesn't use shadow DOM
   createRenderRoot() {
     return this;
   }
