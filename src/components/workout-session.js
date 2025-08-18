@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { saveData, generateRecommendation, getData } from "../services/api.js";
+import { saveData, getData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
 import "./workout-feedback-modal.js";
 
@@ -100,7 +100,6 @@ class WorkoutSession extends LitElement {
             name: ex.name,
             completedSets: ex.sets.filter(s => s.completed)
         })),
-        // In the future, this would be calculated properly
         newPRs: [], 
     };
 
