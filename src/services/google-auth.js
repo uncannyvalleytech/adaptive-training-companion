@@ -20,7 +20,7 @@ const CLIENT_ID =
  * @param {function} onSignIn - A callback function to run when the user signs in.
  */
 export function initializeSignIn(buttonContainer, onSignIn) {
-  if (!window.google) {
+  if (!window.google || !window.google.accounts) {
     console.error("Google Identity Services library not loaded.");
     return;
   }
@@ -63,9 +63,11 @@ function handleCredentialResponse(response, onSignIn) {
  * Handles the sign-out process.
  */
 export function signOut() {
+  if (window.google && window.google.accounts) {
+    window.google.accounts.id.disableAutoSelect();
+  }
   authCredential = null;
   console.log("User has been signed out.");
-  // In the future, we can add logic here to revoke the token if needed.
 }
 
 /**
