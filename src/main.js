@@ -12,6 +12,13 @@ import { syncData, getQueuedWorkoutsCount } from "./services/api.js";
 
 console.log("Adaptive Training Companion initialized!");
 
+// This global function is called by the Google Identity Services library
+// once it has fully loaded.
+window.onGoogleLibraryLoad = () => {
+  console.log("Google Identity Services library has loaded.");
+  window.dispatchEvent(new CustomEvent('google-library-loaded'));
+};
+
 // Call the new syncData function to handle any queued offline data
 syncData();
 
