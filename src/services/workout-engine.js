@@ -47,7 +47,7 @@ export class WorkoutEngine {
   getVolumeLandmarks(muscleGroup, trainingFrequency = 2) {
     const taf = this.calculateTAF();
     const rcs = this.calculateRCS();
-    const base_mev = this.baseMEV[muscleGroup] || 8;
+    const base_mev = this.userProfile.baseMEV?.[muscleGroup] || this.baseMEV[muscleGroup] || 8;
     const muscle_size_factor = this.muscleSizeFactor[muscleGroup] || 0.2;
     const mev = base_mev * (1 + muscle_size_factor) * Math.pow(taf, 0.3);
     const freqFactorMap = { 1: 0.8, 2: 1.0, 3: 1.2 };
@@ -63,178 +63,82 @@ export class WorkoutEngine {
     };
   }
 
-  // --- 7. Exercise Selection Algorithm ---
+  // --- 10. Long-term Progression ---
 
   /**
-   * Calculates the Exercise Priority Score (EPS) for a single exercise.
-   * @param {object} exercise - The exercise object from the database.
-   * @param {object} context - Contextual information like weak muscles and exercise history.
-   * @returns {number} The calculated priority score.
+   * Adapts volume landmarks after a successful mesocycle.
+   * @returns {object} The new, adapted baseMEV values for the user profile.
    */
+  adaptVolumeLandmarks() {
+    const taf = this.calculateTAF();
+    let adaptationRate = 0.01; // Advanced
+    if (taf < 1.5) adaptationRate = 0.05; // Beginner
+    else if (taf < 2.5) adaptationRate = 0.025; // Intermediate
+
+    const currentBaseMEV = this.userProfile.baseMEV || this.baseMEV;
+    const newBaseMEV = {};
+
+    for (const muscle in currentBaseMEV) {
+      newBaseMEV[muscle] = Math.round(currentBaseMEV[muscle] * (1 + adaptationRate));
+    }
+    
+    return newBaseMEV;
+  }
+
+  // --- 7. Exercise Selection Algorithm ---
   calculateEPS(exercise, context = {}) {
     const { weakMuscles = [], recentExercises = [] } = context;
-
-    // Compound Bonus
     const compoundBonus = exercise.type === 'compound' ? 3 : 1;
-
-    // Weakness Multiplier
     const isWeakMuscle = weakMuscles.includes(exercise.muscleGroup);
     const weaknessMultiplier = isWeakMuscle ? 1.5 : 1.0;
-
-    // Novelty Factor
     let noveltyFactor = 0;
     const lastUsedIndex = recentExercises.findIndex(e => e.id === exercise.id);
-    if (lastUsedIndex === -1) {
-      noveltyFactor = 2; // New exercise
-    } else if (lastUsedIndex > 4) { // Assuming one workout per week, > 4 weeks ago
-      noveltyFactor = 1;
-    }
-
-    // Recovery Cost
+    if (lastUsedIndex === -1) noveltyFactor = 2;
+    else if (lastUsedIndex > 4) noveltyFactor = 1;
     const recoveryCostMap = { high: -1, medium: 0, low: 1 };
     const recoveryCost = recoveryCostMap[exercise.recoveryCost] || 0;
-
-    // Final Score Calculation
     const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier;
     return score;
   }
 
-  /**
-   * Selects the best exercises for a given muscle group based on EPS.
-   * @param {string} muscleGroup - The target muscle group.
-   * @param {number} count - The number of exercises to select.
-   * @param {object} context - Context for EPS calculation.
-   * @returns {object[]} An array of selected exercise objects.
-   */
   selectExercisesForMuscle(muscleGroup, count = 2, context = {}) {
     const availableExercises = exerciseDatabase[muscleGroup];
     if (!availableExercises) return [];
-
     const scoredExercises = availableExercises.map(ex => ({
       ...ex,
       score: this.calculateEPS(ex, context),
     }));
-
-    // Sort by score in descending order and take the top 'count'
     scoredExercises.sort((a, b) => b.score - a.score);
     return scoredExercises.slice(0, count);
   }
 
   // --- Integrated Workout Generation ---
-
-  /**
-   * Generates a full workout for the day, now with intelligent exercise selection.
-   * @param {string[]} muscleGroupsForDay - Array of muscle groups to train today.
-   * @param {object} weeklyPlan - The plan for the current week from the mesocycle.
-   * @returns {object} A structured workout object.
-   */
   generateDailyWorkout(muscleGroupsForDay, weeklyPlan) {
     let exercises = [];
-    // This context would be dynamic in a real app
     const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [] }; 
-
     for (const muscle of muscleGroupsForDay) {
         const musclePlan = weeklyPlan.muscleData[muscle];
-        // Determine how many exercises to pick based on volume. Simple logic for now.
         const numExercises = musclePlan.targetVolume > 12 ? 3 : 2;
         const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
-        
-        // Distribute sets among selected exercises
         let setsRemaining = musclePlan.targetVolume;
         const exercisesWithSets = selected.map((ex, index) => {
             const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
             setsRemaining -= setsForThisEx;
             return {
                 ...ex,
-                sets: Array(setsForThisEx).fill({}), // Populate empty sets
-                targetReps: ex.type === 'compound' ? 8 : 12, // Example logic
+                sets: Array(setsForThisEx).fill({}),
+                targetReps: ex.type === 'compound' ? 8 : 12,
             };
         });
         exercises.push(...exercisesWithSets);
     }
-
     return {
         name: `Dynamic Workout - ${muscleGroupsForDay.join(', ')}`,
         exercises: exercises,
     };
   }
   
-  // ... [All other existing methods like calculateTAF, calculateRCS, adjustWorkout, etc. remain here] ...
-  // --- 1. User Profile Initialization ---
-
-  calculateTAF() {
-    const { training_months } = this.userProfile;
-    const taf = 1 + (training_months / 12) * 0.1;
-    return Math.min(taf, 3.0);
-  }
-
-  calculateRCS() {
-    const { sex, age, sleep_hours, stress_level } = this.userProfile;
-    const baseRecovery = 1.0;
-    const sexModifier = sex === 'female' ? 1.15 : 1.0;
-    const ageModifier = Math.max(0.7, 1.2 - (age - 18) * 0.005);
-    const sleepModifier = Math.min(1.2, sleep_hours / 8);
-    const stressModifier = (10 - stress_level) / 10;
-    return baseRecovery * sexModifier * ageModifier * sleepModifier * stressModifier;
-  }
-
-  // --- 2. Volume Landmark Calculations ---
-
-  getVolumeLandmarks(muscleGroup, trainingFrequency = 2) {
-    const taf = this.calculateTAF();
-    const rcs = this.calculateRCS();
-    const base_mev = this.baseMEV[muscleGroup] || 8;
-    const muscle_size_factor = this.muscleSizeFactor[muscleGroup] || 0.2;
-    const mev = base_mev * (1 + muscle_size_factor) * Math.pow(taf, 0.3);
-    const freqFactorMap = { 1: 0.8, 2: 1.0, 3: 1.2 };
-    const trainingFrequencyFactor = freqFactorMap[trainingFrequency] || 1.3;
-    const mrv = mev * (2.5 + rcs) * trainingFrequencyFactor;
-    const mav = mev + (mrv - mev) * 0.7;
-    const mv = mev * 0.6;
-    return {
-      mev: Math.round(mev),
-      mrv: Math.round(mrv),
-      mav: Math.round(mav),
-      mv: Math.round(mv),
-    };
-  }
-
-  // --- 3. Weekly Volume Progression ---
-
-  calculateWeeklyVolume(startingVolume, weekNumber, maxVolume) {
-    const taf = this.calculateTAF();
-    const progressionRate = taf < 1.5 ? 0.1 : 0.05;
-    let weekVolume = startingVolume * (1 + (weekNumber - 1) * progressionRate);
-    if (weekVolume >= maxVolume) {
-        weekVolume = maxVolume;
-    }
-    const deloadTriggered = weekVolume >= maxVolume * 0.95;
-    return { 
-        targetVolume: Math.round(weekVolume), 
-        deloadVolume: Math.round(startingVolume * 0.6),
-        deloadTriggered 
-    };
-  }
-
-  // --- 4. Intensity Prescription ---
-
-  calculateTargetRPE(exerciseType, currentVolume, mrv) {
-    const baseRPE = exerciseType === 'compound' ? 8.0 : 8.5;
-    let fatigueAdjustment = 0;
-    if (currentVolume / mrv > 0.8) fatigueAdjustment = 0.5;
-    if (currentVolume / mrv < 0.4) fatigueAdjustment = -0.5;
-    const volumeAdjustment = 0;
-    return baseRPE + fatigueAdjustment + volumeAdjustment;
-  }
-
-  suggestLoadProgression(previousLoad, lastSessionRPE, targetRPE) {
-    if (lastSessionRPE < targetRPE - 0.5) return previousLoad * 1.025;
-    if (lastSessionRPE > targetRPE + 0.5) return previousLoad * 0.975;
-    return previousLoad;
-  }
-
-  // --- 6 & 8. Recovery Monitoring & Daily Autoregulation ---
-
+  // --- Autoregulation and Periodization ---
   calculateRecoveryScore(readinessData) {
     const { sleep_quality, energy_level, motivation, muscle_soreness } = readinessData;
     const sorenessInverse = 11 - muscle_soreness;
@@ -248,13 +152,10 @@ export class WorkoutEngine {
   adjustWorkout(plannedWorkout, readinessScore) {
     const adjustedWorkout = JSON.parse(JSON.stringify(plannedWorkout));
     let adjustmentNote = "Workout is as planned.";
-
     if (readinessScore < 6) {
       adjustmentNote = "Readiness is low. Volume reduced by 20% and intensity reduced.";
       adjustedWorkout.exercises.forEach(ex => {
-        if (ex.sets.length > 3) {
-          ex.sets.pop();
-        }
+        if (ex.sets.length > 3) ex.sets.pop();
         ex.targetReps = Math.max(5, ex.targetReps - 2);
       });
     } else if (readinessScore > 8) {
@@ -263,12 +164,9 @@ export class WorkoutEngine {
         ex.targetReps += 1;
       });
     }
-    
     adjustedWorkout.adjustmentNote = adjustmentNote;
     return adjustedWorkout;
   }
-
-  // --- 9. Periodization Model ---
 
   generateMesocycle(muscleGroups, mesocycleLength = 5) {
     const mesocycle = { weeks: [] };
