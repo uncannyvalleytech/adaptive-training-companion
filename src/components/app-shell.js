@@ -90,7 +90,7 @@ class AppShell extends LitElement {
     }
   }
 
-  _showToast(message, type = 'success', duration = 3000) {
+  _showToast(message, type = 'success', duration = 4000) {
     this.toast = { message, type };
     setTimeout(() => {
       this.toast = null;
@@ -130,7 +130,7 @@ class AppShell extends LitElement {
 
   _handleOnboardingComplete(e) {
       const onboardingData = e.detail.userData;
-      const fullUserData = { ...this.userData, ...onboardingData, onboardingComplete: true };
+      const fullUserData = { ...this.userData, ...onboardingData, onboardingComplete: true, workoutsCompletedThisMeso: 0 };
       const engine = new WorkoutEngine(fullUserData);
       const muscleGroups = ['chest', 'back', 'legs', 'shoulders', 'arms'];
       const mesocycle = engine.generateMesocycle(muscleGroups);
@@ -290,7 +290,6 @@ class AppShell extends LitElement {
     if (this.userData && this.userData.mesocycle) {
         const engine = new WorkoutEngine(this.userData);
         const currentWeekPlan = this.userData.mesocycle.weeks[this.userData.currentWeek - 1];
-        // This logic determines which muscles to train. A real app would have a more complex split.
         const muscleGroupsForDay = ['chest', 'shoulders', 'arms']; 
         return engine.generateDailyWorkout(muscleGroupsForDay, currentWeekPlan);
     }
@@ -332,7 +331,39 @@ class AppShell extends LitElement {
     if (this.lastCompletedWorkout.newPRs?.length > 0) {
         this._triggerConfetti();
     }
-    this.fetchUserData();
+    
+    // --- LONG-TERM PROGRESSION LOGIC ---
+    const workoutsThisMeso = (this.userData.workoutsCompletedThisMeso || 0) + 1;
+    const workoutsPerWeek = this.userData.daysPerWeek || 4;
+    const workoutsInMeso = workoutsPerWeek * 4; // 4-week progression cycle
+
+    let updatedUserData = { ...this.userData, workoutsCompletedThisMeso: workoutsThisMeso };
+
+    if (workoutsThisMeso >= workoutsInMeso) {
+        this._showToast("Mesocycle complete! Adapting your plan for next month...", "success");
+        const engine = new WorkoutEngine(updatedUserData);
+        
+        // 1. Adapt volume landmarks
+        const newBaseMEV = engine.adaptVolumeLandmarks();
+        updatedUserData.baseMEV = newBaseMEV;
+
+        // 2. Generate a new, harder mesocycle
+        const newEngine = new WorkoutEngine(updatedUserData);
+        const muscleGroups = ['chest', 'back', 'legs', 'shoulders', 'arms'];
+        const newMesocycle = newEngine.generateMesocycle(muscleGroups);
+        
+        // 3. Reset for the next cycle
+        updatedUserData.mesocycle = newMesocycle;
+        updatedUserData.workoutsCompletedThisMeso = 0;
+        updatedUserData.currentWeek = 1;
+
+        this._showToast("Your new training plan is ready!", "success");
+    }
+    
+    this.userData = updatedUserData;
+    const token = getCredential().credential;
+    saveData(this.userData, token); // Save the updated progress
+    this.fetchUserData(); // Refresh data to reflect changes
   }
 
   createRenderRoot() {
