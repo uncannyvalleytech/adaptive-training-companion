@@ -8,7 +8,7 @@ import "./onboarding-flow.js";
 import "./settings-view.js";
 import "./workout-templates.js";
 import "./achievements-view.js";
-import "./readiness-modal.js"; // Import the new modal
+import "./readiness-modal.js";
 import { startAuthentication } from '@simplewebauthn/browser';
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
@@ -22,7 +22,7 @@ class AppShell extends LitElement {
     currentView: { type: String },
     toast: { type: Object },
     showOnboarding: { type: Boolean },
-    showReadinessModal: { type: Boolean }, // New property for the modal
+    showReadinessModal: { type: Boolean },
     theme: { type: String },
     units: { type: String },
     isBiometricsAvailable: { type: Boolean },
@@ -40,7 +40,7 @@ class AppShell extends LitElement {
     this.currentView = "home";
     this.toast = null;
     this.showOnboarding = false;
-    this.showReadinessModal = false; // Initialize to false
+    this.showReadinessModal = false;
     this.theme = localStorage.getItem('theme') || 'dark';
     this.units = localStorage.getItem('units') || 'lbs';
     this.isBiometricsAvailable = false;
@@ -171,7 +171,6 @@ class AppShell extends LitElement {
     if (!this.userData) return this.renderSkeletonHomeScreen();
     if (this.showOnboarding) return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
     
-    // Show readiness modal if triggered
     if (this.showReadinessModal) {
         return html`
             <readiness-modal
@@ -250,7 +249,7 @@ class AppShell extends LitElement {
           </button>
         </nav>
         <button class="home-icon-btn" @click=${() => this.currentView = 'settings'} aria-label="Settings">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
         </button>
       </div>
     `;
@@ -289,16 +288,11 @@ class AppShell extends LitElement {
 
   _getPlannedWorkout() {
     if (this.userData && this.userData.mesocycle) {
-        // This is a simplified workout generation for demonstration.
-        // A real app would have a more robust way to select the day's workout.
-        return {
-            name: `Week ${this.userData.currentWeek} - Day 1`,
-            exercises: [
-                { name: 'Bench Press', sets: [{}, {}, {}], targetReps: 8, category: 'strength' },
-                { name: 'Barbell Row', sets: [{}, {}, {}], targetReps: 8, category: 'strength' },
-                { name: 'Overhead Press', sets: [{}, {}, {}], targetReps: 10, category: 'strength' },
-            ]
-        };
+        const engine = new WorkoutEngine(this.userData);
+        const currentWeekPlan = this.userData.mesocycle.weeks[this.userData.currentWeek - 1];
+        // This logic determines which muscles to train. A real app would have a more complex split.
+        const muscleGroupsForDay = ['chest', 'shoulders', 'arms']; 
+        return engine.generateDailyWorkout(muscleGroupsForDay, currentWeekPlan);
     }
     return null;
   }
