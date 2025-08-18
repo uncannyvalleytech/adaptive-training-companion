@@ -10,7 +10,7 @@ const CACHE_NAME = 'adaptive-training-companion-cache-v1';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/src/style.css',
+  './src/style.css',
   '/src/main.js',
   '/src/services/api.js',
   '/src/services/google-auth.js',
