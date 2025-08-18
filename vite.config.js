@@ -13,6 +13,7 @@ export default defineConfig({
     // It tells Vite to trust the NEW preview window's address.
     allowedHosts: ["wqz6c2-5174.csb.app"],
   },
+  
   // Critical for GitHub Pages deployment
   // This tells Vite that your app will be served from /adaptive-training-companion/
   base: "/adaptive-training-companion/",
@@ -21,5 +22,16 @@ export default defineConfig({
   build: {
     outDir: "dist",
     assetsDir: "assets",
+    // Ensure proper asset handling
+    rollupOptions: {
+      input: {
+        main: 'index.html'
+      }
+    }
   },
+
+  // Ensure proper handling of ES modules
+  optimizeDeps: {
+    include: ['lit']
+  }
 });
