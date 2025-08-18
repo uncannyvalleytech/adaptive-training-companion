@@ -27,6 +27,9 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Load the main.js module BEFORE the Google library -->
+    <script type="module" src="./src/main.js"></script>
+    
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -40,13 +43,12 @@
         });
       }
     </script>
-
-    <script type="module" src="./src/main.js"></script>
-    </head>
+  </head>
   <body>
     <main>
       <app-shell></app-shell>
     </main>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Load Google library AFTER main.js so the callback function exists -->
+    <script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad"></script>
   </body>
 </html>
