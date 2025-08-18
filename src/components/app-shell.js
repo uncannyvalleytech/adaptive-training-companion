@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
-import { initializeSignIn, getCredential } from "../services/google-auth.js";
-import { getData, saveData } from "../services/api.js";
+import { initializeSignIn, getCredential, signOut } from "../services/google-auth.js";
+import { getData, saveData, deleteData } from "../services/api.js";
 import { WorkoutEngine } from "../services/workout-engine.js";
 import "./workout-session.js";
 import "./history-view.js";
@@ -59,6 +59,11 @@ class AppShell extends LitElement {
     window.addEventListener('user-signed-in', () => this.fetchUserData());
     window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
     this.addEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
+    
+    // Listen for events from the settings view
+    this.addEventListener('sign-out', this._handleSignOut);
+    this.addEventListener('delete-data', this._handleDeleteData);
+
     this._applyTheme();
   }
   
@@ -83,7 +88,7 @@ class AppShell extends LitElement {
 
   setupSignIn() {
     const signInButtonContainer = this.querySelector("#google-signin-button");
-    if (signInButtonContainer) {
+    if (signInButtonContainer && !this.userCredential) {
       initializeSignIn(signInButtonContainer, (credential) => {
         this._handleSignIn(credential);
       });
@@ -332,38 +337,56 @@ class AppShell extends LitElement {
         this._triggerConfetti();
     }
     
-    // --- LONG-TERM PROGRESSION LOGIC ---
     const workoutsThisMeso = (this.userData.workoutsCompletedThisMeso || 0) + 1;
     const workoutsPerWeek = this.userData.daysPerWeek || 4;
-    const workoutsInMeso = workoutsPerWeek * 4; // 4-week progression cycle
+    const workoutsInMeso = workoutsPerWeek * 4;
 
     let updatedUserData = { ...this.userData, workoutsCompletedThisMeso: workoutsThisMeso };
 
     if (workoutsThisMeso >= workoutsInMeso) {
         this._showToast("Mesocycle complete! Adapting your plan for next month...", "success");
         const engine = new WorkoutEngine(updatedUserData);
-        
-        // 1. Adapt volume landmarks
         const newBaseMEV = engine.adaptVolumeLandmarks();
         updatedUserData.baseMEV = newBaseMEV;
-
-        // 2. Generate a new, harder mesocycle
         const newEngine = new WorkoutEngine(updatedUserData);
         const muscleGroups = ['chest', 'back', 'legs', 'shoulders', 'arms'];
         const newMesocycle = newEngine.generateMesocycle(muscleGroups);
-        
-        // 3. Reset for the next cycle
         updatedUserData.mesocycle = newMesocycle;
         updatedUserData.workoutsCompletedThisMeso = 0;
         updatedUserData.currentWeek = 1;
-
         this._showToast("Your new training plan is ready!", "success");
     }
     
     this.userData = updatedUserData;
     const token = getCredential().credential;
-    saveData(this.userData, token); // Save the updated progress
-    this.fetchUserData(); // Refresh data to reflect changes
+    saveData(this.userData, token);
+    this.fetchUserData();
+  }
+
+  // --- NEW METHODS FOR SETTINGS ---
+  
+  async _handleDeleteData() {
+    const token = getCredential()?.credential;
+    if (!token) {
+        this._showToast("Authentication error. Please sign in again.", "error");
+        return;
+    }
+
+    const response = await deleteData(token);
+    if (response.success) {
+        this._showToast("All your data has been successfully deleted.", "success");
+        this._handleSignOut(); // Sign out after successful deletion
+    } else {
+        this._showToast(`Error: ${response.error || 'Could not delete data.'}`, "error");
+    }
+  }
+
+  _handleSignOut() {
+    signOut();
+    this.userCredential = null;
+    this.userData = null;
+    // The view will automatically switch to the login screen because userCredential is null
+    this._showToast("You have been signed out.", "info");
   }
 
   createRenderRoot() {
