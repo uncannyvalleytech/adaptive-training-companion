@@ -3,7 +3,7 @@
  * This service worker handles caching of app assets for offline functionality.
  */
 
-const CACHE_NAME = 'adaptive-training-companion-cache-v1';
+const CACHE_NAME = 'adaptive-training-companion-cache-v2'; // Updated cache name
 
 // We explicitly list all files the app needs to function offline.
 const urlsToCache = [
@@ -32,7 +32,16 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache and adding files...');
-        return cache.addAll(urlsToCache);
+        // Add files one by one to handle failures gracefully
+        const promises = urlsToCache.map(url => {
+          return cache.add(url).catch(err => {
+            console.warn(`Failed to cache ${url}:`, err);
+          });
+        });
+        return Promise.all(promises);
+      })
+      .then(() => {
+        console.log('Cache setup completed');
       })
       .catch((error) => {
         console.error('Cache setup failed:', error);
