@@ -410,15 +410,17 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     padding: 0.75rem 1.5rem;
     border-radius: var(--border-radius-md);
     cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s, transform 0.1s ease-out; /* Added transform transition */
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Updated transition */
     font-size: 1.125rem;
     text-align: center;
     font-weight: var(--font-weight-bold);
     text-transform: uppercase;
+    position: relative; /* For spinner */
 }
 .cta-button:hover, .secondary-button:hover, .home-nav-btn:hover, .btn-secondary:hover {
     background-color: var(--color-surface-secondary);
     border-color: var(--color-text-secondary);
+    transform: scale(1.05); /* Added hover scale effect */
 }
 .cta-button {
     background-color: var(--color-accent-primary);
@@ -433,7 +435,23 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 
 /* --- Basic Interaction Feedback --- */
 .cta-button:active, .secondary-button:active, .home-nav-btn:active, .home-icon-btn:active, .btn-secondary:active, .btn-danger:active, .toggle-btn:active {
-    transform: scale(0.98); /* Simple press effect */
+    transform: scale(0.98); /* Refined press effect */
+}
+
+/* --- Loading Spinner for Buttons --- */
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--color-text-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+.cta-button .spinner {
+    border-top-color: var(--color-surface-primary);
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 
