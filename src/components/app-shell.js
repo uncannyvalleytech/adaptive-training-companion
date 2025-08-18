@@ -1,13 +1,14 @@
 import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
 import { getData, saveData } from "../services/api.js";
-import { WorkoutEngine } from "../services/workout-engine.js"; // Corrected import
+import { WorkoutEngine } from "../services/workout-engine.js";
 import "./workout-session.js";
 import "./history-view.js";
 import "./onboarding-flow.js";
 import "./settings-view.js";
 import "./workout-templates.js";
-import "./achievements-view.js"; 
+import "./achievements-view.js";
+import "./readiness-modal.js"; // Import the new modal
 import { startAuthentication } from '@simplewebauthn/browser';
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
@@ -21,6 +22,7 @@ class AppShell extends LitElement {
     currentView: { type: String },
     toast: { type: Object },
     showOnboarding: { type: Boolean },
+    showReadinessModal: { type: Boolean }, // New property for the modal
     theme: { type: String },
     units: { type: String },
     isBiometricsAvailable: { type: Boolean },
@@ -38,6 +40,7 @@ class AppShell extends LitElement {
     this.currentView = "home";
     this.toast = null;
     this.showOnboarding = false;
+    this.showReadinessModal = false; // Initialize to false
     this.theme = localStorage.getItem('theme') || 'dark';
     this.units = localStorage.getItem('units') || 'lbs';
     this.isBiometricsAvailable = false;
@@ -128,25 +131,16 @@ class AppShell extends LitElement {
   _handleOnboardingComplete(e) {
       const onboardingData = e.detail.userData;
       const fullUserData = { ...this.userData, ...onboardingData, onboardingComplete: true };
-      
-      // Initialize the workout engine with the new user profile
       const engine = new WorkoutEngine(fullUserData);
-      
-      // For now, let's generate a plan for a few key muscle groups
       const muscleGroups = ['chest', 'back', 'legs', 'shoulders', 'arms'];
       const mesocycle = engine.generateMesocycle(muscleGroups);
-
-      // Store the full user data and the generated plan
       this.userData = {
         ...fullUserData,
         mesocycle: mesocycle,
-        currentWeek: 1, // Start at week 1
+        currentWeek: 1,
       };
-      
-      // Save the updated user data to the backend
       const token = getCredential().credential;
       saveData(this.userData, token);
-      
       this.showOnboarding = false;
       this._showToast("Profile created! Your new workout plan is ready.", "success");
   }
@@ -172,45 +166,36 @@ class AppShell extends LitElement {
   }
   
   _renderCurrentView() {
-    if (!this.userCredential) {
-      return this.renderLoginScreen();
-    }
-    if (this.errorMessage) {
-      return this.renderErrorScreen();
-    }
-    if (!this.userData) {
-      return this.renderSkeletonHomeScreen();
-    }
-    if (this.showOnboarding) {
-        return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
-    }
-    if (this.isWorkoutActive) {
-      return this.renderWorkoutScreen();
+    if (!this.userCredential) return this.renderLoginScreen();
+    if (this.errorMessage) return this.renderErrorScreen();
+    if (!this.userData) return this.renderSkeletonHomeScreen();
+    if (this.showOnboarding) return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
+    
+    // Show readiness modal if triggered
+    if (this.showReadinessModal) {
+        return html`
+            <readiness-modal
+                @onClose=${() => this.showReadinessModal = false}
+                @onSubmit=${this._handleReadinessSubmit}
+            ></readiness-modal>
+        `;
     }
 
+    if (this.isWorkoutActive) return this.renderWorkoutScreen();
+
     switch (this.currentView) {
-        case "home":
-            return this.renderHomeScreen();
-        case "templates":
-            return html`<workout-templates @setView=${e => this.currentView = e.detail.view}></workout-templates>`;
-        case "history":
-            return html`<history-view @setView=${e => this.currentView = e.detail.view}></history-view>`;
-        case "settings":
-            return html`<settings-view @setView=${e => this.currentView = e.detail.view}></settings-view>`;
-        case "summary":
-            return this.renderWorkoutSummary();
-        default:
-            return this.renderHomeScreen();
+        case "home": return this.renderHomeScreen();
+        case "templates": return html`<workout-templates @setView=${e => this.currentView = e.detail.view}></workout-templates>`;
+        case "history": return html`<history-view @setView=${e => this.currentView = e.detail.view}></history-view>`;
+        case "settings": return html`<settings-view @setView=${e => this.currentView = e.detail.view}></settings-view>`;
+        case "summary": return this.renderWorkoutSummary();
+        default: return this.renderHomeScreen();
     }
   }
 
   renderToast() {
     if (!this.toast) return '';
-    return html`
-      <div class="toast-notification ${this.toast.type}" role="alert">
-        ${this.toast.message}
-      </div>
-    `;
+    return html`<div class="toast-notification ${this.toast.type}" role="alert">${this.toast.message}</div>`;
   }
   
   renderLoginScreen() {
@@ -251,7 +236,7 @@ class AppShell extends LitElement {
         <h1 class="main-title">PROGRESSION</h1>
         <div class="divider"></div>
         <nav class="home-nav-buttons">
-          <button class="hub-option home-nav-btn" @click=${this._startWorkout}>
+          <button class="hub-option home-nav-btn" @click=${() => this.showReadinessModal = true}>
             <div class="hub-option-icon">▶️</div>
             <div class="hub-option-text"><h3>Start Next Workout</h3></div>
           </button>
@@ -288,58 +273,52 @@ class AppShell extends LitElement {
         this.currentView = 'home';
         return;
     }
-    
     return html`
         <div id="workout-summary-view" class="container">
-            <div class="workout-header">
-                <h2>Workout Complete!</h2>
-            </div>
+            <div class="workout-header"><h2>Workout Complete!</h2></div>
             <div class="summary-stats-grid">
-              <div class="stat-card">
-                  <h4>Time</h4>
-                  <p>${Math.floor(lastWorkout.durationInSeconds / 60)}m ${lastWorkout.durationInSeconds % 60}s</p>
-              </div>
-              <div class="stat-card">
-                  <h4>Volume</h4>
-                  <p>${Math.round(lastWorkout.totalVolume)} ${this.units}</p>
-              </div>
-              <div class="stat-card">
-                  <h4>Sets</h4>
-                  <p>${lastWorkout.exercises.reduce((acc, ex) => acc + ex.completedSets.length, 0)}</p>
-              </div>
-              <div class="stat-card">
-                  <h4>PRs</h4>
-                  <p>${lastWorkout.newPRs?.length || 0}</p>
-              </div>
+              <div class="stat-card"><h4>Time</h4><p>${Math.floor(lastWorkout.durationInSeconds / 60)}m ${lastWorkout.durationInSeconds % 60}s</p></div>
+              <div class="stat-card"><h4>Volume</h4><p>${Math.round(lastWorkout.totalVolume)} ${this.units}</p></div>
+              <div class="stat-card"><h4>Sets</h4><p>${lastWorkout.exercises.reduce((acc, ex) => acc + ex.completedSets.length, 0)}</p></div>
+              <div class="stat-card"><h4>PRs</h4><p>${lastWorkout.newPRs?.length || 0}</p></div>
             </div>
-            <div class="summary-actions">
-                <button class="cta-button" @click=${() => this.currentView = 'home'}>Done</button>
-            </div>
+            <div class="summary-actions"><button class="cta-button" @click=${() => this.currentView = 'home'}>Done</button></div>
         </div>
     `;
   }
 
-  _startWorkout() {
-    // This now needs to be smarter. It should select the next workout from the mesocycle.
-    // For now, we'll just grab the first workout of the current week.
+  _getPlannedWorkout() {
     if (this.userData && this.userData.mesocycle) {
-        // A real implementation would track which workout of the week is next.
-        // We'll simulate this by just creating a workout for the day.
-        const currentWeekPlan = this.userData.mesocycle.weeks[this.userData.currentWeek - 1];
-        
-        // This is a simplified workout generation. A full implementation would be more complex.
-        this.workout = {
+        // This is a simplified workout generation for demonstration.
+        // A real app would have a more robust way to select the day's workout.
+        return {
             name: `Week ${this.userData.currentWeek} - Day 1`,
             exercises: [
-                { name: 'Bench Press', sets: [{weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}], targetReps: 8, category: 'strength' },
-                { name: 'Barbell Row', sets: [{weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}], targetReps: 8, category: 'strength' },
-                { name: 'Overhead Press', sets: [{weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}, {weight: null, reps: null, completed: false}], targetReps: 10, category: 'strength' },
+                { name: 'Bench Press', sets: [{}, {}, {}], targetReps: 8, category: 'strength' },
+                { name: 'Barbell Row', sets: [{}, {}, {}], targetReps: 8, category: 'strength' },
+                { name: 'Overhead Press', sets: [{}, {}, {}], targetReps: 10, category: 'strength' },
             ]
         };
+    }
+    return null;
+  }
+
+  _handleReadinessSubmit(e) {
+    const readinessData = e.detail;
+    const engine = new WorkoutEngine(this.userData);
+    const recoveryScore = engine.calculateRecoveryScore(readinessData);
+    const readinessScore = engine.getDailyReadiness(recoveryScore);
+    const plannedWorkout = this._getPlannedWorkout();
+    
+    if (plannedWorkout) {
+        const adjustedWorkout = engine.adjustWorkout(plannedWorkout, readinessScore);
+        this.workout = adjustedWorkout;
+        this._showToast(adjustedWorkout.adjustmentNote, "info");
         this.isWorkoutActive = true;
     } else {
-        this._showToast("No workout plan found. Please complete onboarding.", "error");
+        this._showToast("Could not generate workout.", "error");
     }
+    this.showReadinessModal = false;
   }
   
   _startWorkoutWithTemplate(event) {
@@ -356,7 +335,6 @@ class AppShell extends LitElement {
     this.isWorkoutActive = false;
     this.currentView = "summary";
     this.lastCompletedWorkout = event.detail.workoutData;
-    
     if (this.lastCompletedWorkout.newPRs?.length > 0) {
         this._triggerConfetti();
     }
