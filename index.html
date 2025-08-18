@@ -11,7 +11,8 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Replaced Poppins with Roboto Condensed for the Athletic Excellence theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="./src/style.css" />
     
@@ -27,8 +28,9 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <script type="module" src="./src/main.js" defer></script>
+    
     <script>
-      // Service Worker registration with better error handling
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./service-worker.js')
@@ -46,9 +48,6 @@
     <main>
       <app-shell></app-shell>
     </main>
-    <!-- Load Google library asynchronously -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Load the main.js module after everything else -->
-    <script type="module" src="./src/main.js"></script>
   </body>
 </html>
