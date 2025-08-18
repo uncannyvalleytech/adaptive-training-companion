@@ -247,6 +247,8 @@ class WorkoutSession extends LitElement {
     inputRpe: { type: Number },
     inputRir: { type: Number },
     currentExerciseIndex: { type: Number },
+    lastCompletedWorkout: { type: Object },
+    newPRs: { type: Array },
   };
 
   // Touch state for gestures
@@ -277,6 +279,8 @@ class WorkoutSession extends LitElement {
     this.inputRpe = 0;
     this.inputRir = 0;
     this.currentExerciseIndex = 0;
+    this.lastCompletedWorkout = null;
+    this.newPRs = [];
   }
 
   static styles = [];
@@ -322,12 +326,10 @@ class WorkoutSession extends LitElement {
       try {
         const data = JSON.parse(savedWorkout);
         this.workout = data.workout;
-        // Restore timers and state if needed, though this is a basic implementation
-        // For now, we'll just check if a rest was active.
         if (data.isResting && data.restTimeRemaining > 0) {
           this._startRestTimer(data.restTimeRemaining, data.nextExerciseName);
         }
-        this.workoutStartTime = data.workoutStartTime || Date.Mow();
+        this.workoutStartTime = data.workoutStartTime || Date.now();
         this.pauseDuration = data.pauseDuration || 0;
         this.currentExerciseIndex = data.currentExerciseIndex || 0;
         this._calculateEstimatedTime();
@@ -357,7 +359,6 @@ class WorkoutSession extends LitElement {
       const exercise = this.workout.exercises[i];
       const setsToComplete = exercise.sets - exercise.completedSets.length;
       if (setsToComplete > 0) {
-        // Estimate 1 minute per set, plus the prescribed rest time
         remainingTime += setsToComplete * 60; 
         if (i < this.workout.exercises.length - 1) {
           remainingTime += exercise.rest;
@@ -367,7 +368,6 @@ class WorkoutSession extends LitElement {
     this.estimatedTimeRemaining = remainingTime;
   }
   
-  // New gesture handlers
   _handleTouchStart(e) {
     this._touchStartX = e.touches[0].clientX;
   }
@@ -376,16 +376,13 @@ class WorkoutSession extends LitElement {
     this._touchEndX = e.changedTouches[0].clientX;
     const swipeDistance = this._touchStartX - this._touchEndX;
 
-    // Define a threshold for a valid swipe
     if (Math.abs(swipeDistance) < 50) {
       return;
     }
 
     if (swipeDistance > 0) {
-      // Swiped left, move to next exercise
       this._nextExercise();
     } else {
-      // Swiped right, move to previous exercise
       this._prevExercise();
     }
   }
@@ -406,7 +403,6 @@ class WorkoutSession extends LitElement {
     }
   }
 
-
   _validateInput(e) {
     const input = e.target;
     const { exerciseIndex, inputType } = input.dataset;
@@ -426,7 +422,6 @@ class WorkoutSession extends LitElement {
     const { inputType } = input.dataset;
     const value = input.value;
     
-    // Update the properties for each input field
     switch (inputType) {
       case 'reps':
         this.inputReps = value;
@@ -442,7 +437,6 @@ class WorkoutSession extends LitElement {
         break;
     }
 
-    // Call validation to ensure instant feedback
     this._validateInput(e);
   }
 
@@ -464,7 +458,6 @@ class WorkoutSession extends LitElement {
     if (input) {
       let currentValue = parseFloat(input.value) || 0;
       input.value = Math.max(0, currentValue + parseFloat(amount));
-      // Re-run validation and trigger a change event for Lit to pick it up
       this._validateInput({ target: input });
       this._handleInput({ target: input });
       input.dispatchEvent(new Event('input'));
@@ -516,7 +509,6 @@ class WorkoutSession extends LitElement {
       this.pauseDuration += Date.now() - this.pauseStartTime;
       this.pauseStartTime = null;
     }
-    // Automatically focus on the next input field after resuming
     const nextInput = this.shadowRoot.querySelector('input:not([disabled])');
     if (nextInput) {
       nextInput.focus();
@@ -535,7 +527,6 @@ class WorkoutSession extends LitElement {
   
   _exitWorkoutAndSave() {
     this._triggerHapticFeedback('success');
-    // This will trigger the _completeWorkout method with a flag to save and exit.
     this.shadowRoot.querySelector('.complete-workout-button').click();
   }
   
@@ -545,7 +536,6 @@ class WorkoutSession extends LitElement {
     this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }));
   }
   
-  // New haptic feedback function
   _triggerHapticFeedback(type = 'light') {
     if (!('vibrate' in navigator)) {
         return;
@@ -910,6 +900,9 @@ class WorkoutSession extends LitElement {
       const totalDuration = Math.floor((Date.now() - this.workoutStartTime) / 1000) - (this.pauseDuration / 1000);
       const totalVolume = this._calculateVolume();
 
+      // Check for personal records
+      this.newPRs = await this._checkForPRs();
+
       const workoutToSave = {
         date: new Date().toISOString(),
         durationInSeconds: totalDuration,
@@ -920,6 +913,11 @@ class WorkoutSession extends LitElement {
           category: exercise.category,
           muscleGroup: exercise.muscleGroup,
         })),
+        newPRs: this.newPRs.map(pr => ({
+          exerciseName: pr.exerciseName,
+          weight: pr.weight,
+          reps: pr.reps,
+        }))
       };
 
       const response = await saveData([workoutToSave], token);
@@ -929,7 +927,11 @@ class WorkoutSession extends LitElement {
       // Clear localStorage on successful save
       localStorage.removeItem('currentWorkout');
 
-      this.dispatchEvent(new CustomEvent('workout-completed', { bubbles: true, composed: true }));
+      this.dispatchEvent(new CustomEvent('workout-completed', {
+          bubbles: true, 
+          composed: true,
+          detail: { workoutData: workoutToSave }
+      }));
 
     } catch (error) {
       console.error("Failed to save workout data:", error);
@@ -940,6 +942,55 @@ class WorkoutSession extends LitElement {
       }));
     } finally {
       this.isSaving = false;
+    }
+  }
+  
+  async _checkForPRs() {
+    const newPRs = [];
+    const allWorkoutHistory = await this._getAllWorkoutHistory();
+
+    this.workout.exercises.forEach(exercise => {
+      const allSets = exercise.completedSets;
+      if (allSets.length === 0) return;
+
+      const currentMax1RM = allSets.reduce((max, set) => {
+        const e1rm = this._calculate1RM(set.weight, set.reps);
+        return e1rm > max.e1rm ? { e1rm, set } : max;
+      }, { e1rm: 0, set: null });
+
+      const oldMax1RM = allWorkoutHistory
+        .filter(w => w.exercises.some(e => e.name === exercise.name))
+        .flatMap(w => w.exercises.find(e => e.name === exercise.name).completedSets)
+        .reduce((max, set) => {
+          const e1rm = this._calculate1RM(set.weight, set.reps);
+          return e1rm > max ? e1rm : max;
+        }, 0);
+
+      if (currentMax1RM.e1rm > oldMax1RM) {
+        newPRs.push({
+          exerciseName: exercise.name,
+          weight: currentMax1RM.set.weight,
+          reps: currentMax1RM.set.reps
+        });
+      }
+    });
+
+    return newPRs;
+  }
+  
+  _calculate1RM(weight, reps) {
+    if (reps === 1) return weight;
+    return weight * (1 + reps / 30);
+  }
+  
+  async _getAllWorkoutHistory() {
+    try {
+      const token = getCredential().credential;
+      const response = await getData(token);
+      return response.data.workouts || [];
+    } catch (error) {
+      console.error("Failed to fetch history for PR check:", error);
+      return [];
     }
   }
 }
