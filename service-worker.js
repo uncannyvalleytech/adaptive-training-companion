@@ -21,6 +21,7 @@ const urlsToCache = [
   '/src/components/workout-feedback-modal.js',
   '/src/components/workout-session.js',
   '/src/components/workout-templates.js',
+  '/src/components/achievements-view.js', // NEW
 ];
 
 // The 'install' event is fired when the service worker is first installed.
