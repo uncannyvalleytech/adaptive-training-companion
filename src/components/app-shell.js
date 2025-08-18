@@ -54,9 +54,7 @@ class AppShell extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    // Listen for the custom event to ensure the Google library is ready.
     window.addEventListener('google-library-loaded', this.setupSignIn.bind(this));
-    // Event listeners
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
     this.addEventListener('workout-completed', this._onWorkoutCompleted.bind(this));
@@ -66,6 +64,10 @@ class AppShell extends LitElement {
     this._applyTheme();
   }
   
+  firstUpdated() {
+    this.setupSignIn();
+  }
+
   _applyTheme() {
     document.body.setAttribute('data-theme', this.theme);
   }
@@ -82,7 +84,8 @@ class AppShell extends LitElement {
   }
 
   setupSignIn() {
-    const signInButtonContainer = this.shadowRoot.querySelector("#google-signin-button");
+    // Access the button from the light DOM since createRenderRoot() is used
+    const signInButtonContainer = this.querySelector("#google-signin-button");
     if (signInButtonContainer) {
       initializeSignIn(signInButtonContainer, (credential) => {
         this._handleSignIn(credential);
@@ -147,7 +150,7 @@ class AppShell extends LitElement {
   }
 
   _triggerConfetti() {
-    const canvas = this.shadowRoot.querySelector('#confetti-canvas');
+    const canvas = this.querySelector('#confetti-canvas');
     if (!canvas) return;
     const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
     myConfetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
