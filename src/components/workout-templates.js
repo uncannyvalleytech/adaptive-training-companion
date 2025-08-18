@@ -87,8 +87,7 @@ class WorkoutTemplates extends LitElement {
                 notes: "",
                 category: "strength", // Default category
                 muscleGroup: "Unspecified", // Default muscle group
-                nextSetSuggestion: { reps: ex.reps, rpe: ex.rpe, adjustment: "Start with a warm-up set." },
-                media: null
+                nextSetSuggestion: { reps: ex.reps, rpe: ex.rpe, adjustment: "Start with a warm-up set." }
             }))
         };
         const updatedTemplates = [...this.templates, newTemplate];
