@@ -926,6 +926,7 @@ class WorkoutSession extends LitElement {
       // Clear localStorage on successful save
       localStorage.removeItem('currentWorkout');
 
+      // Dispatch the event with the newly saved workout data, including PRs
       this.dispatchEvent(new CustomEvent('workout-completed', {
           bubbles: true, 
           composed: true,
