@@ -7,7 +7,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { saveData, generateRecommendation } from "../services/api.js";
+import { saveData, generateRecommendation, getData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
 import "./workout-feedback-modal.js";
 
@@ -722,8 +722,7 @@ class WorkoutSession extends LitElement {
                           </div>
                           <div id="${inputType}-error-${index}" class="error-message-text" aria-live="polite">${this.errors[`${index}-${inputType}`] || ''}</div>
                         </div>
-                      </div>
-                    `)}
+                      `)}
                     <button 
                       @click=${this._addSet} 
                       data-exercise-index="${index}" 
@@ -916,7 +915,7 @@ class WorkoutSession extends LitElement {
         newPRs: this.newPRs.map(pr => ({
           exerciseName: pr.exerciseName,
           weight: pr.weight,
-          reps: pr.reps,
+          reps: pr.reps
         }))
       };
 
