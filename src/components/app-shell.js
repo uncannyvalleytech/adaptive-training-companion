@@ -1,10 +1,3 @@
-/**
- * @file app-shell.js
- * This is the main Lit component that acts as the shell for the entire application.
- * It orchestrates the display of different views (like login, home, workout, achievements)
- * based on the application's state, primarily the user's authentication status.
- */
-
 import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
 import { getData, saveData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
@@ -13,232 +6,15 @@ import "./history-view.js";
 import "./onboarding-flow.js";
 import "./settings-view.js";
 import "./workout-templates.js";
-// We will create this component in the next step
 import "./achievements-view.js"; 
 import { startAuthentication } from '@simplewebauthn/browser';
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
-// Initial workout data. It's a static template for now.
+// This is a placeholder for the workout plan that will be generated after onboarding.
 const initialWorkout = {
-  name: "Full Body Strength",
-  exercises: [
-    {
-      name: "Barbell Squats",
-      sets: 3,
-      reps: 5,
-      rpe: 8,
-      rest: 90, // Rest time in seconds
-      completedSets: [],
-      notes: "",
-      category: "strength",
-      muscleGroup: "Legs",
-      nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/irA7MTz96ho?si=K-Lq-055i5r-13iC'
-      }
-    },
-    {
-      name: "Deadlifts",
-      sets: 3,
-      reps: 5,
-      rpe: 8,
-      rest: 120,
-      completedSets: [],
-      notes: "",
-      category: "strength",
-      muscleGroup: "Back",
-      nextSetSuggestion: { reps: 5, rpe: 8, adjustment: "Start with a warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/McCDaAsSeRc?si=nK5Xp8xR5d7dFwQo'
-      }
-    },
-    {
-      name: "Bench Press",
-      sets: 3,
-      reps: 8,
-      rpe: 7,
-      rest: 60,
-      completedSets: [],
-      notes: "",
-      category: "strength",
-      muscleGroup: "Chest",
-      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/0cXAp6WhSj4?si=6mG3B1xK2d7d5Qk'
-      }
-    },
-    {
-      name: "Overhead Press",
-      sets: 3,
-      reps: 8,
-      rpe: 7,
-      rest: 60,
-      completedSets: [],
-      notes: "",
-      category: "strength",
-      muscleGroup: "Shoulders",
-      nextSetSuggestion: { reps: 8, rpe: 7, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/F3QY5vMz_6I?si=6mG3B1xK2d7d5Qk'
-      }
-    },
-    {
-      name: "Pull-ups",
-      sets: 3,
-      reps: 8,
-      rpe: 8,
-      rest: 75,
-      completedSets: [],
-      notes: "",
-      category: "strength",
-      muscleGroup: "Back",
-      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/eGo4IYlbE5g?si=6mG3B1xK2d7d5Qk'
-      }
-    },
-    {
-      name: "Barbell Rows",
-      sets: 3,
-      reps: 8,
-      rpe: 8,
-      rest: 75,
-      completedSets: [],
-      notes: "",
-      category: "strength",
-      muscleGroup: "Back",
-      nextSetSuggestion: { reps: 8, rpe: 8, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Back Soreness": ["Never Got Sore", "Healed a While Ago", "Healed Just on Time", "I'm Still Sore!"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/Nqh7q3zDCoQ?si=6mG3B1xK2d7d5Qk'
-      }
-    },
-    {
-      name: "Bicep Curls",
-      sets: 3,
-      reps: 12,
-      rpe: 7,
-      rest: 45,
-      completedSets: [],
-      notes: "",
-      category: "accessory",
-      muscleGroup: "Arms",
-      nextSetSuggestion: { reps: 12, rpe: 7, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Biceps Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/9xEPQwUDNuI?si=6mG3B1xK2d7d5Qk'
-      }
-    },
-    {
-      name: "Tricep Pushdowns",
-      sets: 3,
-      reps: 12,
-      rpe: 7,
-      rest: 45,
-      completedSets: [],
-      notes: "",
-      category: "accessory",
-      muscleGroup: "Arms",
-      nextSetSuggestion: { reps: 12, rpe: 7, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Tricep Pump": ["Low Pump", "Moderate Pump", "Amazing Pump"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/2-LAMcpzODU?si=6mG3B1xK2d7d5Qk'
-      }
-    },
-    {
-      name: "Leg Press",
-      sets: 3,
-      reps: 10,
-      rpe: 8,
-      rest: 60,
-      completedSets: [],
-      notes: "",
-      category: "strength",
-      muscleGroup: "Legs",
-      nextSetSuggestion: { reps: 10, rpe: 8, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/sSj-Q25vJkU?si=6mG3B1xK2d7d5Qk'
-      }
-    },
-    {
-      name: "Leg Curls",
-      sets: 3,
-      reps: 12,
-      rpe: 7,
-      rest: 45,
-      completedSets: [],
-      notes: "",
-      category: "accessory",
-      muscleGroup: "Legs",
-      nextSetSuggestion: { reps: 12, rpe: 7, adjustment: "Warm-up set." },
-      feedbackRequired: {
-        "Joint Pain?": ["None", "Low Pain", "Moderate Pain", "A Lot of Pain"],
-        "Workout Difficulty": ["Easy", "Pretty Good", "Pushed My Limits", "Too Much"]
-      },
-      media: {
-        type: 'youtube',
-        url: 'https://www.youtube.com/embed/5xR8tvg4-yM?si=6mG3B1xK2d7d5Qk'
-      }
-    }
-  ],
+  name: "Generated Workout Plan",
+  exercises: [],
 };
-
-const ACHIEVEMENTS = [
-    { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', condition: (userData) => userData.workouts.length >= 1 },
-    { id: 'five_workouts', name: 'Workout Warrior', description: 'Complete 5 workouts.', condition: (userData) => userData.workouts.length >= 5 },
-    { id: 'ten_workouts', name: 'Dedicated Lifter', description: 'Complete 10 workouts.', condition: (userData) => userData.workouts.length >= 10 },
-    { id: 'seven_day_streak', name: '7-Day Streak', description: 'Log a workout for 7 consecutive days.', condition: (userData) => userData.streak >= 7 }
-];
-
 
 class AppShell extends LitElement {
   static properties = {
@@ -256,8 +32,6 @@ class AppShell extends LitElement {
     offlineQueueCount: { type: Number },
     isBiometricsAvailable: { type: Boolean },
     lastCompletedWorkout: { type: Object },
-    currentStreak: { type: Number },
-    unlockedAchievements: { type: Array },
   };
 
   constructor() {
@@ -276,41 +50,21 @@ class AppShell extends LitElement {
     this.offlineQueueCount = getQueuedWorkoutsCount();
     this.isBiometricsAvailable = false;
     this.lastCompletedWorkout = null;
-    this.currentStreak = 0;
-    this.unlockedAchievements = [];
     
     this._checkBiometricsAvailability();
   }
 
-  static styles = [];
-
   connectedCallback() {
     super.connectedCallback();
     this.waitForGoogleLibrary();
+    // Event listeners
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
     this.addEventListener('workout-completed', this._onWorkoutCompleted.bind(this));
     window.addEventListener('user-signed-in', () => this.fetchUserData());
     window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
-    window.addEventListener('units-change', (e) => this._handleUnitsChange(e.detail.units));
     this.addEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
-    window.addEventListener('offline-data-queued', (e) => this._handleOfflineQueue(e.detail.count));
-    window.addEventListener('sync-complete', (e) => this._showToast(e.detail.message, e.detail.type));
-    window.addEventListener('sync-failed', (e) => this._showToast(e.detail.message, e.detail.type));
-    window.addEventListener('online', this._handleOnlineStatus.bind(this));
     this._applyTheme();
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    window.removeEventListener('user-signed-in', this.fetchUserData.bind(this));
-    window.removeEventListener('theme-change', this._handleThemeChange.bind(this));
-    window.removeEventListener('units-change', this._handleUnitsChange.bind(this));
-    this.removeEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
-    window.removeEventListener('offline-data-queued', this._handleOfflineQueue.bind(this));
-    window.removeEventListener('sync-complete', this._showToast.bind(this));
-    window.removeEventListener('sync-failed', this._showToast.bind(this));
-    window.removeEventListener('online', this._handleOnlineStatus.bind(this));
   }
   
   _applyTheme() {
@@ -320,20 +74,6 @@ class AppShell extends LitElement {
   _handleThemeChange(theme) {
     this.theme = theme;
     this._applyTheme();
-  }
-  
-  _handleUnitsChange(units) {
-    this.units = units;
-  }
-  
-  _handleOfflineQueue(count) {
-    this.offlineQueueCount = count;
-    this._showToast(`Workout saved offline. ${count} pending sync.`, "info");
-  }
-
-  _handleOnlineStatus() {
-    this._showToast("Back online! Syncing data...", "info");
-    syncData();
   }
 
   waitForGoogleLibrary() {
@@ -345,10 +85,7 @@ class AppShell extends LitElement {
   }
 
   updated(changedProperties) {
-    if (
-      changedProperties.has("isGoogleLibraryLoaded") &&
-      this.isGoogleLibraryLoaded
-    ) {
+    if (changedProperties.has("isGoogleLibraryLoaded") && this.isGoogleLibraryLoaded) {
       this.setupSignIn();
     }
   }
@@ -360,9 +97,7 @@ class AppShell extends LitElement {
   }
 
   setupSignIn() {
-    const signInButtonContainer = this.shadowRoot.querySelector(
-      "#google-signin-button"
-    );
+    const signInButtonContainer = this.shadowRoot.querySelector("#google-signin-button");
     if (signInButtonContainer) {
       initializeSignIn(signInButtonContainer, (credential) => {
         this._handleSignIn(credential);
@@ -393,12 +128,9 @@ class AppShell extends LitElement {
       if (response && response.data) {
         setTimeout(() => {
           this.userData = response.data;
-          this.currentStreak = this.userData.streak || 0;
-          this.unlockedAchievements = this.userData.achievements || [];
-          if (!this.userData.workouts || this.userData.workouts.length === 0) {
-              if (localStorage.getItem('onboardingComplete') !== 'true') {
-                  this.showOnboarding = true;
-              }
+          // Check if onboarding data exists
+          if (!this.userData.onboardingComplete) {
+              this.showOnboarding = true;
           }
           this.loadingMessage = "";
         }, 1000);
@@ -408,165 +140,73 @@ class AppShell extends LitElement {
     } catch (error) {
       console.error("Failed to fetch user data:", error);
       this.errorMessage = "Failed to load your data. Please try again.";
-      this._showToast(this.errorMessage, "error");
       this.loadingMessage = "";
     }
   }
 
-  _handleOnboardingComplete() {
-      localStorage.setItem('onboardingComplete', 'true');
+  _handleOnboardingComplete(e) {
+      const onboardingData = e.detail.userData;
+      this.userData = { ...this.userData, ...onboardingData, onboardingComplete: true };
+      
+      // Save the updated user data (including onboarding answers) to the backend
+      const token = getCredential().credential;
+      saveData(this.userData, token);
+      
       this.showOnboarding = false;
+      this._showToast("Profile created! Your new workout plan is ready.", "success");
   }
 
   _retryFetchUserData() {
     this.errorMessage = "";
     this.fetchUserData();
   }
-  
-  async _shareWorkout(workout) {
-      if (navigator.share) {
-          try {
-              const shareData = {
-                  title: 'Workout Complete!',
-                  text: `I just crushed my workout: "${workout.name}"! I completed it in ${Math.floor(workout.durationInSeconds / 60)} minutes with a total volume of ${Math.round(workout.totalVolume)} ${this.units}.`,
-                  url: 'https://adaptive-training-companion.com', // Replace with your app's URL
-              };
-              await navigator.share(shareData);
-              this._showToast("Workout shared successfully!", "success");
-          } catch (err) {
-              console.error('Error sharing:', err);
-              this._showToast("Sharing failed.", "error");
-          }
-      } else {
-          this._showToast("Web Share API is not supported in this browser.", "info");
-      }
-  }
 
   _triggerConfetti() {
     const canvas = this.shadowRoot.querySelector('#confetti-canvas');
     if (!canvas) return;
-
-    const myConfetti = confetti.create(canvas, {
-        resize: true,
-        useWorker: true
-    });
-
-    myConfetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-    });
-  }
-  
-  _calculateWorkoutStreak() {
-    if (!this.userData || !this.userData.workouts || this.userData.workouts.length === 0) {
-      return 0;
-    }
-    
-    // Sort workouts by date, newest to oldest
-    const sortedWorkouts = [...this.userData.workouts].sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    let streak = 0;
-    let currentDate = new Date();
-    
-    for (const workout of sortedWorkouts) {
-      const workoutDate = new Date(workout.date);
-      const diffInDays = (currentDate.getTime() - workoutDate.getTime()) / (1000 * 60 * 60 * 24);
-      
-      // Check if the workout was logged today or yesterday
-      if (diffInDays < 1) {
-        if (diffInDays < 1 && diffInDays > 0) { // If it's a new day and there was a workout yesterday
-            streak++;
-        }
-      } else if (diffInDays >= 1 && diffInDays < 2) { // If it's a new day and there was a workout yesterday
-        streak++;
-        currentDate.setDate(currentDate.getDate() - 1);
-      } else {
-        break; // Streak broken
-      }
-    }
-    
-    return streak;
-  }
-  
-  _checkAndUnlockAchievements(updatedUserData) {
-      const newAchievements = new Set(this.unlockedAchievements);
-      let newlyUnlocked = [];
-
-      for (const achievement of ACHIEVEMENTS) {
-          if (!this.unlockedAchievements.includes(achievement.id) && achievement.condition(updatedUserData)) {
-              newlyUnlocked.push(achievement);
-              newAchievements.add(achievement.id);
-          }
-      }
-
-      if (newlyUnlocked.length > 0) {
-          this.unlockedAchievements = Array.from(newAchievements);
-          // Save the new achievements to the backend
-          const token = getCredential().credential;
-          saveData({ achievements: this.unlockedAchievements }, token);
-
-          for (const achievement of newlyUnlocked) {
-              this._showToast(`Achievement Unlocked: ${achievement.name}`, 'success');
-          }
-      }
+    const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+    myConfetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
   }
 
   render() {
-    const showNav = this.userCredential && !this.isWorkoutActive && this.userData && !this.showOnboarding && this.currentView !== 'summary';
     return html`
       ${this.renderToast()}
       ${this._renderCurrentView()}
-      ${showNav ? this.renderBottomNav() : ''}
-      ${this.offlineQueueCount > 0 ? this.renderOfflineStatus() : ''}
+      <canvas id="confetti-canvas"></canvas>
     `;
   }
   
   _renderCurrentView() {
     if (!this.userCredential) {
       return this.renderLoginScreen();
-    } else if (this.errorMessage) {
+    }
+    if (this.errorMessage) {
       return this.renderErrorScreen();
-    } else if (!this.userData) {
+    }
+    if (!this.userData) {
       return this.renderSkeletonHomeScreen();
-    } else if (this.showOnboarding) {
+    }
+    if (this.showOnboarding) {
         return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
-    } else if (this.isWorkoutActive) {
+    }
+    if (this.isWorkoutActive) {
       return this.renderWorkoutScreen();
-    } else {
-      return html`
-        <header class="app-header">
-          <h1>PROGRESSION</h1>
-          <button 
-            class="icon-btn" 
-            @click=${() => this.currentView = 'settings'}
-            aria-label="Settings"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 7.4 19a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 5 7.4a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.82.33 1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0-.33 1.82l-.06.06a2 2 0 0 1 0 2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.82.33z"></path><path d="M12 12c-2.485 0-4.5 2.015-4.5 4.5S9.515 21 12 21s4.5-2.015 4.5-4.5S14.485 12 12 12z" clip-rule="evenodd" fill-rule="evenodd" d="M12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4zM12.22 2h-.44C9.79 2 8 3.79 8 6s1.79 4 4.22 4h.44C14.21 10 16 8.21 16 6s-1.79-4-3.78-4z" fill="var(--color-text-primary)"></path></svg>
-          </button>
-        </header>
+    }
 
-        <div class="main-content">
-          ${(() => {
-            switch (this.currentView) {
-              case "home":
-                return this.renderHomeScreen();
-              case "history":
-                return html`<history-view .units=${this.units}></history-view>`;
-              case "templates":
-                return html`<workout-templates></workout-templates>`;
-              case "settings":
-                return this.renderSettingsScreen();
-              case "summary":
-                return this.renderWorkoutSummary();
-              case "achievements":
-                  return this.renderAchievementsScreen();
-              default:
-                return this.renderHomeScreen();
-            }
-          })()}
-        </div>
-      `;
+    // Main view router
+    switch (this.currentView) {
+        case "home":
+            return this.renderHomeScreen();
+        case "templates":
+            return html`<workout-templates @setView=${e => this.currentView = e.detail.view}></workout-templates>`;
+        case "history":
+            return html`<history-view @setView=${e => this.currentView = e.detail.view}></history-view>`;
+        case "settings":
+            return html`<settings-view @setView=${e => this.currentView = e.detail.view}></settings-view>`;
+        case "summary":
+            return this.renderWorkoutSummary();
+        default:
+            return this.renderHomeScreen();
     }
   }
 
@@ -579,170 +219,60 @@ class AppShell extends LitElement {
     `;
   }
   
-  renderOfflineStatus() {
-    return html`
-      <div class="offline-status">
-        <p>Offline: ${this.offlineQueueCount} workout(s) pending sync.</p>
-      </div>
-    `;
-  }
-
   renderLoginScreen() {
     return html`
       <div class="login-container">
         <h1>PROGRESSION</h1>
         <p>Your intelligent workout partner that adapts to you in real-time.</p>
         <div id="google-signin-button" aria-label="Sign in with Google button"></div>
-        ${this.isBiometricsAvailable
-          ? html`
-              <button 
-                class="btn-primary" 
-                @click=${this._loginWithBiometrics}
-                aria-label="Sign in with biometrics (Face ID or fingerprint)">
-                Sign in with Biometrics
-              </button>
-            `
-          : ''}
-        ${!this.isGoogleLibraryLoaded
-          ? html`<p aria-live="polite"><em>Loading Sign-In button...</em></p>`
-          : ""}
       </div>
     `;
-  }
-  
-  async _loginWithBiometrics() {
-      try {
-          const authResponse = await startAuthentication({
-              challenge: 'your_biometric_challenge', // Replace with a secure, server-generated challenge
-              rpId: window.location.hostname,
-              userVerification: 'preferred',
-          });
-          
-          console.log("Biometric authentication successful!", authResponse);
-          this._showToast("Signed in with biometrics!", "success");
-          this._handleSignIn({ credential: 'biometric-token' }); // Simulate a credential
-      } catch (error) {
-          console.error("Biometric authentication failed:", error);
-          this._showToast("Biometric sign-in failed. Please try again.", "error");
-      }
   }
 
   renderSkeletonHomeScreen() {
     return html`
-      <div class="home-container container" aria-live="polite" aria-busy="true">
-        <div class="welcome-message">
-          <div class="skeleton skeleton-heading"></div>
-          <div class="skeleton skeleton-text"></div>
-        </div>
-        <div class="card">
-          <div class="skeleton skeleton-progress-title"></div>
-          <div class="skeleton skeleton-progress-stat"></div>
-          <div class="skeleton skeleton-progress-stat"></div>
-          <div class="skeleton skeleton-progress-stat"></div>
-        </div>
-        <div class="action-buttons-skeleton">
-          <div class="skeleton skeleton-btn"></div>
-          <div class="skeleton skeleton-btn"></div>
-          <div class="skeleton skeleton-btn"></div>
-        </div>
+      <div class="container" aria-live="polite" aria-busy="true">
+        <div class="skeleton skeleton-title"></div>
+        <div class="skeleton skeleton-divider"></div>
+        <div class="skeleton skeleton-btn-large"></div>
+        <div class="skeleton skeleton-btn-large"></div>
+        <div class="skeleton skeleton-btn-large"></div>
       </div>
     `;
   }
 
   renderErrorScreen() {
     return html`
-      <div class="error-container container" role="alert">
+      <div class="container error-container" role="alert">
         <h2>Oops! Something went wrong</h2>
         <p>${this.errorMessage}</p>
-        <button class="btn-primary" @click=${this._retryFetchUserData}>
-          Retry
-        </button>
+        <button class="cta-button" @click=${this._retryFetchUserData}>Retry</button>
       </div>
     `;
   }
 
   renderHomeScreen() {
-    const workoutCount = this.userData.workouts?.length || 0;
-    const totalSets = this.userData.workouts?.reduce((total, workout) => {
-      return total + workout.exercises.reduce((exerciseTotal, exercise) => {
-        return exerciseTotal + (exercise.completedSets?.length || 0);
-      }, 0);
-    }, 0) || 0;
-
-    const lastWorkout = this.userData.workouts?.[0];
-    const lastWorkoutDate = lastWorkout 
-      ? new Date(lastWorkout.date).toLocaleDateString()
-      : "Never";
-      
     return html`
-      <div class="home-container container">
-        <div class="welcome-message">
-          <h2>Welcome Back, ${this.userData.userEmail?.split('@')[0] || 'Athlete'}!</h2>
-          <p>Ready to push your limits today?</p>
-        </div>
-
-        <div class="card stats-section" role="region" aria-labelledby="progress-title">
-          <h3 id="progress-title">Your Progress</h3>
-          <div class="stat-item">
-            <span>Total Workouts</span>
-            <span>${workoutCount}</span>
-          </div>
-          <div class="stat-item">
-            <span>Total Sets Completed</span>
-            <span>${totalSets}</span>
-          </div>
-          <div class="stat-item">
-            <span>Last Workout</span>
-            <span>${lastWorkoutDate}</span>
-          </div>
-          <div class="stat-item">
-            <span>Current Streak</span>
-            <span>${this.currentStreak} day(s)</span>
-          </div>
-        </div>
-        
-        ${lastWorkout ? html`
-          <div class="card action-card social-share-card">
-            <div class="card-text">
-              <h3>Celebrate Your Progress!</h3>
-              <p>Share your last workout with friends.</p>
-            </div>
-            <button class="btn-primary" @click=${() => this._shareWorkout(lastWorkout)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-1a3 3 0 0 1 3-3h13a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H7a3 3 0 0 1-3-3z"></path><path d="M12 2v2"></path><path d="M12 10v-2"></path><path d="M12 22v-2"></path></svg>
-                Share This Workout
-            </button>
-          </div>
-        ` : ''}
-
-        <div class="home-action-cards">
-          <div class="card link-card action-card" @click=${this._startWorkout}>
-            <div class="card-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-8m0 0v-8m0 8h8m-8 0H4"></path></svg>
-            </div>
-            <div class="card-text">
-              <h3>Start New Workout</h3>
-              <p>Begin a new session from scratch.</p>
-            </div>
-          </div>
-          <div class="card link-card action-card" @click=${() => this.currentView = 'templates'}>
-            <div class="card-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            </div>
-            <div class="card-text">
-              <h3>My Templates</h3>
-              <p>Create or load a saved workout plan.</p>
-            </div>
-          </div>
-          <div class="card link-card action-card" @click=${() => this.currentView = 'history'}>
-            <div class="card-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2L12 3z"></path></svg>
-            </div>
-            <div class="card-text">
-              <h3>Workout History</h3>
-              <p>Review past workouts and track progress.</p>
-            </div>
-          </div>
-        </div>
+      <div id="home-screen" class="container">
+        <h1 class="main-title">PROGRESSION</h1>
+        <div class="divider"></div>
+        <nav class="home-nav-buttons">
+          <button class="hub-option home-nav-btn" @click=${this._startWorkout}>
+            <div class="hub-option-icon">▶️</div>
+            <div class="hub-option-text"><h3>Start Next Workout</h3></div>
+          </button>
+          <button class="hub-option home-nav-btn" @click=${() => this.currentView = 'templates'}>
+            <div class="hub-option-icon">📖</div>
+            <div class="hub-option-text"><h3>Template Portal</h3></div>
+          </button>
+          <button class="hub-option home-nav-btn" @click=${() => this.currentView = 'history'}>
+            <div class="hub-option-icon">📊</div>
+            <div class="hub-option-text"><h3>Performance Summary</h3></div>
+          </button>
+        </nav>
+        <button class="home-icon-btn" @click=${() => this.currentView = 'settings'} aria-label="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
       </div>
     `;
   }
@@ -750,10 +280,10 @@ class AppShell extends LitElement {
   renderWorkoutScreen() {
     return html`
       <workout-session 
-        .units=${this.units}
         .workout=${this.workout}
         @workout-completed=${this._onWorkoutCompleted}
-        @workout-cancelled=${this._onWorkoutCancelled}>
+        @workout-cancelled=${this._onWorkoutCancelled}
+        @setView=${e => this.currentView = e.detail.view}>
       </workout-session>
     `;
   }
@@ -764,108 +294,45 @@ class AppShell extends LitElement {
         this.currentView = 'home';
         return;
     }
-    const workoutDate = new Date(lastWorkout.date).toLocaleDateString();
-
+    
     return html`
-        <div class="container workout-summary-container">
-            <header class="app-header">
-                <h1>Workout Complete!</h1>
-                <p>On ${workoutDate}</p>
-            </header>
-
-            <div class="card stats-section">
-                <h3>Summary</h3>
-                <div class="stat-item">
-                    <span>Total Volume</span>
-                    <span>${Math.round(lastWorkout.totalVolume)} ${this.units}</span>
-                </div>
-                <div class="stat-item">
-                    <span>Duration</span>
-                    <span>${Math.floor(lastWorkout.durationInSeconds / 60)} minutes</span>
-                </div>
-                <div class="stat-item">
-                    <span>Total Sets</span>
-                    <span>${lastWorkout.exercises.reduce((total, ex) => total + ex.completedSets.length, 0)}</span>
-                </div>
+        <div id="workout-summary-view" class="container">
+            <div class="workout-header">
+                <h2>Workout Complete!</h2>
             </div>
-            
-            ${lastWorkout.newPRs?.length > 0 ? html`
-              <div class="pr-congrats">
-                🎉 New Personal Records! 🎉
-                <p>You hit a new personal best on the following exercises:</p>
-                <ul class="pr-list">
-                  ${lastWorkout.newPRs.map(pr => html`<li>${pr.exerciseName}: ${pr.weight} ${this.units} x ${pr.reps} reps</li>`)}
-                </ul>
+            <div class="summary-stats-grid">
+              <div class="stat-card">
+                  <h4>Time</h4>
+                  <p>${Math.floor(lastWorkout.durationInSeconds / 60)}m ${lastWorkout.durationInSeconds % 60}s</p>
               </div>
-            ` : ''}
-
-            <div class="card actions-section">
-              <button class="btn-primary" @click=${() => this._shareWorkout(lastWorkout)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-1a3 3 0 0 1 3-3h13a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H7a3 3 0 0 1-3-3z"></path><path d="M12 2v2"></path><path d="M12 10v-2"></path><path d="M12 22v-2"></path></svg>
-                Share This Workout
-              </button>
-              <button class="btn-secondary" @click=${() => this.currentView = 'home'}>
-                Back to Home
-              </button>
+              <div class="stat-card">
+                  <h4>Volume</h4>
+                  <p>${Math.round(lastWorkout.totalVolume)} ${this.units}</p>
+              </div>
+              <div class="stat-card">
+                  <h4>Sets</h4>
+                  <p>${lastWorkout.exercises.reduce((acc, ex) => acc + ex.completedSets.length, 0)}</p>
+              </div>
+              <div class="stat-card">
+                  <h4>PRs</h4>
+                  <p>${lastWorkout.newPRs?.length || 0}</p>
+              </div>
+            </div>
+            <div class="summary-actions">
+                <button class="cta-button" @click=${() => this.currentView = 'home'}>Done</button>
             </div>
         </div>
-        <canvas id="confetti-canvas"></canvas>
-    `;
-  }
-  
-  renderAchievementsScreen() {
-      return html`<achievements-view .unlockedAchievements=${this.unlockedAchievements} .currentStreak=${this.currentStreak}></achievements-view>`;
-  }
-
-  renderHistoryScreen() {
-    return html`
-      <history-view
-        .units=${this.units}
-      ></history-view>
-    `;
-  }
-  
-  renderSettingsScreen() {
-    return html`
-      <settings-view
-        .theme=${this.theme}
-        .units=${this.units}
-      ></settings-view>
-    `;
-  }
-
-  renderBottomNav() {
-    const navItems = [
-      { view: 'home', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`, label: 'Home' },
-      { view: 'history', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2L12 3z"></path></svg>`, label: 'History' },
-      { view: 'templates', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`, label: 'Templates' },
-      { view: 'achievements', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10h6m-3-3v6m-4-6h6m-3-3v6M4 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"></path><path d="M12 21h-8"></path><path d="M12 21a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2z"></path></svg>`, label: 'Achievements' },
-    ];
-
-    return html`
-      <nav class="bottom-nav">
-        ${navItems.map(item => html`
-          <button 
-            class="nav-button ${this.currentView === item.view ? 'active' : ''}" 
-            @click=${() => this.currentView = item.view}
-            aria-label=${item.label}
-          >
-            ${item.icon}
-            <span>${item.label}</span>
-          </button>
-        `)}
-      </nav>
     `;
   }
 
   _startWorkout() {
     this.isWorkoutActive = true;
-    this.workout = { ...initialWorkout };
+    // In a real app, this workout would be dynamically generated or selected.
+    this.workout = initialWorkout;
   }
   
   _startWorkoutWithTemplate(event) {
-    const template = event.detail.template;
-    this.workout = { ...template };
+    this.workout = { ...event.detail.template };
     this.isWorkoutActive = true;
   }
 
@@ -874,29 +341,22 @@ class AppShell extends LitElement {
     this.currentView = "home";
   }
 
-  async _onWorkoutCompleted(event) {
+  _onWorkoutCompleted(event) {
     this.isWorkoutActive = false;
     this.currentView = "summary";
     this.lastCompletedWorkout = event.detail.workoutData;
-    this.offlineQueueCount = getQueuedWorkoutsCount();
-    const toastMessage = "Workout saved successfully!";
-    const toastType = "success";
-    this._showToast(toastMessage, toastType);
-
-    // After a workout is completed and saved, update the streak and check for new achievements
-    await this.fetchUserData();
-    this._checkAndUnlockAchievements(this.userData);
     
-    // Check if new PRs were achieved and trigger confetti
-    if (this.lastCompletedWorkout.newPRs && this.lastCompletedWorkout.newPRs.length > 0) {
+    if (this.lastCompletedWorkout.newPRs?.length > 0) {
         this._triggerConfetti();
     }
+
+    // After a workout is completed and saved, refetch data to update history
+    this.fetchUserData();
   }
-  
-  _onWorkoutCancelled() {
-    this.isWorkoutActive = false;
-    this.currentView = "home";
-    this._showToast("Workout discarded.", "info");
+
+  // To prevent re-rendering the entire component tree, we make sure this component doesn't use shadow DOM
+  createRenderRoot() {
+    return this;
   }
 }
 
