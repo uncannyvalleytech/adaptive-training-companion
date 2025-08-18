@@ -118,6 +118,69 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 /* 5. COMPONENTS                                   */
 /* =============================================== */
 
+/* --- Settings View --- */
+.settings-container .app-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+.settings-group {
+    margin-bottom: 1.5rem;
+}
+.settings-group h3 {
+    margin-bottom: 0.5rem;
+}
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+.setting-item:last-child {
+    border-bottom: none;
+}
+.button-toggle-group {
+    display: flex;
+    gap: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: var(--space-1);
+}
+.toggle-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.toggle-btn.active {
+    background-color: var(--color-surface-tertiary);
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+}
+.danger-zone p {
+    color: var(--color-state-warning);
+    margin-bottom: 1rem;
+}
+.btn-danger {
+    width: 100%;
+    background-color: var(--color-state-error);
+    color: white;
+    border: 1px solid var(--color-state-error);
+}
+.btn-danger:hover {
+    background-color: #d43d34;
+    border-color: #d43d34;
+}
+.btn-secondary {
+    width: 100%;
+}
+
+
 /* --- Onboarding Wizard --- */
 .onboarding-container {
     display: flex;
@@ -231,9 +294,14 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     padding: 0.5rem;
     background-color: transparent;
     border: none;
+    cursor: pointer;
 }
 .back-btn svg {
     stroke: var(--color-text-secondary);
+    transition: stroke 0.2s;
+}
+.back-btn:hover svg {
+    stroke: var(--color-text-primary);
 }
 .timer-container {
     display: flex;
@@ -321,7 +389,6 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     margin-top: 2rem;
 }
 
-
 /* General Components */
 .card {
   background-color: var(--color-surface-secondary);
@@ -332,7 +399,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 }
 
 /* Buttons */
-.cta-button, .secondary-button, .home-nav-btn, .home-icon-btn {
+.cta-button, .secondary-button, .home-nav-btn, .home-icon-btn, .btn-secondary, .btn-danger {
     border: 1px solid var(--border-color);
     background-color: var(--color-surface-tertiary);
     color: var(--color-text-primary);
@@ -344,7 +411,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     text-align: center;
     font-weight: var(--font-weight-semibold);
 }
-.cta-button:hover, .secondary-button:hover, .home-nav-btn:hover {
+.cta-button:hover, .secondary-button:hover, .home-nav-btn:hover, .btn-secondary:hover {
     background-color: var(--color-surface-secondary);
     border-color: var(--color-text-secondary);
 }
@@ -357,10 +424,6 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 .cta-button:hover {
     background-color: var(--color-accent-primary-hover);
     border-color: var(--color-accent-primary-hover);
-}
-.secondary-button {
-    width: 100%;
-    margin-top: 1rem;
 }
 
 /* Skeleton Loaders */
@@ -375,6 +438,36 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 .skeleton-title { height: 32px; width: 60%; margin: 0 auto 1.5rem auto; }
 .skeleton-divider { height: 1px; width: 100%; margin-bottom: 1.5rem; }
 .skeleton-btn-large { height: 88px; width: 100%; margin-bottom: 1rem; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  width: 90%;
+  max-width: 500px;
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+}
 
 /* Toast Notification */
 .toast-notification {
