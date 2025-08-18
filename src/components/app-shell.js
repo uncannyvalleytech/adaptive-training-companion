@@ -480,6 +480,15 @@ class AppShell extends LitElement {
                     <span>${lastWorkout.exercises.reduce((total, ex) => total + ex.completedSets.length, 0)}</span>
                 </div>
             </div>
+            
+            ${lastWorkout.newPRs?.length > 0 ? html`
+              <div class="pr-congrats">
+                🎉 New Personal Records! 🎉
+                <ul>
+                  ${lastWorkout.newPRs.map(pr => html`<li>${pr.exerciseName}: ${pr.weight} ${this.units} x ${pr.reps} reps</li>`)}
+                </ul>
+              </div>
+            ` : ''}
 
             <div class="card actions-section">
               <button class="btn-primary" @click=${() => this._shareWorkout(lastWorkout)}>
@@ -491,9 +500,9 @@ class AppShell extends LitElement {
               </button>
             </div>
         </div>
+        <canvas id="confetti-canvas"></canvas>
     `;
   }
-
 
   renderHistoryScreen() {
     return html`
