@@ -63,82 +63,39 @@ export class WorkoutEngine {
     };
   }
 
-  // --- 10. Long-term Progression ---
-
-  /**
-   * Adapts volume landmarks after a successful mesocycle.
-   * @returns {object} The new, adapted baseMEV values for the user profile.
-   */
-  adaptVolumeLandmarks() {
+  // --- 3. Weekly Volume Progression ---
+  calculateWeeklyVolume(startingVolume, weekNumber, maxVolume) {
     const taf = this.calculateTAF();
-    let adaptationRate = 0.01; // Advanced
-    if (taf < 1.5) adaptationRate = 0.05; // Beginner
-    else if (taf < 2.5) adaptationRate = 0.025; // Intermediate
-
-    const currentBaseMEV = this.userProfile.baseMEV || this.baseMEV;
-    const newBaseMEV = {};
-
-    for (const muscle in currentBaseMEV) {
-      newBaseMEV[muscle] = Math.round(currentBaseMEV[muscle] * (1 + adaptationRate));
+    const progressionRate = taf < 1.5 ? 0.1 : 0.05;
+    let weekVolume = startingVolume * (1 + (weekNumber - 1) * progressionRate);
+    if (weekVolume >= maxVolume) {
+        weekVolume = maxVolume;
     }
-    
-    return newBaseMEV;
-  }
-
-  // --- 7. Exercise Selection Algorithm ---
-  calculateEPS(exercise, context = {}) {
-    const { weakMuscles = [], recentExercises = [] } = context;
-    const compoundBonus = exercise.type === 'compound' ? 3 : 1;
-    const isWeakMuscle = weakMuscles.includes(exercise.muscleGroup);
-    const weaknessMultiplier = isWeakMuscle ? 1.5 : 1.0;
-    let noveltyFactor = 0;
-    const lastUsedIndex = recentExercises.findIndex(e => e.id === exercise.id);
-    if (lastUsedIndex === -1) noveltyFactor = 2;
-    else if (lastUsedIndex > 4) noveltyFactor = 1;
-    const recoveryCostMap = { high: -1, medium: 0, low: 1 };
-    const recoveryCost = recoveryCostMap[exercise.recoveryCost] || 0;
-    const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier;
-    return score;
-  }
-
-  selectExercisesForMuscle(muscleGroup, count = 2, context = {}) {
-    const availableExercises = exerciseDatabase[muscleGroup];
-    if (!availableExercises) return [];
-    const scoredExercises = availableExercises.map(ex => ({
-      ...ex,
-      score: this.calculateEPS(ex, context),
-    }));
-    scoredExercises.sort((a, b) => b.score - a.score);
-    return scoredExercises.slice(0, count);
-  }
-
-  // --- Integrated Workout Generation ---
-  generateDailyWorkout(muscleGroupsForDay, weeklyPlan) {
-    let exercises = [];
-    const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [] }; 
-    for (const muscle of muscleGroupsForDay) {
-        const musclePlan = weeklyPlan.muscleData[muscle];
-        const numExercises = musclePlan.targetVolume > 12 ? 3 : 2;
-        const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
-        let setsRemaining = musclePlan.targetVolume;
-        const exercisesWithSets = selected.map((ex, index) => {
-            const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
-            setsRemaining -= setsForThisEx;
-            return {
-                ...ex,
-                sets: Array(setsForThisEx).fill({}),
-                targetReps: ex.type === 'compound' ? 8 : 12,
-            };
-        });
-        exercises.push(...exercisesWithSets);
-    }
-    return {
-        name: `Dynamic Workout - ${muscleGroupsForDay.join(', ')}`,
-        exercises: exercises,
+    const deloadTriggered = weekVolume >= maxVolume * 0.95;
+    return { 
+        targetVolume: Math.round(weekVolume), 
+        deloadVolume: Math.round(startingVolume * 0.6),
+        deloadTriggered 
     };
   }
+
+  // --- 4. Intensity Prescription ---
+  calculateTargetRPE(exerciseType, currentVolume, mrv) {
+    const baseRPE = exerciseType === 'compound' ? 8.0 : 8.5;
+    let fatigueAdjustment = 0;
+    if (currentVolume / mrv > 0.8) fatigueAdjustment = 0.5;
+    if (currentVolume / mrv < 0.4) fatigueAdjustment = -0.5;
+    const volumeAdjustment = 0;
+    return baseRPE + fatigueAdjustment + volumeAdjustment;
+  }
+
+  suggestLoadProgression(previousLoad, lastSessionRPE, targetRPE) {
+    if (lastSessionRPE < targetRPE - 0.5) return previousLoad * 1.025;
+    if (lastSessionRPE > targetRPE + 0.5) return previousLoad * 0.975;
+    return previousLoad;
+  }
   
-  // --- Autoregulation and Periodization ---
+  // --- 6 & 8. Recovery Monitoring & Daily Autoregulation ---
   calculateRecoveryScore(readinessData) {
     const { sleep_quality, energy_level, motivation, muscle_soreness } = readinessData;
     const sorenessInverse = 11 - muscle_soreness;
@@ -168,6 +125,34 @@ export class WorkoutEngine {
     return adjustedWorkout;
   }
 
+  // --- 7. Exercise Selection Algorithm ---
+  calculateEPS(exercise, context = {}) {
+    const { weakMuscles = [], recentExercises = [] } = context;
+    const compoundBonus = exercise.type === 'compound' ? 3 : 1;
+    const isWeakMuscle = weakMuscles.includes(exercise.muscleGroup);
+    const weaknessMultiplier = isWeakMuscle ? 1.5 : 1.0;
+    let noveltyFactor = 0;
+    const lastUsedIndex = recentExercises.findIndex(e => e.id === exercise.id);
+    if (lastUsedIndex === -1) noveltyFactor = 2;
+    else if (lastUsedIndex > 4) noveltyFactor = 1;
+    const recoveryCostMap = { high: -1, medium: 0, low: 1 };
+    const recoveryCost = recoveryCostMap[exercise.recoveryCost] || 0;
+    const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier;
+    return score;
+  }
+
+  selectExercisesForMuscle(muscleGroup, count = 2, context = {}) {
+    const availableExercises = exerciseDatabase[muscleGroup];
+    if (!availableExercises) return [];
+    const scoredExercises = availableExercises.map(ex => ({
+      ...ex,
+      score: this.calculateEPS(ex, context),
+    }));
+    scoredExercises.sort((a, b) => b.score - a.score);
+    return scoredExercises.slice(0, count);
+  }
+
+  // --- 9. Periodization Model ---
   generateMesocycle(muscleGroups, mesocycleLength = 5) {
     const mesocycle = { weeks: [] };
     for (let week = 1; week <= mesocycleLength; week++) {
@@ -195,5 +180,22 @@ export class WorkoutEngine {
     }
     mesocycle.weeks.push(deloadWeek);
     return mesocycle;
+  }
+
+  // --- 10. Long-term Progression ---
+  adaptVolumeLandmarks() {
+    const taf = this.calculateTAF();
+    let adaptationRate = 0.01; // Advanced
+    if (taf < 1.5) adaptationRate = 0.05; // Beginner
+    else if (taf < 2.5) adaptationRate = 0.025; // Intermediate
+
+    const currentBaseMEV = this.userProfile.baseMEV || this.baseMEV;
+    const newBaseMEV = {};
+
+    for (const muscle in currentBaseMEV) {
+      newBaseMEV[muscle] = Math.round(currentBaseMEV[muscle] * (1 + adaptationRate));
+    }
+    
+    return newBaseMEV;
   }
 }
