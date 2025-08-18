@@ -118,6 +118,17 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 /* 5. COMPONENTS                                   */
 /* =============================================== */
 
+/* --- Progress Ring --- */
+.progress-ring {
+    position: relative;
+}
+.progress-ring__progress {
+    transform-origin: center;
+    transform: rotate(-90deg);
+    transition: stroke-dashoffset 0.3s linear;
+    stroke-linecap: round;
+}
+
 /* --- Settings View --- */
 .settings-container .app-header {
     display: flex;
@@ -306,6 +317,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 .timer-container {
     display: flex;
     justify-content: space-around;
+    align-items: center;
     background-color: var(--color-surface-secondary);
     padding: 1rem;
     border-radius: var(--border-radius-lg);
@@ -314,6 +326,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 }
 .timer-section {
     text-align: center;
+    position: relative;
 }
 .timer-label {
     font-size: 0.75rem;
@@ -324,6 +337,12 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     font-size: 1.75rem;
     font-weight: bold;
     color: var(--color-text-primary);
+}
+.rest-timer-section .timer-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 .exercise-card {
     background-color: var(--color-surface-secondary);
