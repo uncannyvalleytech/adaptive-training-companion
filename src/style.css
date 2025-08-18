@@ -115,6 +115,25 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 
 
 /* =============================================== */
+/* 4. ANIMATIONS                                   */
+/* =============================================== */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in {
+  animation: slideInFromRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+
+/* =============================================== */
 /* 5. COMPONENTS                                   */
 /* =============================================== */
 
