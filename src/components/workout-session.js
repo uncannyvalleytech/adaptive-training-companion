@@ -2,32 +2,33 @@ import { LitElement, html } from "lit";
 import { saveData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
 import "./workout-feedback-modal.js";
+import "./progress-ring.js"; // Import the new component
 
 class WorkoutSession extends LitElement {
   static properties = {
     workout: { type: Object },
     isSaving: { type: Boolean },
-    errors: { type: Object },
     isResting: { type: Boolean },
+    restTotalTime: { type: Number },
     restTimeRemaining: { type: Number },
     units: { type: String },
     workoutStartTime: { type: Number },
     stopwatchInterval: { type: Object },
+    restInterval: { type: Object },
     stopwatchDisplay: { type: String },
-    newPRs: { type: Array },
   };
 
   constructor() {
     super();
     this.workout = null;
     this.isSaving = false;
-    this.errors = {};
     this.isResting = false;
-    this.restTimeRemaining = 90; // Default rest time
+    this.restTotalTime = 90; // Default rest time in seconds
+    this.restTimeRemaining = 90;
     this.units = 'lbs';
-    this.newPRs = [];
     this.workoutStartTime = Date.now();
     this.stopwatchInterval = null;
+    this.restInterval = null;
     this.stopwatchDisplay = "00:00";
   }
 
@@ -39,6 +40,7 @@ class WorkoutSession extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.stopStopwatch();
+    this.stopRestTimer();
   }
 
   startStopwatch() {
@@ -54,10 +56,27 @@ class WorkoutSession extends LitElement {
   stopStopwatch() {
     clearInterval(this.stopwatchInterval);
   }
+  
+  startRestTimer() {
+      this.isResting = true;
+      this.restTimeRemaining = this.restTotalTime;
+      this.restInterval = setInterval(() => {
+          this.restTimeRemaining -= 1;
+          if (this.restTimeRemaining <= 0) {
+              this.stopRestTimer();
+              // Optional: play a sound or vibrate
+          }
+      }, 1000);
+  }
+
+  stopRestTimer() {
+      this.isResting = false;
+      clearInterval(this.restInterval);
+      this.restTimeRemaining = this.restTotalTime;
+  }
 
   _handleSetInput(e, exerciseIndex, setIndex, field) {
     const value = e.target.value;
-    // Ensure sets array exists
     if (!this.workout.exercises[exerciseIndex].sets[setIndex]) {
         this.workout.exercises[exerciseIndex].sets[setIndex] = {};
     }
@@ -66,12 +85,17 @@ class WorkoutSession extends LitElement {
   }
 
   _toggleSetComplete(exerciseIndex, setIndex) {
-    // Ensure sets array exists
     if (!this.workout.exercises[exerciseIndex].sets[setIndex]) {
         this.workout.exercises[exerciseIndex].sets[setIndex] = {};
     }
     const isComplete = this.workout.exercises[exerciseIndex].sets[setIndex].completed;
     this.workout.exercises[exerciseIndex].sets[setIndex].completed = !isComplete;
+    
+    if (!isComplete) { // If the set was just completed
+        this.startRestTimer();
+    } else { // If the set was un-completed
+        this.stopRestTimer();
+    }
     this.requestUpdate();
   }
 
@@ -112,8 +136,6 @@ class WorkoutSession extends LitElement {
         };
 
         const token = getCredential().credential;
-        // In a real app, you would get the full user data object to save
-        // For now, we just save the workout itself
         await saveData({ workouts: [workoutToSave] }, token);
 
         this.dispatchEvent(new CustomEvent('workout-completed', {
@@ -127,17 +149,25 @@ class WorkoutSession extends LitElement {
         this.isSaving = false;
     }
   }
+  
+  formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  }
 
   render() {
     if (!this.workout) {
       return html`<p>Loading workout...</p>`;
     }
+    
+    const restProgress = ((this.restTotalTime - this.restTimeRemaining) / this.restTotalTime) * 100;
 
     return html`
       <div id="daily-workout-view" class="container">
         <div class="workout-header">
             <button class="back-btn" @click=${this._goBack} aria-label="Back to Home">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
             </button>
             <h2 id="workout-day-title">${this.workout.name}</h2>
             <p id="workout-date">${new Date().toLocaleDateString()}</p>
@@ -150,7 +180,8 @@ class WorkoutSession extends LitElement {
             </div>
             <div class="timer-section rest-timer-section">
                 <span class="timer-label">REST</span>
-                <span class="timer-display">01:30</span>
+                <progress-ring .progress=${restProgress}></progress-ring>
+                <span class="timer-display">${this.formatTime(this.restTimeRemaining)}</span>
             </div>
         </div>
 
