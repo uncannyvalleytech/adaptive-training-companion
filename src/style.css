@@ -400,11 +400,15 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 
 /* Buttons */
 .cta-button, .secondary-button, .home-nav-btn, .home-icon-btn, .btn-secondary, .btn-danger {
+    min-height: 56px; /* Athletic Excellence: 56x56dp minimum size */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid var(--border-color);
     background-color: var(--color-surface-tertiary);
     color: var(--color-text-primary);
     padding: 0.75rem 1.5rem;
-    border-radius: var(--border-radius-md);
+    border-radius: var(--border-radius-md); /* Athletic Excellence: 8dp corner radius */
     cursor: pointer;
     transition: background-color 0.2s, border-color 0.2s;
     font-size: 1.125rem; /* 18sp equivalent */
