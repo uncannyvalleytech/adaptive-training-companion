@@ -78,7 +78,7 @@ export class WorkoutEngine {
         deloadTriggered 
     };
   }
-
+    
   // --- 4. Intensity Prescription ---
   calculateTargetRPE(exerciseType, currentVolume, mrv) {
     const baseRPE = exerciseType === 'compound' ? 8.0 : 8.5;
@@ -94,7 +94,7 @@ export class WorkoutEngine {
     if (lastSessionRPE > targetRPE + 0.5) return previousLoad * 0.975;
     return previousLoad;
   }
-  
+
   // --- 6 & 8. Recovery Monitoring & Daily Autoregulation ---
   calculateRecoveryScore(readinessData) {
     const { sleep_quality, energy_level, motivation, muscle_soreness } = readinessData;
@@ -197,5 +197,31 @@ export class WorkoutEngine {
     }
     
     return newBaseMEV;
+  }
+
+  // --- Integrated Workout Generation ---
+  generateDailyWorkout(muscleGroupsForDay, weeklyPlan) {
+    let exercises = [];
+    const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [] }; 
+    for (const muscle of muscleGroupsForDay) {
+        const musclePlan = weeklyPlan.muscleData[muscle];
+        const numExercises = musclePlan.targetVolume > 12 ? 3 : 2;
+        const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
+        let setsRemaining = musclePlan.targetVolume;
+        const exercisesWithSets = selected.map((ex, index) => {
+            const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
+            setsRemaining -= setsForThisEx;
+            return {
+                ...ex,
+                sets: Array(setsForThisEx).fill({}),
+                targetReps: ex.type === 'compound' ? 8 : 12,
+            };
+        });
+        exercises.push(...exercisesWithSets);
+    }
+    return {
+        name: `Dynamic Workout - ${muscleGroupsForDay.join(', ')}`,
+        exercises: exercises,
+    };
   }
 }
