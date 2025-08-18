@@ -250,7 +250,7 @@ class HistoryView extends LitElement {
       }
 
       // Volume Chart
-      const canvasVolume = this.shadowRoot.querySelector(`#chart-volume-${exerciseName.replace(/\s+/g, '-')}`);
+      const canvasVolume = this.shadowRoot.querySelector(`#chart-volume-${exerciseName.replace(/\s+/g, '-')} `);
       if (canvasVolume) {
         const ctx = canvasVolume.getContext('2d');
         this.chartInstances[`volume-${exerciseName}`] = new Chart(ctx, {
@@ -550,8 +550,8 @@ class HistoryView extends LitElement {
           <div class="input-group">
             <label for="group-by-select">Group by:</label>
             <select id="group-by-select" @change=${this._handleGroupBy}>
-              <option value="workout">Workout</option>
-              <option value="muscle-group">Muscle Group</option>
+              <option value="workout" ?selected=${this.groupBy === 'workout'}>Workout</option>
+              <option value="muscle-group" ?selected=${this.groupBy === 'muscle-group'}>Muscle Group</option>
             </select>
           </div>
         </div>
