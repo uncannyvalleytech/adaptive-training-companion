@@ -14,18 +14,16 @@ class AchievementsView extends LitElement {
 
   constructor() {
     super();
-    this.unlockedAchievements = [];
-    this.currentStreak = 0;
+    // This would typically be fetched from user data
+    this.unlockedAchievements = ['first_workout', 'five_workouts']; 
+    this.currentStreak = 5;
     this.allAchievements = [
-      { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', icon: '💪' },
-      { id: 'five_workouts', name: 'Workout Warrior', description: 'Complete 5 workouts.', icon: '🏋️' },
-      { id: 'ten_workouts', name: 'Dedicated Lifter', description: 'Complete 10 workouts.', icon: '🥇' },
+      { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', icon: '🎉' },
+      { id: 'five_workouts', name: 'Workout Warrior', description: 'Complete 5 workouts.', icon: '💪' },
+      { id: 'ten_workouts', name: 'Dedicated Lifter', description: 'Complete 10 workouts.', icon: '🏋️' },
       { id: 'seven_day_streak', name: '7-Day Streak', description: 'Log a workout for 7 consecutive days.', icon: '🔥' },
-      // Add more achievements here as needed
     ];
   }
-
-  static styles = [];
 
   render() {
     const lockedAchievements = this.allAchievements.filter(
@@ -40,7 +38,7 @@ class AchievementsView extends LitElement {
 
         <div class="card streak-card">
           <div class="streak-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path><path d="M12 6v6l4 2"></path></svg>
+            <span>🔥</span>
           </div>
           <div class="streak-text">
             <h3>Current Streak</h3>
@@ -56,7 +54,7 @@ class AchievementsView extends LitElement {
                 .filter(a => this.unlockedAchievements.includes(a.id))
                 .map(
                   (achievement) => html`
-                    <div class="card achievement-card unlocked">
+                    <div class="card achievement-card unlocked slide-in">
                       <span class="achievement-icon">${achievement.icon}</span>
                       <div class="achievement-content">
                         <h4>${achievement.name}</h4>
@@ -85,6 +83,10 @@ class AchievementsView extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  createRenderRoot() {
+      return this;
   }
 }
 
