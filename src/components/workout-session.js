@@ -233,9 +233,9 @@ class WorkoutSession extends LitElement {
         </div>
 
         <div class="exercise-navigation">
-            <button class="nav-arrow" @click=${this._previousExercise} ?disabled=${this.currentExerciseIndex === 0}>‹</button>
+            <button class="nav-arrow" @click=${this._previousExercise} ?disabled=${this.currentExerciseIndex === 0} aria-label="Previous Exercise">‹</button>
             <span class="exercise-counter">${this.currentExerciseIndex + 1} / ${this.workout.exercises.length}</span>
-            <button class="nav-arrow" @click=${this._nextExercise} ?disabled=${this.currentExerciseIndex === this.workout.exercises.length - 1}>›</button>
+            <button class="nav-arrow" @click=${this._nextExercise} ?disabled=${this.currentExerciseIndex === this.workout.exercises.length - 1} aria-label="Next Exercise">›</button>
         </div>
 
         <div id="exercise-list-container">
@@ -249,7 +249,7 @@ class WorkoutSession extends LitElement {
                         <span class="set-number">${setIndex + 1}</span>
                         <input type="number" class="set-input" placeholder="-- ${this.units}" .value=${set.weight || ''} @input=${e => this._handleSetInput(e, setIndex, 'weight')}>
                         <input type="number" class="set-input" placeholder="-- reps" .value=${set.reps || ''} @input=${e => this._handleSetInput(e, setIndex, 'reps')}>
-                        <button class="set-complete-btn ${set.completed ? 'completed' : ''}" @click=${() => this._toggleSetComplete(setIndex)}>
+                        <button class="set-complete-btn ${set.completed ? 'completed' : ''}" @click=${() => this._toggleSetComplete(setIndex)} aria-label="Mark set ${setIndex + 1} as complete">
                             ${set.completed ? '✓' : ''}
                         </button>
                     </div>
