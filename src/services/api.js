@@ -14,6 +14,7 @@ const APPS_SCRIPT_URL =
 // Constants for local storage keys
 const LOCAL_STORAGE_KEY = 'userWorkoutData';
 const QUEUED_WORKOUTS_KEY = 'queuedWorkouts';
+const LAST_SYNC_TIMESTAMP_KEY = 'lastSyncTimestamp';
 
 /**
  * A generic function to make a secure, authenticated request to our backend.
@@ -96,7 +97,6 @@ export async function saveData(data, authToken) {
     if (!currentData.workouts) {
         currentData.workouts = [];
     }
-    // Assume data is an array of new workouts
     currentData.workouts = [...currentData.workouts, ...data];
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(currentData));
 
