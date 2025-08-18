@@ -27,8 +27,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Load the main.js module BEFORE the Google library -->
-    <script type="module" src="./src/main.js"></script>
+    <!-- Load the main.js module with defer to fix the race condition -->
+    <script type="module" src="./src/main.js" defer></script>
     
     <script>
       if ('serviceWorker' in navigator) {
@@ -48,7 +48,7 @@
     <main>
       <app-shell></app-shell>
     </main>
-    <!-- Load Google library AFTER main.js so the callback function exists -->
-    <script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad"></script>
+    <!-- The Google library is now called from main.js after it has loaded -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
   </body>
 </html>
