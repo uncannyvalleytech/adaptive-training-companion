@@ -448,7 +448,7 @@ class AppShell extends LitElement {
 
     const myConfetti = confetti.create(canvas, {
         resize: true,
-        use  Worker: true
+        useWorker: true
     });
 
     myConfetti({
