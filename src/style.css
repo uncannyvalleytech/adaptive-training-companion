@@ -399,8 +399,8 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 }
 
 /* Buttons */
-.cta-button, .secondary-button, .home-nav-btn, .home-icon-btn, .btn-secondary, .btn-danger {
-    min-height: 56px; /* Athletic Excellence: 56x56dp minimum size */
+.cta-button, .secondary-button, .home-nav-btn, .home-icon-btn, .btn-secondary, .btn-danger, .toggle-btn {
+    min-height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -408,13 +408,13 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     background-color: var(--color-surface-tertiary);
     color: var(--color-text-primary);
     padding: 0.75rem 1.5rem;
-    border-radius: var(--border-radius-md); /* Athletic Excellence: 8dp corner radius */
+    border-radius: var(--border-radius-md);
     cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
-    font-size: 1.125rem; /* 18sp equivalent */
+    transition: background-color 0.2s, border-color 0.2s, transform 0.1s ease-out; /* Added transform transition */
+    font-size: 1.125rem;
     text-align: center;
-    font-weight: var(--font-weight-bold); /* Bold */
-    text-transform: uppercase; /* Uppercase */
+    font-weight: var(--font-weight-bold);
+    text-transform: uppercase;
 }
 .cta-button:hover, .secondary-button:hover, .home-nav-btn:hover, .btn-secondary:hover {
     background-color: var(--color-surface-secondary);
@@ -423,13 +423,19 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 .cta-button {
     background-color: var(--color-accent-primary);
     border-color: var(--color-accent-primary);
-    color: #1A1A2E; /* Dark text on bright button */
+    color: #1A1A2E;
     width: 100%;
 }
 .cta-button:hover {
     background-color: var(--color-accent-primary-hover);
     border-color: var(--color-accent-primary-hover);
 }
+
+/* --- Basic Interaction Feedback --- */
+.cta-button:active, .secondary-button:active, .home-nav-btn:active, .home-icon-btn:active, .btn-secondary:active, .btn-danger:active, .toggle-btn:active {
+    transform: scale(0.98); /* Simple press effect */
+}
+
 
 /* Skeleton Loaders */
 .skeleton {
