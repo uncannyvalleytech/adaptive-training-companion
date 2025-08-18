@@ -79,15 +79,9 @@ class WorkoutTemplates extends LitElement {
             name: this.newTemplateName,
             exercises: this.newTemplateExercises.map(ex => ({
                 name: ex.name,
-                sets: ex.sets,
-                reps: ex.reps,
-                rpe: ex.rpe,
-                rest: 60, // Default rest for simplicity
-                completedSets: [],
-                notes: "",
-                category: "strength", // Default category
-                muscleGroup: "Unspecified", // Default muscle group
-                nextSetSuggestion: { reps: ex.reps, rpe: ex.rpe, adjustment: "Start with a warm-up set." }
+                sets: Array(Number(ex.sets) || 3).fill({}),
+                targetReps: Number(ex.reps) || 10,
+                targetRpe: Number(ex.rpe) || 7,
             }))
         };
         const updatedTemplates = [...this.templates, newTemplate];
@@ -110,7 +104,6 @@ class WorkoutTemplates extends LitElement {
   }
   
   _loadTemplate(template) {
-    // This event will tell the app-shell to start a new workout with this template
     this.dispatchEvent(new CustomEvent('start-workout-with-template', { 
       detail: { template: template },
       bubbles: true, 
@@ -138,8 +131,7 @@ class WorkoutTemplates extends LitElement {
 
   _renderTemplateList() {
     return html`
-      <button class="btn-primary" @click=${() => this.showNewTemplateForm = true}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      <button class="cta-button" @click=${() => this.showNewTemplateForm = true}>
         Create New Template
       </button>
       <div class="templates-list">
@@ -150,8 +142,8 @@ class WorkoutTemplates extends LitElement {
               <h3>${template.name}</h3>
               <p>${template.exercises.length} exercises</p>
             </div>
-            <button class="btn-icon" aria-label="Load template">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <button class="btn-icon" @click=${() => this._loadTemplate(template)} aria-label="Load template">
+              ▶️
             </button>
           </div>
         `)}
@@ -185,7 +177,7 @@ class WorkoutTemplates extends LitElement {
                   placeholder="Exercise Name"
                 />
                 <button class="btn-icon" @click=${() => this._removeExercise(index)}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  ✖️
                 </button>
               </div>
               <div class="exercise-details">
@@ -198,16 +190,19 @@ class WorkoutTemplates extends LitElement {
         </div>
         
         <div class="form-actions">
-          <button class="btn-secondary" @click=${this._addExerciseToTemplate}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <button class="secondary-button" @click=${this._addExerciseToTemplate}>
             Add Exercise
           </button>
-          <button class="btn-primary" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.newTemplateExercises.length === 0 || this.isSaving}>
-            ${this.isSaving ? 'Saving...' : 'Save Template'}
+          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.newTemplateExercises.length === 0 || this.isSaving}>
+            ${this.isSaving ? html`<div class="spinner"></div>` : 'Save Template'}
           </button>
         </div>
       </div>
     `;
+  }
+
+  createRenderRoot() {
+      return this;
   }
 }
 
