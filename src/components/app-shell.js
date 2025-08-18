@@ -1,18 +1,20 @@
 /**
  * @file app-shell.js
  * This is the main Lit component that acts as the shell for the entire application.
- * It orchestrates the display of different views (like login, home, workout)
+ * It orchestrates the display of different views (like login, home, workout, achievements)
  * based on the application's state, primarily the user's authentication status.
  */
 
 import { LitElement, html } from "lit";
 import { initializeSignIn, getCredential } from "../services/google-auth.js";
-import { getData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
+import { getData, saveData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
 import "./workout-session.js";
 import "./history-view.js";
 import "./onboarding-flow.js";
 import "./settings-view.js";
 import "./workout-templates.js";
+// We will create this component in the next step
+import "./achievements-view.js"; 
 import { startAuthentication } from '@simplewebauthn/browser';
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
@@ -25,7 +27,7 @@ const initialWorkout = {
       sets: 3,
       reps: 5,
       rpe: 8,
-      rest: 90,
+      rest: 90, // Rest time in seconds
       completedSets: [],
       notes: "",
       category: "strength",
@@ -230,6 +232,14 @@ const initialWorkout = {
   ],
 };
 
+const ACHIEVEMENTS = [
+    { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', condition: (userData) => userData.workouts.length >= 1 },
+    { id: 'five_workouts', name: 'Workout Warrior', description: 'Complete 5 workouts.', condition: (userData) => userData.workouts.length >= 5 },
+    { id: 'ten_workouts', name: 'Dedicated Lifter', description: 'Complete 10 workouts.', condition: (userData) => userData.workouts.length >= 10 },
+    { id: 'seven_day_streak', name: '7-Day Streak', description: 'Log a workout for 7 consecutive days.', condition: (userData) => userData.streak >= 7 }
+];
+
+
 class AppShell extends LitElement {
   static properties = {
     userCredential: { type: Object },
@@ -245,7 +255,9 @@ class AppShell extends LitElement {
     units: { type: String },
     offlineQueueCount: { type: Number },
     isBiometricsAvailable: { type: Boolean },
-    lastCompletedWorkout: { type: Object }, // New property to hold the workout data for the summary screen
+    lastCompletedWorkout: { type: Object },
+    currentStreak: { type: Number },
+    unlockedAchievements: { type: Array },
   };
 
   constructor() {
@@ -264,6 +276,8 @@ class AppShell extends LitElement {
     this.offlineQueueCount = getQueuedWorkoutsCount();
     this.isBiometricsAvailable = false;
     this.lastCompletedWorkout = null;
+    this.currentStreak = 0;
+    this.unlockedAchievements = [];
     
     this._checkBiometricsAvailability();
   }
@@ -379,6 +393,8 @@ class AppShell extends LitElement {
       if (response && response.data) {
         setTimeout(() => {
           this.userData = response.data;
+          this.currentStreak = this.userData.streak || 0;
+          this.unlockedAchievements = this.userData.achievements || [];
           if (!this.userData.workouts || this.userData.workouts.length === 0) {
               if (localStorage.getItem('onboardingComplete') !== 'true') {
                   this.showOnboarding = true;
@@ -441,6 +457,60 @@ class AppShell extends LitElement {
         origin: { y: 0.6 }
     });
   }
+  
+  _calculateWorkoutStreak() {
+    if (!this.userData || !this.userData.workouts || this.userData.workouts.length === 0) {
+      return 0;
+    }
+    
+    // Sort workouts by date, newest to oldest
+    const sortedWorkouts = [...this.userData.workouts].sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let streak = 0;
+    let currentDate = new Date();
+    
+    for (const workout of sortedWorkouts) {
+      const workoutDate = new Date(workout.date);
+      const diffInDays = (currentDate.getTime() - workoutDate.getTime()) / (1000 * 60 * 60 * 24);
+      
+      // Check if the workout was logged today or yesterday
+      if (diffInDays < 1) {
+        if (diffInDays < 1 && diffInDays > 0) { // If it's a new day and there was a workout yesterday
+            streak++;
+        }
+      } else if (diffInDays >= 1 && diffInDays < 2) { // If it's a new day and there was a workout yesterday
+        streak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else {
+        break; // Streak broken
+      }
+    }
+    
+    return streak;
+  }
+  
+  _checkAndUnlockAchievements(updatedUserData) {
+      const newAchievements = new Set(this.unlockedAchievements);
+      let newlyUnlocked = [];
+
+      for (const achievement of ACHIEVEMENTS) {
+          if (!this.unlockedAchievements.includes(achievement.id) && achievement.condition(updatedUserData)) {
+              newlyUnlocked.push(achievement);
+              newAchievements.add(achievement.id);
+          }
+      }
+
+      if (newlyUnlocked.length > 0) {
+          this.unlockedAchievements = Array.from(newAchievements);
+          // Save the new achievements to the backend
+          const token = getCredential().credential;
+          saveData({ achievements: this.unlockedAchievements }, token);
+
+          for (const achievement of newlyUnlocked) {
+              this._showToast(`Achievement Unlocked: ${achievement.name}`, 'success');
+          }
+      }
+  }
 
   render() {
     const showNav = this.userCredential && !this.isWorkoutActive && this.userData && !this.showOnboarding && this.currentView !== 'summary';
@@ -489,6 +559,8 @@ class AppShell extends LitElement {
                 return this.renderSettingsScreen();
               case "summary":
                 return this.renderWorkoutSummary();
+              case "achievements":
+                  return this.renderAchievementsScreen();
               default:
                 return this.renderHomeScreen();
             }
@@ -623,6 +695,10 @@ class AppShell extends LitElement {
             <span>Last Workout</span>
             <span>${lastWorkoutDate}</span>
           </div>
+          <div class="stat-item">
+            <span>Current Streak</span>
+            <span>${this.currentStreak} day(s)</span>
+          </div>
         </div>
         
         ${lastWorkout ? html`
@@ -736,6 +812,10 @@ class AppShell extends LitElement {
         <canvas id="confetti-canvas"></canvas>
     `;
   }
+  
+  renderAchievementsScreen() {
+      return html`<achievements-view .unlockedAchievements=${this.unlockedAchievements}></achievements-view>`;
+  }
 
   renderHistoryScreen() {
     return html`
@@ -759,6 +839,7 @@ class AppShell extends LitElement {
       { view: 'home', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`, label: 'Home' },
       { view: 'history', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17H2L12 3z"></path></svg>`, label: 'History' },
       { view: 'templates', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`, label: 'Templates' },
+      { view: 'achievements', icon: html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 10h6m-3-3v6m-4-6h6m-3-3v6M4 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3"></path><path d="M12 21h-8"></path><path d="M12 21a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2z"></path></svg>`, label: 'Achievements' },
     ];
 
     return html`
@@ -793,7 +874,7 @@ class AppShell extends LitElement {
     this.currentView = "home";
   }
 
-  _onWorkoutCompleted(event) {
+  async _onWorkoutCompleted(event) {
     this.isWorkoutActive = false;
     this.currentView = "summary";
     this.lastCompletedWorkout = event.detail.workoutData;
@@ -801,7 +882,15 @@ class AppShell extends LitElement {
     const toastMessage = "Workout saved successfully!";
     const toastType = "success";
     this._showToast(toastMessage, toastType);
-    this.fetchUserData();
+
+    // After a workout is completed and saved, update the streak and check for new achievements
+    await this.fetchUserData();
+    this._checkAndUnlockAchievements(this.userData);
+    
+    // Check if new PRs were achieved and trigger confetti
+    if (this.lastCompletedWorkout.newPRs && this.lastCompletedWorkout.newPRs.length > 0) {
+        this._triggerConfetti();
+    }
   }
   
   _onWorkoutCancelled() {
