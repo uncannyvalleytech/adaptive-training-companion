@@ -1,398 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progression - Workout Tracker</title>
-    <meta name="description" content="A modern, offline-first workout tracker to help you build muscle and strength.">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adaptive Training Companion</title>
+    <meta
+      name="description"
+      content="An intelligent workout app that adapts to you in real-time."
+    />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-
+    <link rel="stylesheet" href="./src/style.css" />
+    
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "https://cdn.skypack.dev/lit@3",
+          "lit/": "https://cdn.skypack.dev/lit@3/",
+          "@simplewebauthn/browser": "https://cdn.skypack.dev/@simplewebauthn/browser"
+        }
+      }
+    </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(error => {
+              console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+      }
+    </script>
 
-    </head>
-<body>
-    <canvas id="confetti-canvas"></canvas>
-
+    <script type="module" src="./src/main.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body>
     <main>
-
-        <div class="container view hidden" id="onboarding-container">
-            <div class="onboarding-wizard">
-                <div class="progress-bar" id="onboarding-progress-bar">
-                    <div class="progress" id="onboarding-progress"></div>
-                    <div class="shimmer-wrapper"></div>
-                </div>
-
-                <div class="step active" data-step="1">
-                    <h2 class="main-title">Welcome to Progression</h2>
-                    <p>Let's build your perfect workout plan. First, tell us a little about yourself.</p>
-                    <button class="cta-button" data-action="nextOnboardingStep">Get Started</button>
-                </div>
-
-                <div class="step" data-step="2">
-                    <h3>What is your primary fitness goal?</h3>
-                    <p>This helps us tailor your training volume and intensity.</p>
-                    <div class="card-group">
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="goal" data-value="hypertrophy" role="button" tabindex="0"><h3>Build Muscle</h3></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="goal" data-value="strength" role="button" tabindex="0"><h3>Get Stronger</h3></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="goal" data-value="fatLoss" role="button" tabindex="0"><h3>Fat Loss</h3></div>
-                    </div>
-                    <div class="button-group">
-                        <button class="secondary-button" data-action="previousOnboardingStep">Back</button>
-                    </div>
-                </div>
-
-                <div class="step" data-step="3">
-                    <h3>What is your training age?</h3>
-                    <p>Be honest! This determines your starting volume and progression rate.</p>
-                    <div class="card-group vertical">
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="trainingAge" data-value="novice" role="button" tabindex="0"><h3>Novice</h3><p>&lt; 6 months of consistent training</p></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="trainingAge" data-value="beginner" role="button" tabindex="0"><h3>Beginner</h3><p>6 months to 2 years of training</p></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="trainingAge" data-value="intermediate" role="button" tabindex="0"><h3>Intermediate</h3><p>2 to 5 years of serious training</p></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="trainingAge" data-value="advanced" role="button" tabindex="0"><h3>Advanced</h3><p>5+ years of dedicated training</p></div>
-                    </div>
-                    <div class="button-group">
-                        <button class="secondary-button" data-action="previousOnboardingStep">Back</button>
-                    </div>
-                </div>
-
-                <div class="step" data-step="4">
-                    <h3>How many days per week can you train?</h3>
-                    <p>We'll use this to create an optimal training split for you.</p>
-                    <div class="card-group">
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="daysPerWeek" data-value="3" role="button" tabindex="0"><h3>3 Days</h3></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="daysPerWeek" data-value="4" role="button" tabindex="0"><h3>4 Days</h3></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="daysPerWeek" data-value="5" role="button" tabindex="0"><h3>5 Days</h3></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="daysPerWeek" data-value="6" role="button" tabindex="0"><h3>6 Days</h3></div>
-                    </div>
-                     <div class="button-group">
-                        <button class="secondary-button" data-action="previousOnboardingStep">Back</button>
-                    </div>
-                </div>
-
-                <div class="step" data-step="5">
-                    <h3>What is your current dietary status?</h3>
-                    <p>Your nutrition impacts recovery and how much training volume you can handle.</p>
-                    <div class="card-group vertical">
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="dietaryStatus" data-value="surplus" role="button" tabindex="0"><h3>Calorie Surplus</h3><p>Actively trying to gain weight</p></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="dietaryStatus" data-value="maintenance" role="button" tabindex="0"><h3>Maintenance</h3><p>Maintaining current weight</p></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="dietaryStatus" data-value="deficit" role="button" tabindex="0"><h3>Calorie Deficit</h3><p>Actively trying to lose weight</p></div>
-                    </div>
-                     <div class="button-group">
-                        <button class="secondary-button" data-action="previousOnboardingStep">Back</button>
-                    </div>
-                </div>
-                
-                <div class="step" data-step="6">
-                    <h3>Where do you prefer to work out?</h3>
-                    <p>No gym? No problem. We'll build workouts you can do anywhere.</p>
-                    <div class="card-group">
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="style" data-value="gym" role="button" tabindex="0"><h3>Gym</h3></div>
-                        <div class="goal-card" data-action="selectOnboardingCard" data-field="style" data-value="home" role="button" tabindex="0"><h3>Home</h3></div>
-                    </div>
-                    <div class="button-group">
-                        <button class="secondary-button" data-action="previousOnboardingStep">Back</button>
-                    </div>
-                </div>
-
-                <div class="step" data-step="7">
-                    <h2 class="main-title">Building Your Plan...</h2>
-                    <p>We're analyzing your profile to create a personalized mesocycle just for you.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="home-screen" class="container view hidden">
-            <div class="main-title">PROGRESSION</div>
-            <div class="divider"></div>
-            <nav class="home-nav-buttons">
-                <button class="hub-option home-nav-btn" data-action="showView" data-view-name="workout">
-                    <div class="hub-option-icon" id="home-workout-icon">▶️</div>
-                    <div class="hub-option-text"><h3 id="home-workout-title">Start Next Workout</h3></div>
-                </button>
-                <button class="hub-option home-nav-btn" data-action="showView" data-view-name="templatePortal">
-                    <div class="hub-option-icon">📖</div>
-                    <div class="hub-option-text"><h3>Template Portal</h3></div>
-                </button>
-                <button class="hub-option home-nav-btn" data-action="showView" data-view-name="performanceSummary">
-                    <div class="hub-option-icon">📊</div>
-                    <div class="hub-option-text"><h3>Performance Summary</h3></div>
-                </button>
-            </nav>
-            <button class="home-icon-btn" data-action="showView" data-view-name="settings" aria-label="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            </button>
-        </div>
-
-        <div id="template-portal-view" class="container view hidden">
-            <div class="workout-header">
-                 <button class="back-btn" data-action="showView" data-view-name="home" aria-label="Back to Home" data-tooltip="Back to Home Screen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </button>
-                <h2>Template Portal</h2>
-            </div>
-            <div id="template-portal-options"></div>
-        </div>
-
-        <div id="daily-workout-view" class="view hidden">
-            <div class="workout-header">
-                <button class="back-btn" data-action="showView" data-view-name="home" aria-label="Back to Home" data-tooltip="Back to Home Screen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </button>
-                <h2 id="workout-day-title">Workout Title</h2>
-                <p id="workout-date">Date</p>
-            </div>
-
-            <div class="timer-container">
-                <div class="timer-section">
-                    <span class="timer-label">TIME</span>
-                    <span id="workout-stopwatch-display" class="timer-display">00:00</span>
-                </div>
-                <div class="timer-section rest-timer-section">
-                    <span class="timer-label">REST</span>
-                    <span id="rest-timer-display" class="timer-display">01:30</span>
-                    <div class="timer-controls">
-                        <button class="timer-control-btn" data-action="startRestTimer" data-tooltip="Start Rest Timer">▶</button>
-                        <button class="timer-control-btn" data-action="stopRestTimer" data-tooltip="Stop Rest Timer">◼</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="exercise-list-loader" class="hidden">
-                <div class="skeleton-card">
-                    <div class="skeleton-header">
-                        <div class="skeleton skeleton-title"></div>
-                        <div class="skeleton skeleton-icon"></div>
-                    </div>
-                    <div class="skeleton skeleton-text skeleton-text-long"></div>
-                    <div class="skeleton skeleton-text skeleton-text-short"></div>
-                    <div class="skeleton skeleton-text skeleton-text-long"></div>
-                </div>
-                <div class="skeleton-card">
-                    <div class="skeleton-header">
-                        <div class="skeleton skeleton-title"></div>
-                        <div class="skeleton skeleton-icon"></div>
-                    </div>
-                    <div class="skeleton skeleton-text skeleton-text-long"></div>
-                    <div class="skeleton skeleton-text skeleton-text-short"></div>
-                    <div class="skeleton skeleton-text skeleton-text-long"></div>
-                </div>
-            </div>
-
-            <div id="exercise-list-container"></div>
-            <div class="workout-actions">
-                <button id="complete-workout-btn" class="cta-button" data-action="confirmCompleteWorkout">Complete Workout</button>
-            </div>
-        </div>
-
-        <section id="workout-summary-view" class="container view hidden">
-            <div class="workout-header">
-                <h2>Workout Complete!</h2>
-            </div>
-            <div id="summary-content">
-                <div class="summary-stats-grid">
-                    <div class="stat-card">
-                        <h4>Time</h4>
-                        <p id="summary-time">--:--</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Volume</h4>
-                        <p id="summary-volume">0 lbs</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>Sets</h4>
-                        <p id="summary-sets">0</p>
-                    </div>
-                    <div class="stat-card">
-                        <h4>PRs</h4>
-                        <p id="summary-prs">0</p>
-                    </div>
-                </div>
-                <div class="summary-section">
-                    <h3>Mesocycle Summary</h3>
-                    <div id="mesocycle-summary-list">
-                        <div class="summary-item">
-                            <h4>Workouts Completed</h4>
-                            <p id="summary-meso-completed">0</p>
-                        </div>
-                        <div class="summary-item">
-                            <h4>Workouts Incomplete</h4>
-                            <p id="summary-meso-incomplete">0</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="summary-section">
-                    <h3>Progression Suggestions</h3>
-                    <div id="summary-progression-list">
-                        <p class="placeholder-text">No suggestions right now. Great work!</p>
-                    </div>
-                </div>
-                <div class="summary-actions">
-                    <button class="cta-button" data-action="showView" data-view-name="home">Done</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="performance-summary-view" class="container view hidden">
-            <div class="workout-header">
-                <button class="back-btn" data-action="showView" data-view-name="home" aria-label="Back to Home" data-tooltip="Back to Home Screen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </button>
-                <h2>Performance Summary</h2>
-            </div>
-            <div id="summary-content">
-                <section class="summary-section">
-                    <h3>🏆 Trophy Case: Personal Records</h3>
-                    <div id="trophy-case-list">
-                        </div>
-                </section>
-                <section class="summary-section">
-                    <h3>Workout Consistency</h3>
-                    <div id="consistency-calendar"></div>
-                </section>
-                <section class="summary-section">
-                    <h3>Volume by Muscle Group</h3>
-                    <div class="chart-container">
-                        <canvas id="volume-chart"></canvas>
-                    </div>
-                </section>
-                <section class="summary-section">
-                    <h3>Track Exercise Progress</h3>
-                    <select id="exercise-tracker-select" class="builder-select"></select>
-                    <div class="toggle-switch chart-toggle-switch">
-                        <button class="toggle-btn active" data-action="setChartType" data-chart-type="weight">Top Set Weight</button>
-                        <button class="toggle-btn" data-action="setChartType" data-chart-type="e1rm">Est. 1-Rep Max</button>
-                    </div>
-                    <div id="weight-chart-container" class="chart-container">
-                        <canvas id="weight-progress-chart"></canvas>
-                    </div>
-                    <div id="e1rm-chart-container" class="chart-container hidden">
-                        <canvas id="e1rm-progress-chart"></canvas>
-                    </div>
-                </section>
-                <section class="summary-section">
-                    <h3>Workout History</h3>
-                    <div id="workout-history-list"></div>
-                </section>
-            </div>
-        </section>
-
-        <section id="settings-view" class="container view hidden">
-            <div class="workout-header">
-                <button class="back-btn" data-action="showView" data-view-name="home" aria-label="Back to Home" data-tooltip="Back to Home Screen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                </button>
-                <h2>Settings</h2>
-            </div>
-            <div id="settings-content">
-                <section class="settings-section">
-    <h3>My Plans</h3>
-    <div id="plan-management-list"></div>
-    <button class="cta-button secondary-button" data-action="showView" data-view-name="templatePortal">+ Create New Plan</button>
-</section>
-<section class="settings-section">
-    <h3>Data Management</h3>
-    <button id="export-data-btn" class="cta-button secondary-button">Download Data Backup</button>
-    <button id="reset-app-btn" class="cta-button secondary-button">Reset App</button>
-</section>
-                <section class="settings-section">
-                    <h3>Training Goal</h3>
-                    <div class="card-group settings-card-group" data-field="goal" id="settings-goal-cards">
-                        <div class="goal-card" data-action="selectCard" data-should-save="true" data-value="strength" role="button" tabindex="0"><div class="icon">🏋️</div><h3>Get Strong</h3></div>
-                        <div class="goal-card" data-action="selectCard" data-should-save="true" data-value="hypertrophy" role="button" tabindex="0"><div class="icon">💪</div><h3>Build Muscle</h3></div>
-                        <div class="goal-card" data-action="selectCard" data-should-save="true" data-value="fatLoss" role="button" tabindex="0"><div class="icon">🔥</div><h3>Fat Loss</h3></div>
-                    </div>
-                </section>
-                <section class="settings-section">
-                    <h3>Experience Level</h3>
-                    <div class="card-group settings-card-group" data-field="trainingAge" id="settings-experience-cards">
-                        <div class="goal-card" data-action="selectCard" data-should-save="true" data-value="novice" role="button" tabindex="0"><div class="icon">🌱</div><h3>Novice</h3></div>
-                        <div class="goal-card" data-action="selectCard" data-should-save="true" data-value="beginner" role="button" tabindex="0"><h3>Beginner</h3></div>
-                        <div class="goal-card" data-action="selectCard" data-should-save="true" data-value="intermediate" role="button" tabindex="0"><h3>Intermediate</h3></div>
-                        <div class="goal-card" data-action="selectCard" data-should-save="true" data-value="advanced" role="button" tabindex="0"><h3>Advanced</h3></div>
-                    </div>
-                </section>
-                <section class="settings-section">
-                    <h3>Workout Settings</h3>
-                    <label class="settings-label" data-tooltip="Choose between linear and double progression models">Progression Model</label>
-                    <div class="toggle-switch" id="progression-model-switch">
-                        <button class="toggle-btn" data-action="setProgressionModel" data-progression="linear">Linear</button>
-                        <button class="toggle-btn" data-action="setProgressionModel" data-progression="double">Double</button>
-                    </div>
-                    <label class="settings-label" data-tooltip="Set the smallest weight increment you can make">Weight Increment</label>
-                    <div class="toggle-switch" id="weight-increment-switch">
-                        <button class="toggle-btn" data-action="setWeightIncrement" data-increment="2.5">2.5</button>
-                        <button class="toggle-btn" data-action="setWeightIncrement" data-increment="5">5</button>
-                        <button class="toggle-btn" data-action="setWeightIncrement" data-increment="10">10</button>
-                    </div>
-                    <label class="settings-label" data-tooltip="Set the default rest duration between sets">Default Rest Duration (seconds)</label>
-                    <div class="toggle-switch" id="rest-duration-switch">
-                        <button class="toggle-btn" data-action="setRestDuration" data-duration="60">60s</button>
-                        <button class="toggle-btn" data-action="setRestDuration" data-duration="90">90s</button>
-                        <button class="toggle-btn" data-action="setRestDuration" data-duration="120">120s</button>
-                        <button class="toggle-btn" data-action="setRestDuration" data-duration="180">180s</button>
-                    </div>
-                </section>
-                <section class="settings-section">
-                    <h3>Units</h3>
-                    <div class="toggle-switch" id="units-switch">
-                        <button class="toggle-btn" data-action="setUnits" data-unit="lbs">LBS</button>
-                        <button class="toggle-btn" data-action="setUnits" data-unit="kg">KG</button>
-                    </div>
-                </section>
-                <section class="settings-section">
-                    <h3>Theme</h3>
-                    <div class="toggle-switch" id="theme-switch">
-                        <button class="toggle-btn" data-action="setTheme" data-theme="dark">Dark</button>
-                        <button class="toggle-btn" data-action="setTheme" data-theme="light">Light</button>
-                    </div>
-                </section>
-            </div>
-        </section>
-
+      <app-shell></app-shell>
     </main>
-    
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" data-action="closeModal">&times;</span>
-            <div id="modal-body"></div>
-            <div id="modal-actions" class="modal-actions"></div>
-        </div>
-    </div>
-
-    <div id="feedback-modal" class="modal">
-        <div class="modal-content">
-            <h2 id="feedback-modal-title">Feedback</h2>
-            <p id="feedback-modal-question">Question goes here...</p>
-            <div id="feedback-modal-options" class="button-group vertical">
-            </div>
-        </div>
-    </div>
-
-    <div id="daily-checkin-modal" class="modal">
-        <div class="modal-content">
-            <h2>Daily Check-in</h2>
-            <p>How are you feeling today? This helps us adjust your workout.</p>
-            <div class="settings-section">
-                <label class="settings-label" id="sleep-label">Sleep: 8 hours</label>
-                <input type="range" min="4" max="12" value="8" step="0.5" class="slider" id="sleep-slider">
-                
-                <label class="settings-label" id="stress-label">Stress Level: 3</label>
-                <input type="range" min="1" max="10" value="3" class="slider" id="stress-slider">
-            </div>
-            <div class="modal-actions">
-                <button class="cta-button" data-action="submitCheckin">Start Workout</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="toast" class="toast hidden">
-      <div id="toast-message"></div>
-      <div id="toast-icon"></div>
-    </div>
-
-    <script type="module" src="js/main.js"></script>
-
-</body>
+  </body>
 </html>
