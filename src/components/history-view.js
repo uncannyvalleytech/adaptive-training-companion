@@ -8,7 +8,6 @@
 import { LitElement, html } from "lit";
 import { getData } from "../services/api.js";
 import { getCredential } from "../services/google-auth.js";
-// import "../style.css"; // This line is removed to fix the loading error
 
 class HistoryView extends LitElement {
   static properties = {
@@ -35,7 +34,7 @@ class HistoryView extends LitElement {
     this.searchTerm = "";
     this.filterTerm = "all";
     this.groupBy = "workout";
-    this.units = 'lbs';
+    this.units = localStorage.getItem('units') || 'lbs';
   }
   
   connectedCallback() {
@@ -171,7 +170,17 @@ class HistoryView extends LitElement {
     return { exerciseData, personalRecords };
   }
 
+  createRenderRoot() {
+    return this;
+  }
+
   createCharts() {
+    // Only create charts if Chart.js is available
+    if (typeof Chart === 'undefined') {
+      console.warn('Chart.js not loaded, skipping chart creation');
+      return;
+    }
+
     const { exerciseData } = this._processDataForCharts();
     const unitLabel = this.units === 'lbs' ? 'lbs' : 'kg';
     
@@ -180,7 +189,7 @@ class HistoryView extends LitElement {
 
     for (const exerciseName in exerciseData) {
       // 1RM Chart
-      const canvas1RM = this.shadowRoot.querySelector(`#chart-1rm-${exerciseName.replace(/\s+/g, '-')}`);
+      const canvas1RM = this.querySelector(`#chart-1rm-${exerciseName.replace(/\s+/g, '-')}`);
       if (canvas1RM) {
         const ctx = canvas1RM.getContext('2d');
         this.chartInstances[`1rm-${exerciseName}`] = new Chart(ctx, {
@@ -250,7 +259,7 @@ class HistoryView extends LitElement {
       }
 
       // Volume Chart
-      const canvasVolume = this.shadowRoot.querySelector(`#chart-volume-${exerciseName.replace(/\s+/g, '-')} `);
+      const canvasVolume = this.querySelector(`#chart-volume-${exerciseName.replace(/\s+/g, '-')}`);
       if (canvasVolume) {
         const ctx = canvasVolume.getContext('2d');
         this.chartInstances[`volume-${exerciseName}`] = new Chart(ctx, {
