@@ -19,7 +19,6 @@ const initialWorkout = {
 class AppShell extends LitElement {
   static properties = {
     userCredential: { type: Object },
-    isGoogleLibraryLoaded: { type: Boolean },
     userData: { type: Object },
     loadingMessage: { type: String },
     errorMessage: { type: String },
@@ -37,7 +36,6 @@ class AppShell extends LitElement {
   constructor() {
     super();
     this.userCredential = null;
-    this.isGoogleLibraryLoaded = false;
     this.userData = null;
     this.loadingMessage = "Initializing...";
     this.errorMessage = "";
@@ -56,7 +54,8 @@ class AppShell extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.waitForGoogleLibrary();
+    // Listen for the custom event to ensure the Google library is ready.
+    window.addEventListener('google-library-loaded', this.setupSignIn.bind(this));
     // Event listeners
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
@@ -74,20 +73,6 @@ class AppShell extends LitElement {
   _handleThemeChange(theme) {
     this.theme = theme;
     this._applyTheme();
-  }
-
-  waitForGoogleLibrary() {
-    if (window.google && window.google.accounts) {
-      this.isGoogleLibraryLoaded = true;
-    } else {
-      setTimeout(() => this.waitForGoogleLibrary(), 100);
-    }
-  }
-
-  updated(changedProperties) {
-    if (changedProperties.has("isGoogleLibraryLoaded") && this.isGoogleLibraryLoaded) {
-      this.setupSignIn();
-    }
   }
   
   async _checkBiometricsAvailability() {
