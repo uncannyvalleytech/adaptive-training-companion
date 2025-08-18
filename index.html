@@ -9,10 +9,12 @@
       content="An intelligent workout app that adapts to you in real-time."
     />
     
+    <!-- Google Fonts: Poppins -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- The new stylesheet replaces the old one, but the file path remains the same. -->
     <link rel="stylesheet" href="./src/style.css" />
     
     <script type="importmap">
@@ -25,8 +27,10 @@
       }
     </script>
     
+    <!-- Added Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Register the service worker here. -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
