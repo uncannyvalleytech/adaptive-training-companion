@@ -12,6 +12,7 @@
   --color-text-tertiary: #6C6C6C;
   --color-accent-primary: #00D4FF; /* Electric Blue */
   --color-accent-primary-hover: #33E1FF; /* Lighter Electric Blue */
+  --color-accent-secondary: #00A2FF; /* Complementary Teal for Gradient */
   --color-state-success: #3fb950;
   --color-state-warning: #ffcc00;
   --color-state-error: #f85149;
@@ -61,6 +62,7 @@ body[data-theme="light"] {
   --color-text-tertiary: #8b949e;
   --color-accent-primary: #0969da;
   --color-accent-primary-hover: #2c85f0;
+  --color-accent-secondary: #0052cc;
   --color-state-success: #1f883d;
   --color-state-error: #cf222e;
   --color-glow-focus: rgba(9, 105, 218, 0.3);
@@ -476,12 +478,12 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     transform: scale(0.98);
 }
 .cta-button {
-    background-color: var(--color-accent-primary);
+    background: linear-gradient(145deg, var(--color-accent-primary-hover), var(--color-accent-secondary));
     color: #1A1A2E;
     width: 100%;
 }
 .cta-button:hover {
-    background-color: var(--color-accent-primary-hover);
+    background: linear-gradient(145deg, var(--color-accent-primary), var(--color-accent-primary-hover));
 }
 
 /* --- Loading Spinner for Buttons --- */
