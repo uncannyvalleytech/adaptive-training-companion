@@ -773,7 +773,7 @@ class WorkoutSession extends LitElement {
 
   _addSet(event) {
     this._triggerHapticFeedback('success');
-    const exerciseIndex = parseInt(event.target.closest('button').dataset.exercise-index);
+    const exerciseIndex = parseInt(event.target.closest('button').dataset.exerciseIndex);
     const exercise = this.workout.exercises[exerciseIndex];
 
     const parent = event.target.closest(".set-input-grid");
@@ -878,7 +878,7 @@ class WorkoutSession extends LitElement {
 
     // Check if the next exercise has already been completed before starting the rest timer
     if (this.currentExerciseIndex + 1 < this.workout.exercises.length) {
-      const nextExercise = this.workout.exercises[this.currentExerciseIndex + 1];
+      const nextExercise = this.workout.exercises[this.currentFeedbackExerciseIndex + 1];
       if (nextExercise.completedSets.length < nextExercise.sets) {
         this._startRestTimer(currentExercise.rest, nextExercise.name);
       }
