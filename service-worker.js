@@ -21,7 +21,7 @@ const urlsToCache = [
   '/src/components/workout-feedback-modal.js',
   '/src/components/workout-session.js',
   '/src/components/workout-templates.js',
-  '/src/components/achievements-view.js', // NEW
+  '/src/components/achievements-view.js',
 ];
 
 // The 'install' event is fired when the service worker is first installed.
@@ -31,7 +31,25 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache and adding files...');
-        return cache.addAll(urlsToCache);
+        // Add files one by one to handle failures gracefully
+        return Promise.allSettled(
+          urlsToCache.map(url => 
+            cache.add(url).catch(err => {
+              console.warn(`Failed to cache ${url}:`, err);
+              return null;
+            })
+          )
+        );
+      })
+      .then((results) => {
+        const failed = results.filter(result => result.status === 'rejected');
+        if (failed.length > 0) {
+          console.warn(`Failed to cache ${failed.length} files`);
+        }
+        console.log('Cache setup completed');
+      })
+      .catch((error) => {
+        console.error('Cache setup failed:', error);
       })
   );
 });
@@ -40,7 +58,9 @@ self.addEventListener('install', (event) => {
 // We intercept these requests to serve cached content if available.
 self.addEventListener('fetch', (event) => {
   // We don't cache requests to the Google Apps Script backend.
-  if (event.request.url.includes('script.google.com')) {
+  if (event.request.url.includes('script.google.com') || 
+      event.request.url.includes('accounts.google.com') ||
+      event.request.url.includes('googleapis.com')) {
     return;
   }
   
@@ -55,7 +75,14 @@ self.addEventListener('fetch', (event) => {
         
         // If the file is not in the cache, we fetch it from the network.
         console.log('Fetching from network:', event.request.url);
-        return fetch(event.request);
+        return fetch(event.request).catch(err => {
+          console.warn('Network fetch failed for:', event.request.url, err);
+          // Return a basic response for failed requests
+          return new Response('Offline - resource not available', {
+            status: 503,
+            statusText: 'Service Unavailable'
+          });
+        });
       })
   );
 });
