@@ -6,7 +6,6 @@
 const CACHE_NAME = 'adaptive-training-companion-cache-v1';
 
 // We explicitly list all files the app needs to function offline.
-// The list includes HTML, CSS, JavaScript, and any other static assets.
 const urlsToCache = [
   '/',
   '/index.html',
@@ -14,6 +13,8 @@ const urlsToCache = [
   '/src/main.js',
   '/src/services/api.js',
   '/src/services/google-auth.js',
+  '/src/services/workout-engine.js',
+  '/src/services/exercise-database.js',
   '/src/components/app-shell.js',
   '/src/components/history-view.js',
   '/src/components/onboarding-flow.js',
@@ -22,31 +23,16 @@ const urlsToCache = [
   '/src/components/workout-session.js',
   '/src/components/workout-templates.js',
   '/src/components/achievements-view.js',
+  '/src/components/readiness-modal.js',
 ];
 
 // The 'install' event is fired when the service worker is first installed.
-// We use it to open a cache and add all the necessary files to it.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache and adding files...');
-        // Add files one by one to handle failures gracefully
-        return Promise.allSettled(
-          urlsToCache.map(url => 
-            cache.add(url).catch(err => {
-              console.warn(`Failed to cache ${url}:`, err);
-              return null;
-            })
-          )
-        );
-      })
-      .then((results) => {
-        const failed = results.filter(result => result.status === 'rejected');
-        if (failed.length > 0) {
-          console.warn(`Failed to cache ${failed.length} files`);
-        }
-        console.log('Cache setup completed');
+        return cache.addAll(urlsToCache);
       })
       .catch((error) => {
         console.error('Cache setup failed:', error);
@@ -55,9 +41,7 @@ self.addEventListener('install', (event) => {
 });
 
 // The 'fetch' event is fired for every network request made by the page.
-// We intercept these requests to serve cached content if available.
 self.addEventListener('fetch', (event) => {
-  // We don't cache requests to the Google Apps Script backend.
   if (event.request.url.includes('script.google.com') || 
       event.request.url.includes('accounts.google.com') ||
       event.request.url.includes('googleapis.com')) {
@@ -67,28 +51,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request)
       .then((response) => {
-        // If a response is found in the cache, we return it.
         if (response) {
-          console.log('Serving from cache:', event.request.url);
           return response;
         }
-        
-        // If the file is not in the cache, we fetch it from the network.
-        console.log('Fetching from network:', event.request.url);
-        return fetch(event.request).catch(err => {
-          console.warn('Network fetch failed for:', event.request.url, err);
-          // Return a basic response for failed requests
-          return new Response('Offline - resource not available', {
-            status: 503,
-            statusText: 'Service Unavailable'
-          });
-        });
+        return fetch(event.request);
       })
   );
 });
 
 // The 'activate' event is fired when the service worker is activated.
-// We use it to clean up old caches to save disk space.
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME];
   
