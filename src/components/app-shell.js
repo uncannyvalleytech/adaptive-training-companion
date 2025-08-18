@@ -814,7 +814,7 @@ class AppShell extends LitElement {
   }
   
   renderAchievementsScreen() {
-      return html`<achievements-view .unlockedAchievements=${this.unlockedAchievements}></achievements-view>`;
+      return html`<achievements-view .unlockedAchievements=${this.unlockedAchievements} .currentStreak=${this.currentStreak}></achievements-view>`;
   }
 
   renderHistoryScreen() {
