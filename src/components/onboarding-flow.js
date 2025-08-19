@@ -175,6 +175,7 @@ class OnboardingFlow extends LitElement {
 
   render() {
     const currentStepData = this.steps[this.step];
+    // Progress bar does not show on the intro and final loading screen.
     const progress = (this.step / (this.steps.length - 2)) * 100;
 
     return html`
@@ -240,6 +241,8 @@ class OnboardingFlow extends LitElement {
                     min=${field.min}
                     max=${field.max}
                     placeholder="Enter ${field.label.toLowerCase()}"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
                   />
                 </div>
               `;
@@ -251,7 +254,7 @@ class OnboardingFlow extends LitElement {
                     type="range"
                     id=${field.key}
                     .value=${this.userData[field.key]}
-                    @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
+                    @input=${e => this._handleSliderInput(field.key, Number(e.target.value))}
                     min=${field.min}
                     max=${field.max}
                     step=${field.step}
