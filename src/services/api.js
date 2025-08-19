@@ -5,7 +5,7 @@
 
 // --- CONFIGURATION ---
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycby9IYSEA1jz6D6IzUtIZGuqDYkvdPa4W88icDUbqbC1BeqImAeWPVmVe1yHWFWNTata/exec";
+  "https://script.google.com/macros/s/AKfycbxpRMXbjW5JAQb5YKVUhGfXkPDR1vOD0CFCVGVXOOxsK5nASGlxQudJi7YOAHjXfof7/exec";
 
 // Constants for local storage keys
 const LOCAL_STORAGE_KEY = 'userWorkoutData';
