@@ -18,16 +18,26 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html'
+      },
+      output: {
+        manualChunks: {
+          // Split vendor code into separate chunks for better caching
+          vendor: ['lit'],
+        }
       }
-    }
+    },
+    // Increase chunk size warning limit
+    chunkSizeWarningLimit: 1000,
+    // Enable source maps for debugging
+    sourcemap: true
   },
 
   optimizeDeps: {
-    include: ['lit']
+    include: ['lit'],
+    // Handle ESM dependencies
+    force: true
   },
 
   // Add define to handle any missing environment variables
   define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
-  }
-});
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_
