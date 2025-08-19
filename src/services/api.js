@@ -1,6 +1,6 @@
 /**
  * @file api.js
- * Enhanced API service with better CORS handling and offline support
+ * Enhanced API service with improved CORS handling and offline support
  */
 
 // --- CONFIGURATION ---
@@ -12,29 +12,52 @@ const LOCAL_STORAGE_KEY = 'userWorkoutData';
 const OFFLINE_QUEUE_KEY = 'offlineWorkoutQueue';
 
 /**
- * Enhanced API request function with user-owned data support
+ * Enhanced API request function with better CORS handling
  */
 async function makeApiRequest(action, token, payload = {}) {
   if (!token) {
     return { success: false, error: "Authentication token is missing." };
   }
 
+  // Prepare the request data
+  const requestData = { action, token, payload };
+
   try {
-    // First, try a simple request without preflight
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "text/plain" // Use text/plain to avoid preflight
-      },
-      body: JSON.stringify({ action, token, payload }),
-      mode: 'cors'
-    });
+    // Try multiple request methods to handle CORS issues
+    let response;
+    
+    // Method 1: Try with proper CORS headers
+    try {
+      response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+        mode: 'cors',
+        credentials: 'omit'
+      });
+    } catch (corsError) {
+      console.warn("CORS request failed, trying alternative method:", corsError);
+      
+      // Method 2: Try with text/plain content type to avoid preflight
+      response = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain",
+        },
+        body: JSON.stringify(requestData),
+        mode: 'cors'
+      });
+    }
 
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error("Authentication failed. Please sign in again.");
       } else if (response.status === 403) {
         throw new Error("Permission denied. Please check your Google account permissions.");
+      } else if (response.status === 0 || response.status >= 500) {
+        throw new Error("Server temporarily unavailable. Please try again later.");
       } else {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -42,34 +65,63 @@ async function makeApiRequest(action, token, payload = {}) {
 
     const data = await response.json();
     return data;
+    
   } catch (error) {
     console.error("API Request Failed:", error);
     
-    // More specific error messages for user-owned data
+    // Provide more specific error messages
     if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
-      return { success: false, error: "Network error. Please check your connection and try again." };
-    } else if (error.message.includes('Authentication failed')) {
-      return { success: false, error: "Please sign out and sign in again to refresh your authentication." };
-    } else if (error.message.includes('Permission denied')) {
-      return { success: false, error: "Unable to access your Google Drive. Please check permissions and try again." };
+      return { 
+        success: false, 
+        error: "Unable to connect to server. Please check your internet connection.",
+        isNetworkError: true
+      };
     } else if (error.message.includes('CORS')) {
-      return { success: false, error: "Server configuration error. Please try again later." };
+      return { 
+        success: false, 
+        error: "Server access blocked. This may be due to browser security settings.",
+        isCorsError: true
+      };
+    } else if (error.message.includes('Authentication failed')) {
+      return { 
+        success: false, 
+        error: "Please sign out and sign in again to refresh your authentication.",
+        isAuthError: true
+      };
     } else {
-      return { success: false, error: error.message };
+      return { 
+        success: false, 
+        error: error.message || "An unexpected error occurred. Please try again."
+      };
     }
   }
 }
 
 /**
- * Test the API connection
+ * Test the API connection with fallback methods
  */
 export async function testApiConnection() {
   try {
+    // Try a simple GET request first
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "GET",
+      mode: 'cors',
+      cache: 'no-cache'
+    });
+    
+    if (response.ok || response.status === 405) {
+      // 405 Method Not Allowed is expected for GET on Apps Script
+      return true;
+    }
+    
+    // If GET fails, try OPTIONS
+    const optionsResponse = await fetch(APPS_SCRIPT_URL, {
+      method: "OPTIONS",
       mode: 'cors'
     });
-    return response.ok;
+    
+    return optionsResponse.ok;
+    
   } catch (error) {
     console.error("API connection test failed:", error);
     return false;
@@ -77,17 +129,60 @@ export async function testApiConnection() {
 }
 
 /**
- * Fetches the user's initial data from the backend with offline fallback
+ * Create default user data structure
+ */
+function createDefaultUserData() {
+  return {
+    onboardingComplete: false,
+    workouts: [],
+    templates: [],
+    currentWeek: 1,
+    workoutsCompletedThisMeso: 0,
+    totalXP: 0,
+    level: 1,
+    baseMEV: {
+      chest: 8,
+      back: 10,
+      shoulders: 8,
+      arms: 6,
+      legs: 14,
+    }
+  };
+}
+
+/**
+ * Fetches the user's data with comprehensive offline fallback
  */
 export async function getData(authToken) {
   // First, try to get cached data
   const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+  let parsedCachedData = null;
   
+  try {
+    parsedCachedData = cachedData ? JSON.parse(cachedData) : null;
+  } catch (e) {
+    console.warn("Invalid cached data, clearing:", e);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+  }
+
+  // If offline, use cached data or create default
   if (!navigator.onLine) {
-    if (cachedData) {
-      return { success: true, data: JSON.parse(cachedData), isOffline: true };
+    if (parsedCachedData) {
+      return { 
+        success: true, 
+        data: parsedCachedData, 
+        isOffline: true,
+        warning: "You're offline. Using cached data."
+      };
     } else {
-      return { success: false, error: "No cached data available and you're offline." };
+      const defaultData = createDefaultUserData();
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultData));
+      return { 
+        success: true, 
+        data: defaultData, 
+        isOffline: true,
+        warning: "You're offline. Created new local profile."
+      };
     }
   }
 
@@ -95,40 +190,69 @@ export async function getData(authToken) {
   try {
     const response = await makeApiRequest("getData", authToken);
     
-    if (response.success) {
+    if (response.success && response.data) {
+      // Ensure data has required structure
+      const validatedData = { ...createDefaultUserData(), ...response.data };
+      
       // Cache the successful response
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(response.data));
-      return response;
-    } else {
-      // If server fails but we have cached data, use it
-      if (cachedData) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(validatedData));
+      return { success: true, data: validatedData };
+      
+    } else if (response.isNetworkError || response.isCorsError) {
+      // Network/CORS error - use cached data or create default
+      if (parsedCachedData) {
         console.warn("Server request failed, using cached data:", response.error);
         return { 
           success: true, 
-          data: JSON.parse(cachedData), 
-          warning: "Using offline data. Some features may be limited." 
+          data: parsedCachedData, 
+          warning: "Server unavailable. Using offline data."
         };
       } else {
-        return response;
+        // No cached data, create default and queue for later sync
+        const defaultData = createDefaultUserData();
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(defaultData));
+        return { 
+          success: true, 
+          data: defaultData,
+          warning: "Server unavailable. Created new local profile."
+        };
+      }
+    } else {
+      // Other error - still try to use cached data
+      if (parsedCachedData) {
+        return { 
+          success: true, 
+          data: parsedCachedData, 
+          warning: "Server error. Using offline data."
+        };
+      } else {
+        return { 
+          success: false, 
+          error: response.error || "Failed to load data and no offline data available."
+        };
       }
     }
   } catch (error) {
-    // Network error - use cached data if available
-    if (cachedData) {
-      console.warn("Network error, using cached data:", error);
+    // Unexpected error - use cached data if available
+    console.error("Unexpected error in getData:", error);
+    
+    if (parsedCachedData) {
       return { 
         success: true, 
-        data: JSON.parse(cachedData), 
-        warning: "Using offline data due to network error." 
+        data: parsedCachedData, 
+        warning: "Unexpected error. Using offline data."
       };
     } else {
-      return { success: false, error: "Network error and no cached data available." };
+      return { 
+        success: false, 
+        error: "Unexpected error and no offline data available."
+      };
     }
   }
 }
 
 /**
- * Saves data to the backend with offline queueing
+ * Saves data with enhanced offline queueing
  */
 export async function saveData(data, authToken) {
   // Always update local cache immediately for responsive UI
@@ -136,45 +260,72 @@ export async function saveData(data, authToken) {
   let updatedData = data;
   
   if (cachedData) {
-    const existing = JSON.parse(cachedData);
-    updatedData = { ...existing, ...data };
-    
-    // Handle arrays properly (append workouts, replace templates)
-    if (data.workouts && Array.isArray(data.workouts)) {
-      updatedData.workouts = [...(existing.workouts || []), ...data.workouts];
+    try {
+      const existing = JSON.parse(cachedData);
+      updatedData = { ...existing, ...data };
+      
+      // Handle arrays properly (append workouts, replace templates)
+      if (data.workouts && Array.isArray(data.workouts)) {
+        updatedData.workouts = [...(existing.workouts || []), ...data.workouts];
+      }
+      if (data.templates && Array.isArray(data.templates)) {
+        updatedData.templates = data.templates; // Replace templates
+      }
+    } catch (e) {
+      console.warn("Error parsing cached data during save:", e);
+      updatedData = { ...createDefaultUserData(), ...data };
     }
   }
   
   localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedData));
 
+  // If offline, queue for later sync
   if (!navigator.onLine) {
-    // Queue for later sync
     queueOfflineData(data, authToken);
     console.log("Offline mode: Data saved locally and queued for sync.");
-    return { success: true, isOffline: true };
+    return { 
+      success: true, 
+      isOffline: true,
+      warning: "Data saved offline. Will sync when connection is restored."
+    };
   }
 
+  // Try to save to server
   try {
     const response = await makeApiRequest("saveData", authToken, { data });
     
-    if (!response.success) {
-      // If save fails, queue it for later
+    if (response.success) {
+      console.log("Data saved successfully to server");
+      return response;
+    } else if (response.isNetworkError || response.isCorsError) {
+      // Network/CORS error - queue for later
       queueOfflineData(data, authToken);
-      console.warn("Save failed, data queued for retry:", response.error);
-      return { success: true, warning: "Data saved locally, will sync when possible." };
+      console.warn("Save failed due to network/CORS, data queued:", response.error);
+      return { 
+        success: true, 
+        warning: "Data saved locally. Will sync when server is available."
+      };
+    } else {
+      // Other server error - still queue for retry
+      queueOfflineData(data, authToken);
+      return { 
+        success: true, 
+        warning: "Server error. Data saved locally and queued for retry."
+      };
     }
-    
-    return response;
   } catch (error) {
-    // Network error - queue for later
+    // Unexpected error - queue for later
+    console.error("Unexpected error during save:", error);
     queueOfflineData(data, authToken);
-    console.warn("Network error during save, data queued:", error);
-    return { success: true, warning: "Data saved locally, will sync when connection is restored." };
+    return { 
+      success: true, 
+      warning: "Unexpected error. Data saved locally and queued for retry."
+    };
   }
 }
 
 /**
- * Deletes all user data from the backend
+ * Deletes all user data
  */
 export async function deleteData(authToken) {
   // Clear local cache immediately
@@ -182,31 +333,52 @@ export async function deleteData(authToken) {
   localStorage.removeItem(OFFLINE_QUEUE_KEY);
   
   if (!navigator.onLine) {
-    return { success: false, error: "Cannot delete data while offline. Please try again when connected." };
+    return { 
+      success: false, 
+      error: "Cannot delete server data while offline. Local data has been cleared."
+    };
   }
 
-  return await makeApiRequest("deleteData", authToken);
+  try {
+    const response = await makeApiRequest("deleteData", authToken);
+    return response;
+  } catch (error) {
+    console.error("Error deleting data:", error);
+    return { 
+      success: false, 
+      error: "Error deleting server data, but local data has been cleared."
+    };
+  }
 }
 
 /**
  * Queue data for offline sync
  */
 function queueOfflineData(data, authToken) {
-  const existingQueue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
-  existingQueue.push({
-    data,
-    authToken,
-    timestamp: Date.now()
-  });
-  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(existingQueue));
+  try {
+    const existingQueue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+    existingQueue.push({
+      data,
+      authToken,
+      timestamp: Date.now()
+    });
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(existingQueue));
+  } catch (e) {
+    console.error("Error queueing offline data:", e);
+  }
 }
 
 /**
  * Get the count of queued workouts for offline sync
  */
 export function getQueuedWorkoutsCount() {
-  const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
-  return queue.length;
+  try {
+    const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+    return queue.length;
+  } catch (e) {
+    console.error("Error reading offline queue:", e);
+    return 0;
+  }
 }
 
 /**
@@ -217,7 +389,14 @@ export async function syncData() {
     return { success: false, error: "Still offline" };
   }
 
-  const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+  let queue;
+  try {
+    queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+  } catch (e) {
+    console.error("Error reading sync queue:", e);
+    return { success: false, error: "Error reading sync queue" };
+  }
+
   if (queue.length === 0) {
     return { success: true, message: "No data to sync" };
   }
@@ -233,6 +412,7 @@ export async function syncData() {
       if (response.success) {
         syncedCount++;
       } else {
+        console.warn("Failed to sync item:", response.error);
         failedItems.push(queuedItem);
       }
     } catch (error) {
@@ -242,7 +422,11 @@ export async function syncData() {
   }
 
   // Update queue with failed items only
-  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(failedItems));
+  try {
+    localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(failedItems));
+  } catch (e) {
+    console.error("Error updating sync queue:", e);
+  }
   
   if (failedItems.length === 0) {
     console.log("All offline data synced successfully");
