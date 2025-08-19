@@ -129,13 +129,27 @@ class AppShell extends LitElement {
               this.showOnboarding = true;
           }
           this.loadingMessage = "";
+          
+          // Show warning if using offline data
+          if (response.warning) {
+            this._showToast(response.warning, "info");
+          }
         }, 1000);
       } else {
         throw new Error(response.error || "Unexpected API response format.");
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
-      this.errorMessage = "Failed to load your data. Please try again.";
+      
+      // More user-friendly error messages
+      if (error.message.includes("Network error")) {
+        this.errorMessage = "Unable to connect to server. Please check your internet connection and try again.";
+      } else if (error.message.includes("CORS") || error.message.includes("Server configuration")) {
+        this.errorMessage = "Server is temporarily unavailable. Please try again in a few minutes.";
+      } else {
+        this.errorMessage = "Failed to load your data. Please try again.";
+      }
+      
       this.loadingMessage = "";
     }
   }
