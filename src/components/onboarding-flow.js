@@ -214,7 +214,11 @@ class OnboardingFlow extends LitElement {
         case 'intro':
             return html`<button class="cta-button" @click=${this._nextStep}>Get Started</button>`;
         case 'form':
-            return this._renderForm(stepData.fields);
+            return html`
+                <div class="form-inputs card">
+                    ${this._renderForm(stepData.fields)}
+                </div>
+            `;
         case 'choice':
             return this._renderChoice(stepData);
         case 'loading':
@@ -226,61 +230,59 @@ class OnboardingFlow extends LitElement {
 
   _renderForm(fields) {
     return html`
-      <div class="form-inputs card">
-        ${fields.map(field => {
-          switch(field.type) {
-            case 'number':
+      ${fields.map(field => {
+        switch(field.type) {
+          case 'number':
+            return html`
+              <div class="input-group">
+                <label for=${field.key}>${field.label}</label>
+                <input
+                  type="number"
+                  id=${field.key}
+                  .value=${this.userData[field.key]}
+                  @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
+                  min=${field.min}
+                  max=${field.max}
+                  placeholder="Enter ${field.label.toLowerCase()}"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                />
+              </div>
+            `;
+          case 'slider':
+            return html`
+              <div class="input-group slider-group">
+                <label for=${field.key}>${field.label}: <strong>${this.userData[field.key]}</strong></label>
+                <input
+                  type="range"
+                  id=${field.key}
+                  .value=${this.userData[field.key]}
+                  @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
+                  min=${field.min}
+                  max=${field.max}
+                  step=${field.step}
+                />
+              </div>
+            `;
+          case 'choice':
               return html`
-                <div class="input-group">
-                  <label for=${field.key}>${field.label}</label>
-                  <input
-                    type="number"
-                    id=${field.key}
-                    .value=${this.userData[field.key]}
-                    @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
-                    min=${field.min}
-                    max=${field.max}
-                    placeholder="Enter ${field.label.toLowerCase()}"
-                    inputmode="numeric"
-                    pattern="[0-9]*"
-                  />
-                </div>
+                  <div class="input-group choice-group">
+                      <label>${field.label}</label>
+                      <div class="button-options">
+                      ${field.options.map(opt => html`
+                          <button 
+                              class="choice-btn ${this.userData[field.key] === opt.value ? 'selected' : ''}"
+                              @click=${() => this._handleInputChange(field.key, opt.value)}>
+                              ${opt.text}
+                          </button>
+                      `)}
+                      </div>
+                  </div>
               `;
-            case 'slider':
-              return html`
-                <div class="input-group slider-group">
-                  <label for=${field.key}>${field.label}: <strong>${this.userData[field.key]}</strong></label>
-                  <input
-                    type="range"
-                    id=${field.key}
-                    .value=${this.userData[field.key]}
-                    @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
-                    min=${field.min}
-                    max=${field.max}
-                    step=${field.step}
-                  />
-                </div>
-              `;
-            case 'choice':
-                return html`
-                    <div class="input-group choice-group">
-                        <label>${field.label}</label>
-                        <div class="button-options">
-                        ${field.options.map(opt => html`
-                            <button 
-                                class="choice-btn ${this.userData[field.key] === opt.value ? 'selected' : ''}"
-                                @click=${() => this._handleInputChange(field.key, opt.value)}>
-                                ${opt.text}
-                            </button>
-                        `)}
-                        </div>
-                    </div>
-                `;
-            default:
-              return html``;
-          }
-        })}
-      </div>
+          default:
+            return html``;
+        }
+      })}
     `;
   }
 
