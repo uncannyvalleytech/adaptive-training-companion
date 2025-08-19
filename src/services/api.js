@@ -5,7 +5,7 @@
 
 // --- CONFIGURATION ---
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxpRMXbjW5JAQb5YKVUhGfXkPDR1vOD0CFCVGVXOOxsK5nASGlxQudJi7YOAHjXfof7/exec";
+  "[https://script.google.com/macros/s/AKfycbxpRMXbjW5JAQb5YKVUhGfXkPDR1vOD0CFCVGVXOOxsK5nASGlxQudJi7YOAHjXfof7/exec](https://script.google.com/macros/s/AKfycbxpRMXbjW5JAQb5YKVUhGfXkPDR1vOD0CFCVGVXOOxsK5nASGlxQudJi7YOAHjXfof7/exec)";
 
 // Constants for local storage keys
 const LOCAL_STORAGE_KEY = 'userWorkoutData';
@@ -23,33 +23,14 @@ async function makeApiRequest(action, token, payload = {}) {
   const requestData = { action, token, payload };
 
   try {
-    // Try multiple request methods to handle CORS issues
-    let response;
-    
-    // Method 1: Try with proper CORS headers
-    try {
-      response = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-        mode: 'cors',
-        credentials: 'omit'
-      });
-    } catch (corsError) {
-      console.warn("CORS request failed, trying alternative method:", corsError);
-      
-      // Method 2: Try with text/plain content type to avoid preflight
-      response = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain",
-        },
-        body: JSON.stringify(requestData),
-        mode: 'cors'
-      });
-    }
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+      mode: 'cors',
+    });
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -76,18 +57,6 @@ async function makeApiRequest(action, token, payload = {}) {
         error: "Unable to connect to server. Please check your internet connection.",
         isNetworkError: true
       };
-    } else if (error.message.includes('CORS')) {
-      return { 
-        success: false, 
-        error: "Server access blocked. This may be due to browser security settings.",
-        isCorsError: true
-      };
-    } else if (error.message.includes('Authentication failed')) {
-      return { 
-        success: false, 
-        error: "Please sign out and sign in again to refresh your authentication.",
-        isAuthError: true
-      };
     } else {
       return { 
         success: false, 
@@ -98,30 +67,16 @@ async function makeApiRequest(action, token, payload = {}) {
 }
 
 /**
- * Test the API connection with fallback methods
+ * Test the API connection with a simple POST
  */
 export async function testApiConnection() {
   try {
-    // Try a simple GET request first
     const response = await fetch(APPS_SCRIPT_URL, {
-      method: "GET",
+      method: "POST",
+      body: JSON.stringify({ action: "test" }),
       mode: 'cors',
-      cache: 'no-cache'
     });
-    
-    if (response.ok || response.status === 405) {
-      // 405 Method Not Allowed is expected for GET on Apps Script
-      return true;
-    }
-    
-    // If GET fails, try OPTIONS
-    const optionsResponse = await fetch(APPS_SCRIPT_URL, {
-      method: "OPTIONS",
-      mode: 'cors'
-    });
-    
-    return optionsResponse.ok;
-    
+    return response.ok;
   } catch (error) {
     console.error("API connection test failed:", error);
     return false;
@@ -198,8 +153,8 @@ export async function getData(authToken) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(validatedData));
       return { success: true, data: validatedData };
       
-    } else if (response.isNetworkError || response.isCorsError) {
-      // Network/CORS error - use cached data or create default
+    } else if (response.isNetworkError) {
+      // Network error - use cached data or create default
       if (parsedCachedData) {
         console.warn("Server request failed, using cached data:", response.error);
         return { 
@@ -297,10 +252,10 @@ export async function saveData(data, authToken) {
     if (response.success) {
       console.log("Data saved successfully to server");
       return response;
-    } else if (response.isNetworkError || response.isCorsError) {
-      // Network/CORS error - queue for later
+    } else if (response.isNetworkError) {
+      // Network error - queue for later
       queueOfflineData(data, authToken);
-      console.warn("Save failed due to network/CORS, data queued:", response.error);
+      console.warn("Save failed due to network, data queued:", response.error);
       return { 
         success: true, 
         warning: "Data saved locally. Will sync when server is available."
