@@ -1,3 +1,5 @@
+// src/components/settings-view.js
+
 /**
  * @file settings-view.js
  * This component handles the user settings and customization options,
@@ -20,6 +22,7 @@ class SettingsView extends LitElement {
     this.showDeleteConfirm = false;
   }
 
+  // Helper to dispatch events up to the app-shell
   _dispatchEvent(eventName, detail = {}) {
     this.dispatchEvent(new CustomEvent(eventName, {
       detail,
@@ -40,10 +43,12 @@ class SettingsView extends LitElement {
     this._dispatchEvent('units-change', { units: this.units });
   }
   
+  // This method correctly dispatches a 'sign-out' event which app-shell will now handle.
   _handleSignOut() {
     this._dispatchEvent('sign-out');
   }
   
+  // This dispatches the event to delete data.
   _handleDeleteData() {
     this._dispatchEvent('delete-data');
     this.showDeleteConfirm = false;
@@ -53,7 +58,7 @@ class SettingsView extends LitElement {
     return html`
       <div class="settings-container container">
         <header class="app-header">
-          <button class="back-btn" @click=${() => this._dispatchEvent('setView', { view: 'home' })} aria-label="Back to Home">
+            <button class="btn btn-icon" @click=${() => this._dispatchEvent('setView', { view: 'home' })} aria-label="Back to Home">
              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
           </button>
           <h1>Settings</h1>
@@ -89,7 +94,7 @@ class SettingsView extends LitElement {
         
         <div class="card settings-group">
             <h3>Account</h3>
-            <button class="btn-secondary" @click=${this._handleSignOut}>Sign Out</button>
+            <button class="btn btn-secondary" @click=${this._handleSignOut}>Sign Out</button>
         </div>
 
         ${this.showDeleteConfirm ? this.renderDeleteConfirmModal() : ''}
