@@ -1,5 +1,3 @@
-// src/components/app-shell.js
-
 import { LitElement, html } from "lit";
 import { initializeSignIn, signOut, validateAuth, getCredential } from "../services/google-auth.js";
 import { getData, saveData, deleteData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
@@ -90,7 +88,6 @@ class AppShell extends LitElement {
     
     if (authPreference === 'google') {
         this.loadingMessage = "Authenticating session...";
-        // Attempt automatic sign-in
         const credential = getCredential();
         const validation = validateAuth();
 
@@ -99,21 +96,19 @@ class AppShell extends LitElement {
             this._handleSignIn(credential, true);
         } else {
              console.log("No valid credential found, showing login.");
-             this.loadingMessage = ""; // Stop loading to show login screen
+             this.loadingMessage = "";
              this.setupSignInButton();
         }
     } else if (authPreference === 'offline') {
         console.log("Starting in offline mode based on user preference.");
-        this._startOfflineMode(true); // Start in offline mode without user interaction
+        this._startOfflineMode(true);
     } else {
-        // No preference set, show the login screen
         this.loadingMessage = "";
         this.setupSignInButton();
     }
   }
 
   setupSignInButton() {
-      // Ensure this runs after the component has rendered
       setTimeout(() => {
         const signInButtonContainer = this.querySelector("#google-signin-button");
         if (signInButtonContainer) {
@@ -178,23 +173,25 @@ class AppShell extends LitElement {
     }
   }
 
-  // --- NEW METHOD: Start in Offline Mode ---
   _startOfflineMode(isAutoStart = false) {
     localStorage.setItem('userAuthPreference', 'offline');
     this.offlineMode = true;
-    this.userCredential = { credential: 'offline-mode-user' }; // Mock credential
+    this.userCredential = { credential: 'offline-mode-user' };
     
-    // Check for local data first
     const localData = localStorage.getItem('userWorkoutData');
     if (localData) {
-        this.userData = JSON.parse(localData);
-        if (!this.userData.onboardingComplete) {
+        try {
+            this.userData = JSON.parse(localData);
+            if (!this.userData.onboardingComplete) {
+                this.showOnboarding = true;
+            }
+        } catch (e) {
+            this.userData = createDefaultUserData();
             this.showOnboarding = true;
         }
     } else {
-        // Create a default structure if no local data exists
         this.userData = createDefaultUserData();
-        this.showOnboarding = true; // Force onboarding for new offline profiles
+        this.showOnboarding = true;
     }
 
     if (!isAutoStart) {
@@ -205,21 +202,16 @@ class AppShell extends LitElement {
     this.loadingMessage = "";
   }
 
-  // --- UPDATED: Handle Sign Out ---
   _handleSignOut() {
-    // Clear Google session
     signOut(); 
-    // Clear local preference and data
     localStorage.removeItem('userAuthPreference');
     
-    // Reset all component state
     this.userCredential = null;
     this.userData = null;
     this.currentView = 'home';
     this._viewHistory = ['home'];
     
     this._showToast("You have been signed out.", "info");
-    // Re-initialize auth to show login button
     this.setupSignInButton();
   }
   
@@ -239,9 +231,6 @@ class AppShell extends LitElement {
           this.currentView = 'home';
       }
   }
-  
-  // (All other methods like _onWorkoutCompleted, _handleOnboardingComplete, gamification, etc. remain the same)
-  // ... [The rest of your existing methods from app-shell.js go here] ...
   
   _initializeGamificationData() {
     const workouts = this.userData?.workouts || [];
@@ -345,6 +334,13 @@ class AppShell extends LitElement {
         this._showToast(`Error: ${response.error}`, "error");
     }
   }
+
+  _getTimeOfDay() {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
+  }
   
   render() {
     return html`
@@ -354,37 +350,30 @@ class AppShell extends LitElement {
   }
   
   _renderCurrentView() {
-    // 1. Authentication Check
     if (!this.userCredential) {
       return this.loadingMessage ? this.renderSkeletonScreen() : this.renderLoginScreen();
     }
     
-    // 2. Error Check
     if (this.errorMessage) {
       return this.renderErrorScreen();
     }
     
-    // 3. Loading/Data Check
     if (!this.userData) {
       return this.renderSkeletonScreen(this.loadingMessage);
     }
     
-    // 4. Onboarding Check
     if (this.showOnboarding) {
       return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
     }
     
-    // 5. Readiness Modal Check
     if (this.showReadinessModal) {
       return html`<readiness-modal .onSubmit=${(data) => this._handleReadinessSubmit(data)} .onClose=${() => this.showReadinessModal = false}></readiness-modal>`;
     }
 
-    // 6. Active Workout Check
     if (this.isWorkoutActive) {
       return html`<workout-session .workout=${this.workout}></workout-session>`;
     }
 
-    // 7. Render Current View
     switch (this.currentView) {
       case "home": return this.renderHomeScreen();
       case "templates": return html`<workout-templates></workout-templates>`;
@@ -396,7 +385,6 @@ class AppShell extends LitElement {
     }
   }
 
-  // --- NEW RENDER METHOD: Login Screen ---
   renderLoginScreen() {
     return html`
       <div class="onboarding-container">
@@ -406,7 +394,7 @@ class AppShell extends LitElement {
         <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
             <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Choose how to save your data:</p>
             <div id="google-signin-button" style="margin-bottom: 1rem;">
-                </div>
+            </div>
             <button class="btn btn-secondary" @click=${() => this._startOfflineMode(false)}>
                 Stay Offline (Save to Device)
             </button>
@@ -415,25 +403,60 @@ class AppShell extends LitElement {
     `;
   }
   
-  // (The rest of your render methods: renderHomeScreen, renderWorkoutScreen, renderToast, etc.)
-  // ... [Other render methods go here] ...
   renderHomeScreen() {
     return html`
-        <div id="home-screen" class="container">
-            <div class="home-header">
-                <div class="greeting">Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},</div>
-                <h1 class="display-text">PROGRESSION</h1>
-            </div>
-            <level-progress .currentLevel=${this.userLevel} .currentXP=${this.userXP}></level-progress>
-            <workout-streak .streak=${this.currentStreak}></workout-streak>
-            <nav class="home-nav-buttons">
-                <button class="hub-option card-interactive" @click=${() => this.showReadinessModal = true}>Start Workout</button>
-                <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>Templates</button>
-                <button class="hub-option card-interactive" @click=${() => this._setView('history')}>Progress</button>
-                <button class="hub-option card-interactive" @click=${() => this._setView('achievements')}>Achievements</button>
-            </nav>
-            <button class="btn btn-icon" @click=${() => this._setView('settings')} aria-label="Settings">⚙️</button>
+      <div id="home-screen" class="container">
+        <div class="home-header">
+          <div class="greeting">Good ${this._getTimeOfDay()},</div>
+          <h1 class="display-text">PROGRESSION</h1>
         </div>
+
+        <level-progress 
+          .currentLevel=${this.userLevel} 
+          .currentXP=${this.userXP} 
+          .xpToNext=${1000}
+        ></level-progress>
+
+        ${this.currentStreak > 0 ? html`<workout-streak .streak=${this.currentStreak}></workout-streak>` : ''}
+
+        <nav class="home-nav-buttons">
+          <button class="hub-option card-interactive" @click=${() => this.showReadinessModal = true}>
+            <div class="hub-option-icon">💪</div>
+            <div class="hub-option-text">
+              <h3>Start Workout</h3>
+              <p>Begin your training session</p>
+            </div>
+          </button>
+          
+          <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
+            <div class="hub-option-icon">📖</div>
+            <div class="hub-option-text">
+              <h3>Templates</h3>
+              <p>Custom workout routines</p>
+            </div>
+          </button>
+          
+          <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
+            <div class="hub-option-icon">📊</div>
+            <div class="hub-option-text">
+              <h3>Progress</h3>
+              <p>Track your journey</p>
+            </div>
+          </button>
+          
+          <button class="hub-option card-interactive" @click=${() => this._setView('achievements')}>
+            <div class="hub-option-icon">🏆</div>
+            <div class="hub-option-text">
+              <h3>Achievements</h3>
+              <p>Unlock rewards</p>
+            </div>
+          </button>
+        </nav>
+
+        <button class="btn btn-icon" @click=${() => this._setView('settings')} aria-label="Settings" style="position: absolute; bottom: 2rem; right: 2rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        </button>
+      </div>
     `;
   }
   
@@ -468,13 +491,13 @@ class AppShell extends LitElement {
       if (!workout) return this.renderHomeScreen();
       return html`
           <div class="container">
-              ${this._renderHeader("Workout Complete!", false)}
+              <header class="app-header"><h1>Workout Complete!</h1></header>
               <div class="card">
                   <p>Duration: ${Math.floor(workout.durationInSeconds / 60)}m ${workout.durationInSeconds % 60}s</p>
                   <p>Total Volume: ${workout.totalVolume} ${this.units}</p>
                   <p>XP Gained: +${workout.xpGained || 100}</p>
               </div>
-              <button class="btn btn-primary" @click=${() => this._setView('home')}>Done</button>
+              <button class="btn btn-primary cta-button" @click=${() => this._setView('home')}>Done</button>
           </div>
       `;
   }
