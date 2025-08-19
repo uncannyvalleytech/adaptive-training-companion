@@ -1,430 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fitness App Home - Redesigned</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Progression - Adaptive Training Companion</title>
+    <meta name="description" content="Your intelligent workout partner that adapts to you in real-time. Track progress, unlock achievements, and reach new fitness levels." />
+    
+    <!-- Enhanced Meta Tags for PWA -->
+    <meta name="theme-color" content="#1A1A2E" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Progression" />
+    
+    <!-- Preconnect to External Resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://apis.google.com">
+    <link rel="preconnect" href="https://accounts.google.com">
+    <link rel="preconnect" href="https://cdn.skypack.dev">
+    
+    <!-- Enhanced Google Fonts Loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Favicon and App Icons -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231A1A2E'/><text y='.9em' x='.1em' font-size='80'>💪</text></svg>" />
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="./src/style.css" />
+    
+    <!-- Import Maps for ES modules -->
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "https://cdn.skypack.dev/lit@3",
+          "lit/": "https://cdn.skypack.dev/lit@3/",
+          "@simplewebauthn/browser": "https://cdn.skypack.dev/@simplewebauthn/browser",
+          "canvas-confetti": "https://cdn.skypack.dev/canvas-confetti"
+        }
+      }
+    </script>
+    
+    <!-- Chart.js for enhanced data visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <!-- Performance optimization styles -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Inter', system-ui;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        .container {
-            max-width: 430px;
-            margin: 0 auto;
-            background: linear-gradient(145deg, #1a1a2e, #16213e);
-            min-height: 100vh;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        /* Background decoration */
-        .bg-decoration {
-            position: absolute;
-            top: 0;
-            right: -50px;
-            width: 200px;
-            height: 200px;
-            background: linear-gradient(45deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-            border-radius: 50%;
-            filter: blur(40px);
-        }
-        
-        .header {
-            padding: 60px 24px 40px;
-            position: relative;
-            z-index: 10;
-        }
-        
-        .greeting {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 16px;
-            font-weight: 400;
-            margin-bottom: 4px;
-        }
-        
-        .user-name {
-            color: white;
-            font-family: 'Sora', system-ui;
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 24px;
-        }
-        
-        .streak-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        
-        .streak-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #FF6B35, #F7931E);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-        }
-        
-        .streak-info h3 {
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        
-        .streak-info p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-        }
-        
-        .quick-actions {
-            padding: 0 24px;
-            margin-bottom: 32px;
-        }
-        
-        .section-title {
-            color: white;
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        
-        .action-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        
-        .action-card {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .action-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .action-card:hover::before {
-            opacity: 1;
-        }
-        
-        .action-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        .action-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #00D4FF, #7C3AED);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 18px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .action-title {
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .main-cta {
-            background: linear-gradient(135deg, #00FF88, #00D4FF);
-            border: none;
-            border-radius: 20px;
-            padding: 20px;
-            width: 100%;
-            color: #1a1a2e;
-            font-family: 'Sora', system-ui;
-            font-size: 18px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .main-cta::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.5s ease;
-        }
-        
-        .main-cta:hover::before {
-            left: 100%;
-        }
-        
-        .main-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(0, 255, 136, 0.4);
-        }
-        
-        .progress-section {
-            padding: 0 24px 32px;
-        }
-        
-        .progress-overview {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            padding: 24px;
-        }
-        
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .progress-title {
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        .view-all {
-            color: #00D4FF;
-            font-size: 14px;
-            font-weight: 500;
-            text-decoration: none;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-value {
-            color: white;
-            font-size: 24px;
-            font-weight: 700;
-            display: block;
-        }
-        
-        .stat-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 12px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 430px;
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.95));
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 16px 24px 32px;
-            display: flex;
-            justify-content: space-around;
-        }
-        
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-item.active {
-            background: rgba(0, 212, 255, 0.2);
-        }
-        
-        .nav-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #00D4FF, #7C3AED);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-        }
-        
-        .nav-item.active .nav-icon {
-            background: linear-gradient(135deg, #00FF88, #00D4FF);
-        }
-        
-        .nav-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 10px;
-            font-weight: 500;
-        }
-        
-        .nav-item.active .nav-label {
-            color: #00D4FF;
-        }
-        
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .action-card, .streak-card, .progress-overview {
-            animation: fadeInUp 0.6s ease forwards;
-        }
-        
-        .action-card:nth-child(1) { animation-delay: 0.1s; }
-        .action-card:nth-child(2) { animation-delay: 0.2s; }
-        .action-card:nth-child(3) { animation-delay: 0.3s; }
-        .action-card:nth-child(4) { animation-delay: 0.4s; }
+      /* Critical CSS for faster initial load */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', system-ui, sans-serif;
+        background: linear-gradient(135deg, #1A1A2E 0%, #16213e 50%, #0f1419 100%);
+        color: white;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      
+      /* Loading animation */
+      .app-loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1A1A2E 0%, #16213e 50%, #0f1419 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+      }
+      
+      .app-loading.hidden {
+        opacity: 0;
+        visibility: hidden;
+      }
+      
+      .loading-logo {
+        font-size: 4rem;
+        margin-bottom: 2rem;
+        animation: pulse 2s infinite;
+      }
+      
+      .loading-text {
+        font-family: 'Sora', system-ui;
+        font-size: 2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #00D4FF, #00FF88);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+      }
+      
+      .loading-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1rem;
+        margin-bottom: 2rem;
+      }
+      
+      .loading-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #00D4FF;
+        animation: spin 1s ease-in-out infinite;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+      
+      /* Safe area for notched devices */
+      .safe-area {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+      
+      /* Hide scrollbars in Webkit browsers for cleaner look */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 212, 255, 0.5);
+        border-radius: 4px;
+      }
+      
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 212, 255, 0.7);
+      }
     </style>
-</head>
-<body>
-    <div class="container">
-        <div class="bg-decoration"></div>
-        
-        <div class="header">
-            <div class="greeting">Good morning,</div>
-            <div class="user-name">Alex!</div>
-            
-            <div class="streak-card">
-                <div class="streak-icon">🔥</div>
-                <div class="streak-info">
-                    <h3>7-Day Streak</h3>
-                    <p>You're on fire! Keep it up</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="quick-actions">
-            <h2 class="section-title">Quick Actions</h2>
-            <div class="action-grid">
-                <div class="action-card">
-                    <div class="action-icon">💪</div>
-                    <div class="action-title">Start Workout</div>
-                </div>
-                <div class="action-card">
-                    <div class="action-icon">📊</div>
-                    <div class="action-title">Progress</div>
-                </div>
-                <div class="action-card">
-                    <div class="action-icon">🎯</div>
-                    <div class="action-title">Goals</div>
-                </div>
-                <div class="action-card">
-                    <div class="action-icon">⚡</div>
-                    <div class="action-title">Challenges</div>
-                </div>
-            </div>
-            
-            <button class="main-cta">
-                Start Today's Workout
-            </button>
-        </div>
-        
-        <div class="progress-section">
-            <div class="progress-overview">
-                <div class="progress-header">
-                    <h3 class="progress-title">This Week</h3>
-                    <a href="#" class="view-all">View All</a>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-value">4</span>
-                        <span class="stat-label">Workouts</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">2.5k</span>
-                        <span class="stat-label">Volume</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-value">285</span>
-                        <span class="stat-label">Minutes</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bottom-nav">
-            <div class="nav-item active">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-label">Home</div>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">💪</div>
-                <div class="nav-label">Workouts</div>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">📈</div>
-                <div class="nav-label">Progress</div>
-            </div>
-            <div class="nav-item">
-                <div class="nav-icon">👤</div>
-                <div class="nav-label">Profile</div>
-            </div>
-        </div>
+  </head>
+  <body class="safe-area">
+    <!-- Enhanced Loading Screen -->
+    <div class="app-loading" id="app-loading">
+      <div class="loading-logo">💪</div>
+      <div class="loading-text">PROGRESSION</div>
+      <div class="loading-subtitle">Adaptive Training Companion</div>
+      <div class="loading-spinner"></div>
     </div>
-</body>
+
+    <!-- Main App Container -->
+    <main>
+      <app-shell></app-shell>
+    </main>
+
+    <!-- Google APIs Loading Script with Enhanced Error Handling -->
+    <script>
+      // Global variables to track API loading
+      window.googleApisReady = {
+        gapi: false,
+        gsi: false,
+        allReady: false
+      };
+
+      // Function called when GAPI loads
+      function onGapiLoad() {
+        console.log('GAPI loaded');
+        
+        // Load auth2 library
+        window.gapi.load('auth2', () => {
+          console.log('GAPI Auth2 loaded');
+          window.googleApisReady.gapi = true;
+          checkAllApisReady();
+          
+          // Initialize GAPI auth if the app is loaded
+          if (window.initializeGapi) {
+            window.initializeGapi();
+          }
+        });
+      }
+
+      // Function called when Google Identity Services loads
+      function onGoogleLibraryLoad() {
+        console.log('Google Identity Services loaded');
+        window.googleApisReady.gsi = true;
+        checkAllApisReady();
+        
+        // Dispatch the event that your app is listening for
+        window.dispatchEvent(new CustomEvent('google-library-loaded'));
+      }
+
+      // Check if all APIs are ready
+      function checkAllApisReady() {
+        if (window.googleApisReady.gapi && window.googleApisReady.gsi && !window.googleApisReady.allReady) {
+          window.googleApisReady.allReady = true;
+          console.log('All Google APIs are ready');
+          window.dispatchEvent(new CustomEvent('google-apis-ready'));
+        }
+      }
+
+      // Enhanced error handling with user feedback
+      function handleGoogleApiError(error) {
+        console.error('Google API loading error:', error);
+        
+        // Show user-friendly error message
+        const loadingText = document.querySelector('.loading-subtitle');
+        if (loadingText) {
+          loadingText.textContent = 'Loading without Google features...';
+          loadingText.style.color = '#FF6B35';
+        }
+        
+        // Continue without APIs - the app should still work with basic features
+        setTimeout(() => {
+          hideLoadingScreen();
+        }, 2000);
+      }
+
+      // Hide loading screen with smooth transition
+      function hideLoadingScreen() {
+        const loadingScreen = document.getElementById('app-loading');
+        if (loadingScreen) {
+          loadingScreen.classList.add('hidden');
+          setTimeout(() => {
+            loadingScreen.remove();
+          }, 500);
+        }
+      }
+
+      // Fallback for older browsers
+      if (!window.CustomEvent) {
+        window.CustomEvent = function(event, params) {
+          params = params || { bubbles: false, cancelable: false, detail: undefined };
+          var evt = document.createEvent('CustomEvent');
+          evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+          return evt;
+        };
+        window.CustomEvent.prototype = window.Event.prototype;
+      }
+
+      // App initialization
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, initializing app...');
+        
+        // Hide loading screen after app components are ready
+        setTimeout(() => {
+          hideLoadingScreen();
+        }, 3000); // Fallback timeout
+      });
+
+      // Listen for app-ready event from the main app
+      window.addEventListener('app-ready', () => {
+        hideLoadingScreen();
+      });
+    </script>
+
+    <!-- Load Google APIs with enhanced error handling -->
+    <script src="https://apis.google.com/js/api.js" 
+            onload="onGapiLoad()" 
+            onerror="handleGoogleApiError('Failed to load GAPI')" 
+            async defer></script>
+    
+    <script src="https://accounts.google.com/gsi/client" 
+            onload="onGoogleLibraryLoad()" 
+            onerror="handleGoogleApiError('Failed to load GSI')" 
+            async defer></script>
+
+    <!-- Load main application -->
+    <script type="module" src="./src/main.js"></script>
+    
+    <!-- Enhanced Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('./service-worker.js');
+            console.log('ServiceWorker registration successful:', registration.scope);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New update available
+                  console.log('New app version available!');
+                  // You could show a toast notification here
+                }
+              });
+            });
+            
+          } catch (error) {
+            console.log('ServiceWorker registration failed:', error);
+          }
+        });
+      }
+
+      // Enhanced offline/online detection
+      window.addEventListener('online', () => {
+        console.log('App is online');
+        document.body.classList.remove('offline');
+        // Dispatch custom event for app components to handle
+        window.dispatchEvent(new CustomEvent('app-online'));
+      });
+
+      window.addEventListener('offline', () => {
+        console.log('App is offline');
+        document.body.classList.add('offline');
+        // Dispatch custom event for app components to handle
+        window.dispatchEvent(new CustomEvent('app-offline'));
+      });
+    </script>
+
+    <!-- Performance monitoring (optional) -->
+    <script>
+      // Basic performance monitoring
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const perfData = performance.getEntriesByType('navigation')[0];
+          if (perfData) {
+            console.log('App load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+            console.log('DOM ready time:', perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart, 'ms');
+          }
+        }, 0);
+      });
+
+      // Report any unhandled errors for debugging
+      window.addEventListener('error', (event) => {
+        console.error('Global error:', {
+          message: event.message,
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno,
+          error: event.error
+        });
+      });
+
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('Unhandled promise rejection:', event.reason);
+      });
+    </script>
+  </body>
 </html>
