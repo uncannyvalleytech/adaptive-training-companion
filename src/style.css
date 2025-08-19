@@ -238,12 +238,13 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 80vh;
+    min-height: 100vh;
 }
 .onboarding-wizard {
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     text-align: center;
+    padding: 1rem;
 }
 .progress-bar {
     width: 100%;
@@ -296,13 +297,20 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 
 /* --- Home Screen --- */
 #home-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    position: relative;
+    height: 100vh;
+    padding-bottom: 6rem; /* Space for the bottom-aligned button */
 }
 .home-nav-buttons {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
+    width: 100%;
+    max-width: 600px;
 }
 .home-nav-btn {
     display: flex;
@@ -319,8 +327,9 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 }
 .home-icon-btn {
     position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
     padding: 0.5rem;
     background-color: transparent;
 }
@@ -330,6 +339,7 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 .home-icon-btn:hover svg {
     stroke: var(--color-text-primary);
 }
+
 
 /* --- Workout Session --- */
 .workout-header {
@@ -484,7 +494,8 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 .cta-button:active, .secondary-button:active, .home-nav-btn:active, .home-icon-btn:active, .btn-secondary:active, .btn-danger:active, .toggle-btn:active {
     box-shadow: 
         inset 5px 5px 10px var(--shadow-dark), 
-        inset -5px -5px 10px var(--shadow-light);
+        inset -5px -5px 10px var(--shadow-light),
+        0 0 10px 2px var(--color-glow-focus);
     transform: scale(0.98);
 }
 .cta-button {
