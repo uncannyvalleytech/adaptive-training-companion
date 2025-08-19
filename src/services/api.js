@@ -5,14 +5,14 @@
 
 // --- CONFIGURATION ---
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx08n3XtFt7GctKO4dBwH9LzTxSQgBqsEpb6xU2SiqfCivUM6vafQ4G2yevZfsAXdc/exec";
+  "https://script.google.com/macros/s/AKfycbw5ofZN7TG-mV2Fg35OWvr73FGaFhHE3N9yDE6Jr0H_28tQZ4twgP-rKjCLSFsvwCN3/exec";
 
 // Constants for local storage keys
 const LOCAL_STORAGE_KEY = 'userWorkoutData';
 const OFFLINE_QUEUE_KEY = 'offlineWorkoutQueue';
 
 /**
- * Enhanced API request function with better error handling
+ * Enhanced API request function with user-owned data support
  */
 async function makeApiRequest(action, token, payload = {}) {
   if (!token) {
@@ -24,15 +24,22 @@ async function makeApiRequest(action, token, payload = {}) {
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
-        "Accept": "application/json"
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}` // Add authorization header
       },
       body: JSON.stringify({ action, token, payload }),
-      mode: 'cors', // Explicitly set CORS mode
-      credentials: 'omit' // Don't send credentials
+      mode: 'cors',
+      credentials: 'include' // Include credentials for user-owned data
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      if (response.status === 401) {
+        throw new Error("Authentication failed. Please sign in again.");
+      } else if (response.status === 403) {
+        throw new Error("Permission denied. Please check your Google account permissions.");
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
     }
 
     const data = await response.json();
@@ -40,9 +47,13 @@ async function makeApiRequest(action, token, payload = {}) {
   } catch (error) {
     console.error("API Request Failed:", error);
     
-    // More specific error messages
+    // More specific error messages for user-owned data
     if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
       return { success: false, error: "Network error. Please check your connection and try again." };
+    } else if (error.message.includes('Authentication failed')) {
+      return { success: false, error: "Please sign out and sign in again to refresh your authentication." };
+    } else if (error.message.includes('Permission denied')) {
+      return { success: false, error: "Unable to access your Google Drive. Please check permissions and try again." };
     } else if (error.message.includes('CORS')) {
       return { success: false, error: "Server configuration error. Please try again later." };
     } else {
