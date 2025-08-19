@@ -1,9 +1,3 @@
-/**
- * @file achievements-view.js
- * This component displays the user's workout streak and a list of
- * unlocked and locked achievements.
- */
-
 import { LitElement, html } from "lit";
 
 class AchievementsView extends LitElement {
@@ -18,7 +12,7 @@ class AchievementsView extends LitElement {
     this.unlockedAchievements = ['first_workout', 'five_workouts']; 
     this.currentStreak = 5;
     this.allAchievements = [
-      { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', icon: '🎉' },
+      { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', icon: '🥇' },
       { id: 'five_workouts', name: 'Workout Warrior', description: 'Complete 5 workouts.', icon: '💪' },
       { id: 'ten_workouts', name: 'Dedicated Lifter', description: 'Complete 10 workouts.', icon: '🏋️' },
       { id: 'seven_day_streak', name: '7-Day Streak', description: 'Log a workout for 7 consecutive days.', icon: '🔥' },
@@ -31,11 +25,7 @@ class AchievementsView extends LitElement {
     );
 
     return html`
-      <div class="achievements-container container">
-        <header class="app-header">
-          <h1>Achievements</h1>
-        </header>
-
+      <div class="achievements-container">
         <div class="card streak-card">
           <div class="streak-icon">
             <span>🔥</span>
