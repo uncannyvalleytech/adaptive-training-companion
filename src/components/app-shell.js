@@ -70,7 +70,14 @@ class AppShell extends LitElement {
     window.addEventListener('app-offline-mode', this._handleOfflineMode.bind(this));
     window.addEventListener('app-online', this._handleOnlineMode.bind(this));
     window.addEventListener('user-signed-in', () => this.fetchUserData());
-    window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
+    window.addEventListener('theme-change', (e) => {
+        this.theme = e.detail.theme;
+        this._applyTheme();
+    });
+    window.addEventListener('units-change', (e) => {
+        this.units = e.detail.units;
+        this.requestUpdate();
+    });
     
     // Component event listeners
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
@@ -93,11 +100,6 @@ class AppShell extends LitElement {
 
   _applyTheme() {
     document.body.setAttribute('data-theme', this.theme);
-  }
-
-  _handleThemeChange(theme) {
-    this.theme = theme;
-    this._applyTheme();
   }
 
   _handleOfflineMode(event) {
@@ -492,7 +494,7 @@ class AppShell extends LitElement {
         case "home": return this.renderHomeScreen();
         case "templates": return html`<div class="container">${this._renderHeader("Workout Templates")}<workout-templates></workout-templates></div>`;
         case "history": return html`<div class="container">${this._renderHeader("Workout History")}<history-view></history-view></div>`;
-        case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view></settings-view></div>`;
+        case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view .theme=${this.theme} .units=${this.units}></settings-view></div>`;
         case "achievements": return html`<div class="container">${this._renderHeader("Achievements")}<achievements-view></achievements-view></div>`;
         case "summary": return this.renderWorkoutSummary();
         default: return this.renderHomeScreen();
