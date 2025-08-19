@@ -854,10 +854,60 @@ h4 { font-size: var(--font-size-xl); }
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
+
+/* Focus styles for accessibility */
+.btn:focus-visible,
+.set-input:focus-visible,
+.hub-option:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card {
+    border-width: 2px;
+  }
+  
+  .btn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  .btn,
+  .modal-overlay,
+  .toast-notification {
+    display: none !important;
+  }
+  
+  .container {
+    max-width: none;
+    padding: 0;
+  }
+  
+  .card {
+    break-inside: avoid;
+    border: 1px solid #000;
+  }
+}
+
 /* =============================================== */
 /* 16. GAMIFICATION COMPONENT STYLES              */
 /* =============================================== */
@@ -1362,6 +1412,7 @@ h4 { font-size: var(--font-size-xl); }
     border: 1px solid #000;
   }
 }
+
 /* =============================================== */
 /* 21. ONBOARDING & READINESS STYLES              */
 /* =============================================== */
@@ -1577,4 +1628,97 @@ h4 { font-size: var(--font-size-xl); }
   box-sizing: border-box;
   animation: spin 1s linear infinite;
   margin-top: var(--space-8);
+}
+/* =============================================== */
+/* 22. SETTINGS VIEW STYLES                       */
+/* =============================================== */
+
+.settings-container {
+  padding-bottom: var(--space-16);
+}
+
+.settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.settings-group h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-accent-primary);
+  margin: 0;
+}
+
+.settings-group .setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-group .setting-item label {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.button-toggle-group {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+  gap: var(--space-1);
+}
+
+.toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+  background: var(--color-surface-primary);
+  color: var(--color-text-primary);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.btn-danger {
+  background: var(--color-state-error);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-6);
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-danger:hover {
+  background: #e53e3e;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(248, 81, 73, 0.3);
+}
+
+.danger-zone {
+  border: 1px solid var(--color-state-error);
+  background: linear-gradient(135deg, rgba(248, 81, 73, 0.1), rgba(248, 81, 73, 0.05));
+}
+
+.danger-zone h3 {
+  color: var(--color-state-error);
+}
+
+.danger-zone p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-4);
 }
