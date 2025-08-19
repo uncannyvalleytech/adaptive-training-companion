@@ -5,6 +5,7 @@
 
 // Import components and services
 import "./components/app-shell.js";
+import "./components/motivational-elements.js"; // Add this line
 import { syncData, getQueuedWorkoutsCount } from "./services/api.js";
 import { initializeGapi } from "./services/google-auth.js";
 
