@@ -11,7 +11,7 @@ import "./settings-view.js";
 import "./workout-templates.js";
 import "./achievements-view.js";
 import "./readiness-modal.js";
-import "./motivational-elements.js"; // Ensures motivational elements are defined
+import "./motivational-elements.js";
 
 class AppShell extends LitElement {
   static properties = {
@@ -29,7 +29,6 @@ class AppShell extends LitElement {
     lastCompletedWorkout: { type: Object },
     workout: { type: Object },
     offlineMode: { type: Boolean },
-    // Gamification properties
     userLevel: { type: Number },
     userXP: { type: Number },
     currentStreak: { type: Number },
@@ -52,8 +51,6 @@ class AppShell extends LitElement {
     this.workout = null;
     this.offlineMode = !navigator.onLine;
     this._viewHistory = ['home'];
-    
-    // Gamification defaults
     this.userLevel = 1;
     this.userXP = 0;
     this.currentStreak = 0;
@@ -61,14 +58,10 @@ class AppShell extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    
-    // Event listeners
     window.addEventListener('google-library-loaded', this._initAuth.bind(this));
     window.addEventListener('app-online', this._handleOnlineMode.bind(this));
     window.addEventListener('theme-change', (e) => this._applyTheme(e.detail.theme));
     window.addEventListener('units-change', (e) => (this.units = e.detail.units));
-    
-    // Component event listeners
     this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
     this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
     this.addEventListener('workout-completed', this._onWorkoutCompleted.bind(this));
@@ -76,31 +69,23 @@ class AppShell extends LitElement {
     this.addEventListener('setView', (e) => this._setView(e.detail.view));
     this.addEventListener('sign-out', this._handleSignOut.bind(this));
     this.addEventListener('delete-data', this._handleDeleteData.bind(this));
-
     this._applyTheme();
-    
-    // Attempt to initialize auth immediately
     this._initAuth();
   }
   
   _initAuth() {
     const authPreference = localStorage.getItem('userAuthPreference');
-    
     if (authPreference === 'google') {
         this.loadingMessage = "Authenticating session...";
         const credential = getCredential();
         const validation = validateAuth();
-
         if (credential && validation.valid) {
-            console.log("Automatic sign-in: Existing credential is valid.");
             this._handleSignIn(credential, true);
         } else {
-             console.log("No valid credential found, showing login.");
              this.loadingMessage = "";
              this.setupSignInButton();
         }
     } else if (authPreference === 'offline') {
-        console.log("Starting in offline mode based on user preference.");
         this._startOfflineMode(true);
     } else {
         this.loadingMessage = "";
@@ -138,9 +123,7 @@ class AppShell extends LitElement {
   _handleSignIn(credential, isAutoSignIn = false) {
     this.userCredential = credential;
     localStorage.setItem('userAuthPreference', 'google');
-    if (!isAutoSignIn) {
-      this._showToast("Successfully signed in!", "success");
-    }
+    if (!isAutoSignIn) this._showToast("Successfully signed in!", "success");
     this.fetchUserData();
   }
 
@@ -150,23 +133,16 @@ class AppShell extends LitElement {
     try {
       const token = this.userCredential?.credential;
       if (!token) throw new Error("Authentication token not available.");
-
       const response = await getData(token);
-      
       if (response.success && response.data) {
         this.userData = response.data;
         this._initializeGamificationData();
-        if (!this.userData.onboardingComplete) {
-          this.showOnboarding = true;
-        }
-        if (response.warning) {
-          this._showToast(response.warning, "info", 6000);
-        }
+        if (!this.userData.onboardingComplete) this.showOnboarding = true;
+        if (response.warning) this._showToast(response.warning, "info", 6000);
       } else {
         throw new Error(response.error || "Failed to fetch data.");
       }
     } catch (error) {
-      console.error("Failed to fetch user data:", error);
       this.errorMessage = "Could not load your profile. Please try again.";
     } finally {
       this.loadingMessage = "";
@@ -177,14 +153,11 @@ class AppShell extends LitElement {
     localStorage.setItem('userAuthPreference', 'offline');
     this.offlineMode = true;
     this.userCredential = { credential: 'offline-mode-user' };
-    
     const localData = localStorage.getItem('userWorkoutData');
     if (localData) {
         try {
             this.userData = JSON.parse(localData);
-            if (!this.userData.onboardingComplete) {
-                this.showOnboarding = true;
-            }
+            if (!this.userData.onboardingComplete) this.showOnboarding = true;
         } catch (e) {
             this.userData = createDefaultUserData();
             this.showOnboarding = true;
@@ -193,11 +166,7 @@ class AppShell extends LitElement {
         this.userData = createDefaultUserData();
         this.showOnboarding = true;
     }
-
-    if (!isAutoStart) {
-      this._showToast("Started in offline mode. Data will be saved locally.", "info");
-    }
-    
+    if (!isAutoStart) this._showToast("Started in offline mode.", "info");
     this._initializeGamificationData();
     this.loadingMessage = "";
   }
@@ -205,12 +174,10 @@ class AppShell extends LitElement {
   _handleSignOut() {
     signOut(); 
     localStorage.removeItem('userAuthPreference');
-    
     this.userCredential = null;
     this.userData = null;
     this.currentView = 'home';
     this._viewHistory = ['home'];
-    
     this._showToast("You have been signed out.", "info");
     this.setupSignInButton();
   }
@@ -245,12 +212,10 @@ class AppShell extends LitElement {
     let streak = 0;
     let today = new Date();
     today.setHours(0,0,0,0);
-
     if (sortedWorkouts.length > 0) {
         let lastWorkoutDate = new Date(sortedWorkouts[0].date);
         lastWorkoutDate.setHours(0,0,0,0);
         let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 24);
-
         if (diffDays <= 1) {
             streak = 1;
             for (let i = 0; i < sortedWorkouts.length - 1; i++) {
@@ -277,10 +242,8 @@ class AppShell extends LitElement {
         ...onboardingData, 
         onboardingComplete: true
       };
-      
       const engine = new WorkoutEngine(this.userData);
       this.userData.mesocycle = engine.generateMesocycle(['chest', 'back', 'legs', 'shoulders', 'arms']);
-      
       this.showOnboarding = false;
       this._showToast("Profile created! Your new workout plan is ready.", "success");
       saveData(this.userData, this.userCredential.credential);
@@ -294,21 +257,16 @@ class AppShell extends LitElement {
   async _onWorkoutCompleted(event) {
       this.isWorkoutActive = false;
       this.lastCompletedWorkout = event.detail.workoutData;
-
       const xpGained = 100 + (this.lastCompletedWorkout.newPRs?.length || 0) * 25;
       this.userXP += xpGained;
       this.lastCompletedWorkout.xpGained = xpGained;
-
       if (Math.floor(this.userXP / 1000) + 1 > this.userLevel) {
           this._showToast("Level Up!", "success");
       }
       this.userLevel = Math.floor(this.userXP / 1000) + 1;
-
       this.userData.workouts.push(this.lastCompletedWorkout);
       this.userData.totalXP = this.userXP;
-      
       this.currentStreak = this._calculateStreak(this.userData.workouts);
-      
       await saveData(this.userData, this.userCredential.credential);
       this.currentView = "summary";
   }
@@ -322,7 +280,7 @@ class AppShell extends LitElement {
     const token = this.userCredential?.credential;
     if (!token || this.offlineMode) {
         localStorage.removeItem('userWorkoutData');
-        this._showToast("Local data deleted. Sign in to delete server data.", "info");
+        this._showToast("Local data deleted.", "info");
         this._handleSignOut();
         return;
     }
@@ -349,37 +307,34 @@ class AppShell extends LitElement {
     `;
   }
   
+  // NEW: Reusable header with back button
+  _renderHeader(title) {
+    return html`
+      <header class="app-header">
+        <button class="btn btn-icon" @click=${this._goBack} aria-label="Back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        </button>
+        <h1>${title}</h1>
+        <div style="width: 48px;"></div> <!-- Spacer for centering title -->
+      </header>
+    `;
+  }
+
   _renderCurrentView() {
-    if (!this.userCredential) {
-      return this.loadingMessage ? this.renderSkeletonScreen() : this.renderLoginScreen();
-    }
-    
-    if (this.errorMessage) {
-      return this.renderErrorScreen();
-    }
-    
-    if (!this.userData) {
-      return this.renderSkeletonScreen(this.loadingMessage);
-    }
-    
-    if (this.showOnboarding) {
-      return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
-    }
-    
-    if (this.showReadinessModal) {
-      return html`<readiness-modal .onSubmit=${(data) => this._handleReadinessSubmit(data)} .onClose=${() => this.showReadinessModal = false}></readiness-modal>`;
-    }
+    if (!this.userCredential) return this.loadingMessage ? this.renderSkeletonScreen() : this.renderLoginScreen();
+    if (this.errorMessage) return this.renderErrorScreen();
+    if (!this.userData) return this.renderSkeletonScreen(this.loadingMessage);
+    if (this.showOnboarding) return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
+    if (this.showReadinessModal) return html`<readiness-modal .onSubmit=${(data) => this._handleReadinessSubmit(data)} .onClose=${() => this.showReadinessModal = false}></readiness-modal>`;
+    if (this.isWorkoutActive) return html`<workout-session .workout=${this.workout}></workout-session>`;
 
-    if (this.isWorkoutActive) {
-      return html`<workout-session .workout=${this.workout}></workout-session>`;
-    }
-
+    // UPDATED: Added headers to all sub-views
     switch (this.currentView) {
       case "home": return this.renderHomeScreen();
-      case "templates": return html`<workout-templates></workout-templates>`;
-      case "history": return html`<history-view></history-view>`;
-      case "settings": return html`<settings-view .theme=${this.theme} .units=${this.units}></settings-view>`;
-      case "achievements": return html`<achievements-view></achievements-view>`;
+      case "templates": return html`<div class="container">${this._renderHeader("Templates")}<workout-templates></workout-templates></div>`;
+      case "history": return html`<div class="container">${this._renderHeader("Progress")}<history-view></history-view></div>`;
+      case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view .theme=${this.theme} .units=${this.units}></settings-view></div>`;
+      case "achievements": return html`<div class="container">${this._renderHeader("Achievements")}<achievements-view></achievements-view></div>`;
       case "summary": return this.renderWorkoutSummary();
       default: return this.renderHomeScreen();
     }
@@ -390,11 +345,9 @@ class AppShell extends LitElement {
       <div class="onboarding-container">
         <h1 class="display-text">PROGRESSION</h1>
         <p class="main-title" style="font-size: 1.25rem; margin-bottom: 2rem;">Adaptive Training Companion</p>
-        
         <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
             <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Choose how to save your data:</p>
-            <div id="google-signin-button" style="margin-bottom: 1rem;">
-            </div>
+            <div id="google-signin-button" style="margin-bottom: 1rem;"></div>
             <button class="btn btn-secondary" @click=${() => this._startOfflineMode(false)}>
                 Stay Offline (Save to Device)
             </button>
@@ -403,6 +356,7 @@ class AppShell extends LitElement {
     `;
   }
   
+  // UPDATED: Settings button moved and centered
   renderHomeScreen() {
     return html`
       <div id="home-screen" class="container">
@@ -410,52 +364,31 @@ class AppShell extends LitElement {
           <div class="greeting">Good ${this._getTimeOfDay()},</div>
           <h1 class="display-text">PROGRESSION</h1>
         </div>
-
-        <level-progress 
-          .currentLevel=${this.userLevel} 
-          .currentXP=${this.userXP} 
-          .xpToNext=${1000}
-        ></level-progress>
-
+        <level-progress .currentLevel=${this.userLevel} .currentXP=${this.userXP} .xpToNext=${1000}></level-progress>
         ${this.currentStreak > 0 ? html`<workout-streak .streak=${this.currentStreak}></workout-streak>` : ''}
-
         <nav class="home-nav-buttons">
           <button class="hub-option card-interactive" @click=${() => this.showReadinessModal = true}>
             <div class="hub-option-icon">💪</div>
-            <div class="hub-option-text">
-              <h3>Start Workout</h3>
-              <p>Begin your training session</p>
-            </div>
+            <div class="hub-option-text"><h3>Start Workout</h3><p>Begin your training session</p></div>
           </button>
-          
           <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
             <div class="hub-option-icon">📖</div>
-            <div class="hub-option-text">
-              <h3>Templates</h3>
-              <p>Custom workout routines</p>
-            </div>
+            <div class="hub-option-text"><h3>Templates</h3><p>Custom workout routines</p></div>
           </button>
-          
           <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
             <div class="hub-option-icon">📊</div>
-            <div class="hub-option-text">
-              <h3>Progress</h3>
-              <p>Track your journey</p>
-            </div>
+            <div class="hub-option-text"><h3>Progress</h3><p>Track your journey</p></div>
           </button>
-          
           <button class="hub-option card-interactive" @click=${() => this._setView('achievements')}>
             <div class="hub-option-icon">🏆</div>
-            <div class="hub-option-text">
-              <h3>Achievements</h3>
-              <p>Unlock rewards</p>
-            </div>
+            <div class="hub-option-text"><h3>Achievements</h3><p>Unlock rewards</p></div>
           </button>
         </nav>
-
-        <button class="btn btn-icon" @click=${() => this._setView('settings')} aria-label="Settings" style="position: absolute; bottom: 2rem; right: 2rem;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        </button>
+        <div class="home-footer-actions">
+            <button class="btn btn-icon" @click=${() => this._setView('settings')} aria-label="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
+        </div>
       </div>
     `;
   }
@@ -507,7 +440,6 @@ class AppShell extends LitElement {
       const recoveryScore = engine.calculateRecoveryScore(readinessData);
       const readinessScore = engine.getDailyReadiness(recoveryScore);
       const plannedWorkout = this._getPlannedWorkout();
-      
       if (plannedWorkout) {
           this.workout = engine.adjustWorkout(plannedWorkout, readinessScore);
           this._showToast(this.workout.adjustmentNote, "info");
@@ -522,7 +454,6 @@ class AppShell extends LitElement {
       if (!this.userData?.mesocycle?.weeks) return null;
       const engine = new WorkoutEngine(this.userData);
       const currentWeekData = this.userData.mesocycle.weeks.find(w => w.week === this.userData.currentWeek);
-      // This is a simplification; a real implementation would determine the muscle groups for the day
       return engine.generateDailyWorkout(['chest', 'shoulders', 'arms'], currentWeekData);
   }
 
