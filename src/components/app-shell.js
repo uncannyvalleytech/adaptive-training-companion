@@ -9,7 +9,7 @@ import "./settings-view.js";
 import "./workout-templates.js";
 import "./achievements-view.js";
 import "./readiness-modal.js";
-import { startAuthentication } from '@simplewebauthn/browser';
+// Removed: import { startAuthentication } from '@simplewebauthn/browser';
 import confetti from 'https://cdn.skypack.dev/canvas-confetti';
 
 class AppShell extends LitElement {
@@ -43,12 +43,13 @@ class AppShell extends LitElement {
     this.showReadinessModal = false;
     this.theme = localStorage.getItem('theme') || 'dark';
     this.units = localStorage.getItem('units') || 'lbs';
-    this.isBiometricsAvailable = false;
+    this.isBiometricsAvailable = false; // Set to false since we're not using it
     this.lastCompletedWorkout = null;
     this.workout = null;
     this._viewHistory = ['home'];
     
-    this._checkBiometricsAvailability();
+    // Removed biometrics check since we're not using it
+    // this._checkBiometricsAvailability();
   }
 
   connectedCallback() {
@@ -81,11 +82,12 @@ class AppShell extends LitElement {
     this._applyTheme();
   }
   
-  async _checkBiometricsAvailability() {
-      if (window.SimpleWebAuthnBrowser) {
-          this.isBiometricsAvailable = await startAuthentication.isWebAuthnAvailable();
-      }
-  }
+  // Removed biometrics availability check since we're not using it
+  // async _checkBiometricsAvailability() {
+  //     if (window.SimpleWebAuthnBrowser) {
+  //         this.isBiometricsAvailable = await startAuthentication.isWebAuthnAvailable();
+  //     }
+  // }
 
   setupSignIn() {
     const signInButtonContainer = this.querySelector("#google-signin-button");
