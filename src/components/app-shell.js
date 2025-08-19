@@ -46,6 +46,7 @@ class AppShell extends LitElement {
     this.isBiometricsAvailable = false;
     this.lastCompletedWorkout = null;
     this.workout = null;
+    this._viewHistory = ['home'];
     
     this._checkBiometricsAvailability();
   }
@@ -59,6 +60,7 @@ class AppShell extends LitElement {
     window.addEventListener('user-signed-in', () => this.fetchUserData());
     window.addEventListener('theme-change', (e) => this._handleThemeChange(e.detail.theme));
     this.addEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
+    this.addEventListener('change-view', this._handleChangeView.bind(this));
     
     this.addEventListener('sign-out', this._handleSignOut);
     this.addEventListener('delete-data', this._handleDeleteData);
@@ -168,6 +170,35 @@ class AppShell extends LitElement {
       <canvas id="confetti-canvas"></canvas>
     `;
   }
+
+  _renderHeader(title, showBackButton = true) {
+    return html`
+        <header class="app-header">
+            ${showBackButton ? html`
+            <button class="back-btn" @click=${this._goBack} aria-label="Back">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+            </button>
+            ` : ''}
+            <h1>${title}</h1>
+        </header>
+    `;
+  }
+  
+  _handleChangeView(event) {
+    const newView = event.detail.view;
+    if (newView !== this.currentView) {
+      this._viewHistory.push(this.currentView);
+      this.currentView = newView;
+    }
+  }
+
+  _goBack() {
+      if (this._viewHistory.length > 1) {
+          this.currentView = this._viewHistory.pop();
+      } else {
+          this.currentView = 'home';
+      }
+  }
   
   _renderCurrentView() {
     if (!this.userCredential) return this.renderLoginScreen();
@@ -188,9 +219,10 @@ class AppShell extends LitElement {
 
     switch (this.currentView) {
         case "home": return this.renderHomeScreen();
-        case "templates": return html`<workout-templates @setView=${e => this.currentView = e.detail.view}></workout-templates>`;
-        case "history": return html`<history-view @setView=${e => this.currentView = e.detail.view}></history-view>`;
-        case "settings": return html`<settings-view @setView=${e => this.currentView = e.detail.view}></settings-view>`;
+        case "templates": return html`<div class="container">${this._renderHeader("Workout Templates")}<workout-templates></workout-templates></div>`;
+        case "history": return html`<div class="container">${this._renderHeader("Workout History")}<history-view></history-view></div>`;
+        case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view></settings-view></div>`;
+        case "achievements": return html`<div class="container">${this._renderHeader("Achievements")}<achievements-view></achievements-view></div>`;
         case "summary": return this.renderWorkoutSummary();
         default: return this.renderHomeScreen();
     }
@@ -278,7 +310,7 @@ class AppShell extends LitElement {
     }
     return html`
         <div id="workout-summary-view" class="container">
-            <div class="workout-header"><h2>Workout Complete!</h2></div>
+            ${this._renderHeader("Workout Complete!", false)}
             <div class="summary-stats-grid">
               <div class="stat-card"><h4>Time</h4><p>${Math.floor(lastWorkout.durationInSeconds / 60)}m ${lastWorkout.durationInSeconds % 60}s</p></div>
               <div class="stat-card"><h4>Volume</h4><p>${Math.round(lastWorkout.totalVolume)} ${this.units}</p></div>
