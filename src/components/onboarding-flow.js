@@ -11,7 +11,6 @@ class OnboardingFlow extends LitElement {
     super();
     this.step = 0;
     this.userData = {
-      // Default values
       age: 25,
       sex: 'male',
       training_months: 6,
@@ -32,59 +31,23 @@ class OnboardingFlow extends LitElement {
         text: "This information helps us calculate your baseline recovery capacity.",
         type: "form",
         fields: [
-          {
-            key: "sex",
-            label: "Biological Sex",
-            type: "choice",
-            options: [
-              { value: "male", text: "Male" },
-              { value: "female", text: "Female" },
-            ],
-          },
-          {
-            key: "age",
-            label: "Age",
-            type: "number",
-            min: 13,
-            max: 99,
-          },
+          { key: "sex", label: "Biological Sex", type: "choice", options: [{ value: "male", text: "Male" }, { value: "female", text: "Female" }] },
+          { key: "age", label: "Age", type: "number", min: 13, max: 99 },
         ],
       },
       {
         title: "Your Training Experience",
         text: "How many months have you been training consistently?",
         type: "form",
-        fields: [
-          {
-            key: "training_months",
-            label: "Consistent Training (Months)",
-            type: "number",
-            min: 0,
-            max: 240,
-          },
-        ],
+        fields: [{ key: "training_months", label: "Consistent Training (Months)", type: "number", min: 0, max: 240 }],
       },
       {
         title: "Lifestyle Factors",
         text: "Your recovery is influenced by sleep and stress.",
         type: "form",
         fields: [
-          {
-            key: "sleep_hours",
-            label: "Average Sleep (Hours per night)",
-            type: "slider",
-            min: 4,
-            max: 12,
-            step: 0.5,
-          },
-          {
-            key: "stress_level",
-            label: "Average Daily Stress (1-10)",
-            type: "slider",
-            min: 1,
-            max: 10,
-            step: 1,
-          },
+          { key: "sleep_hours", label: "Average Sleep (Hours per night)", type: "slider", min: 4, max: 12, step: 0.5 },
+          { key: "stress_level", label: "Average Daily Stress (1-10)", type: "slider", min: 1, max: 10, step: 1 },
         ],
       },
       {
@@ -92,23 +55,14 @@ class OnboardingFlow extends LitElement {
         text: "How many days per week can you realistically commit to training?",
         type: "choice",
         field: "daysPerWeek",
-        options: [
-          { value: "3", text: "3 Days" },
-          { value: "4", text: "4 Days" },
-          { value: "5", text: "5 Days" },
-          { value: "6", text: "6 Days" },
-        ],
+        options: [{ value: "3", text: "3 Days" }, { value: "4", text: "4 Days" }, { value: "5", text: "5 Days" }, { value: "6", text: "6 Days" }],
       },
       {
         title: "What is your primary fitness goal?",
         text: "This helps us tailor your training focus.",
         type: "choice",
         field: "goal",
-        options: [
-          { value: "hypertrophy", text: "Build Muscle" },
-          { value: "strength", text: "Get Stronger" },
-          { value: "fatLoss", text: "Fat Loss" },
-        ],
+        options: [{ value: "hypertrophy", text: "Build Muscle" }, { value: "strength", text: "Get Stronger" }, { value: "fatLoss", text: "Fat Loss" }],
       },
       {
         title: "Building Your Plan...",
@@ -120,12 +74,12 @@ class OnboardingFlow extends LitElement {
 
   _handleInputChange(field, value) {
     this.userData = { ...this.userData, [field]: value };
-    this.error = ""; // Clear error on input
+    this.error = "";
   }
   
   _handleChoiceSelection(field, value) {
     this.userData = { ...this.userData, [field]: value };
-    this._nextStep(); // Move to next step automatically on choice selection
+    this._nextStep();
   }
 
   _validateStep() {
@@ -148,9 +102,7 @@ class OnboardingFlow extends LitElement {
   }
 
   _nextStep() {
-    if (!this._validateStep()) {
-        return;
-    }
+    if (!this._validateStep()) return;
 
     if (this.step < this.steps.length - 1) {
       this.step++;
@@ -175,7 +127,6 @@ class OnboardingFlow extends LitElement {
 
   render() {
     const currentStepData = this.steps[this.step];
-    // Progress bar does not show on the intro and final loading screen.
     const progress = (this.step / (this.steps.length - 2)) * 100;
 
     return html`
@@ -195,14 +146,12 @@ class OnboardingFlow extends LitElement {
 
             ${this._renderStepContent(currentStepData)}
 
-            <div class="button-group">
-              ${this.step > 0 && currentStepData.type !== 'loading' ? html`
-                <button class="btn-secondary" @click=${this._prevStep}>Back</button>
-              ` : ''}
-              ${currentStepData.type === 'form' ? html`
-                <button class="cta-button" @click=${this._nextStep}>Next</button>
-              ` : ''}
-            </div>
+            ${currentStepData.type === 'form' ? html`
+              <div class="button-group">
+                <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>Back</button>
+                <button class="btn btn-primary cta-button" @click=${this._nextStep}>Next</button>
+              </div>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -212,7 +161,7 @@ class OnboardingFlow extends LitElement {
   _renderStepContent(stepData) {
     switch(stepData.type) {
         case 'intro':
-            return html`<button class="cta-button" @click=${this._nextStep}>Get Started</button>`;
+            return html`<button class="btn btn-primary cta-button" @click=${this._nextStep}>Get Started</button>`;
         case 'form':
             return html`
                 <div class="form-inputs card">
@@ -222,7 +171,7 @@ class OnboardingFlow extends LitElement {
         case 'choice':
             return this._renderChoice(stepData);
         case 'loading':
-            return html`<div class="loader"></div>`; // Add a CSS loader animation
+            return html`<div class="loader"></div>`;
         default:
             return html``;
     }
@@ -237,15 +186,10 @@ class OnboardingFlow extends LitElement {
               <div class="input-group">
                 <label for=${field.key}>${field.label}</label>
                 <input
-                  type="number"
-                  id=${field.key}
-                  .value=${this.userData[field.key]}
+                  type="number" id=${field.key} .value=${this.userData[field.key]}
                   @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
-                  min=${field.min}
-                  max=${field.max}
-                  placeholder="Enter ${field.label.toLowerCase()}"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
+                  min=${field.min} max=${field.max} placeholder="Enter ${field.label.toLowerCase()}"
+                  inputmode="numeric" pattern="[0-9]*"
                 />
               </div>
             `;
@@ -254,13 +198,9 @@ class OnboardingFlow extends LitElement {
               <div class="input-group slider-group">
                 <label for=${field.key}>${field.label}: <strong>${this.userData[field.key]}</strong></label>
                 <input
-                  type="range"
-                  id=${field.key}
-                  .value=${this.userData[field.key]}
+                  type="range" id=${field.key} .value=${this.userData[field.key]}
                   @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
-                  min=${field.min}
-                  max=${field.max}
-                  step=${field.step}
+                  min=${field.min} max=${field.max} step=${field.step}
                 />
               </div>
             `;
@@ -279,8 +219,7 @@ class OnboardingFlow extends LitElement {
                       </div>
                   </div>
               `;
-          default:
-            return html``;
+          default: return html``;
         }
       })}
     `;
