@@ -9,13 +9,19 @@
       content="An intelligent workout app that adapts to you in real-time."
     />
     
+    <!-- Preconnect to Google APIs for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Replaced Poppins with Roboto Condensed for the Athletic Excellence theme -->
+    <link rel="preconnect" href="https://apis.google.com">
+    <link rel="preconnect" href="https://accounts.google.com">
+    
+    <!-- Load Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- App Styles -->
     <link rel="stylesheet" href="./src/style.css" />
     
+    <!-- Import Maps for ES modules -->
     <script type="importmap">
       {
         "imports": {
@@ -26,10 +32,96 @@
       }
     </script>
     
+    <!-- Chart.js for data visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <main>
+      <app-shell></app-shell>
+    </main>
+
+    <!-- Google APIs - Load in correct order -->
     
+    <!-- 1. Google APIs Platform Library (must load first) -->
+    <script src="https://apis.google.com/js/api.js" onload="initializeGapi()"></script>
+    
+    <!-- 2. Google Identity Services (for sign-in) -->
+    <script src="https://accounts.google.com/gsi/client" async defer onload="onGoogleLibraryLoad()"></script>
+    
+    <!-- 3. Initialize Google APIs -->
+    <script>
+      // Global flag to track initialization status
+      window.googleApisLoaded = {
+        gapi: false,
+        gsi: false
+      };
+
+      // Initialize Google API Platform Library
+      function initializeGapi() {
+        console.log('Google API Platform Library loaded');
+        
+        // Load required APIs
+        window.gapi.load('auth2:client', () => {
+          console.log('Google Auth2 and Client APIs loaded');
+          
+          // Initialize the auth2 library
+          window.gapi.auth2.init({
+            client_id: '250304194666-7j8n6sslauu1betcqafmlb7pa779bimi.apps.googleusercontent.com'
+          }).then(() => {
+            console.log('Google Auth2 initialized');
+            window.googleApisLoaded.gapi = true;
+            checkAllApisLoaded();
+          }).catch((error) => {
+            console.error('Error initializing Google Auth2:', error);
+          });
+        });
+      }
+
+      // This function is called when Google Identity Services loads
+      function onGoogleLibraryLoad() {
+        console.log('Google Identity Services library loaded');
+        window.googleApisLoaded.gsi = true;
+        checkAllApisLoaded();
+        
+        // Dispatch the event that your app is listening for
+        window.dispatchEvent(new CustomEvent('google-library-loaded'));
+      }
+
+      // Check if all required Google APIs are loaded
+      function checkAllApisLoaded() {
+        if (window.googleApisLoaded.gapi && window.googleApisLoaded.gsi) {
+          console.log('All Google APIs loaded and ready');
+          window.dispatchEvent(new CustomEvent('google-apis-ready'));
+        }
+      }
+
+      // Fallback initialization if scripts don't load properly
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          if (!window.google || !window.google.accounts) {
+            console.warn('Google Identity Services not loaded, retrying...');
+            // You could implement retry logic here if needed
+          }
+          if (!window.gapi) {
+            console.warn('Google API Platform Library not loaded');
+            // You could implement retry logic here if needed
+          }
+        }, 3000);
+      });
+
+      // Error handling for script loading failures
+      window.addEventListener('error', (event) => {
+        if (event.filename && event.filename.includes('googleapis.com')) {
+          console.error('Failed to load Google API script:', event.filename);
+          // You could show a user-friendly error message here
+        }
+      });
+    </script>
+
+    <!-- Load your main application -->
     <script type="module" src="./src/main.js" defer></script>
     
+    <!-- Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -43,11 +135,44 @@
         });
       }
     </script>
-  </head>
-  <body>
-    <main>
-      <app-shell></app-shell>
-    </main>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Additional error handling and debugging -->
+    <script>
+      // Debug information in development
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        window.addEventListener('google-library-loaded', () => {
+          console.log('✅ Google Library Loaded Event Fired');
+        });
+        
+        window.addEventListener('google-apis-ready', () => {
+          console.log('✅ All Google APIs Ready');
+        });
+
+        // Log any unhandled promise rejections
+        window.addEventListener('unhandledrejection', event => {
+          console.error('Unhandled promise rejection:', event.reason);
+        });
+      }
+
+      // Provide fallback for older browsers
+      if (!window.CustomEvent) {
+        window.CustomEvent = function(event, params) {
+          params = params || { bubbles: false, cancelable: false, detail: undefined };
+          var evt = document.createEvent('CustomEvent');
+          evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
+          return evt;
+        };
+        window.CustomEvent.prototype = window.Event.prototype;
+      }
+    </script>
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="./src/main.js" as="script">
+    <link rel="preload" href="./src/components/app-shell.js" as="script">
+    
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//script.google.com">
+    <link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="//cdn.skypack.dev">
   </body>
 </html>
