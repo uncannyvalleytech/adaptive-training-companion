@@ -40,6 +40,7 @@
   /* Borders & Shadows */
   --border-radius-md: 8px;
   --border-radius-lg: 12px;
+  --border-radius-full: 9999px;
 
   /* Spacing */
   --space-1: 4px;
@@ -419,8 +420,8 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
 .set-input {
     width: 100%;
     padding: 0.75rem;
-    background-color: var(--color-surface-primary);
-    border: 1px solid var(--border-color);
+    background-color: var(--color-surface-secondary);
+    border: none;
     color: var(--color-text-primary);
     border-radius: var(--border-radius-md);
     text-align: center;
@@ -428,6 +429,13 @@ p { font-size: var(--font-size-md); color: var(--color-text-secondary); }
     box-shadow: 
         inset 2px 2px 5px var(--shadow-dark), 
         inset -2px -2px 5px var(--shadow-light);
+}
+.set-input:focus {
+    outline: none;
+    box-shadow:
+      inset 2px 2px 5px var(--shadow-dark),
+      inset -2px -2px 5px var(--shadow-light),
+      0 0 0 2px var(--color-accent-primary);
 }
 .set-complete-btn {
     height: 42px;
