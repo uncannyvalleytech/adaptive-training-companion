@@ -197,7 +197,7 @@ class OnboardingFlow extends LitElement {
 
             <div class="button-group">
               ${this.step > 0 && currentStepData.type !== 'loading' ? html`
-                <button class="secondary-button" @click=${this._prevStep}>Back</button>
+                <button class="btn-secondary" @click=${this._prevStep}>Back</button>
               ` : ''}
               ${currentStepData.type === 'form' ? html`
                 <button class="cta-button" @click=${this._nextStep}>Next</button>
@@ -226,7 +226,7 @@ class OnboardingFlow extends LitElement {
 
   _renderForm(fields) {
     return html`
-      <div class="form-inputs">
+      <div class="form-inputs card">
         ${fields.map(field => {
           switch(field.type) {
             case 'number':
@@ -254,7 +254,7 @@ class OnboardingFlow extends LitElement {
                     type="range"
                     id=${field.key}
                     .value=${this.userData[field.key]}
-                    @input=${e => this._handleSliderInput(field.key, Number(e.target.value))}
+                    @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
                     min=${field.min}
                     max=${field.max}
                     step=${field.step}
@@ -288,7 +288,7 @@ class OnboardingFlow extends LitElement {
     return html`
       <div class="card-group ${stepData.vertical ? 'vertical' : ''}">
         ${stepData.options.map(opt => html`
-          <div class="goal-card" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
+          <div class="goal-card card-interactive" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
             <h3>${opt.text}</h3>
             ${opt.subtext ? html`<p>${opt.subtext}</p>` : ''}
           </div>
