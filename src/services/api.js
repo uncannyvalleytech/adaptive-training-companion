@@ -5,7 +5,7 @@
 
 // --- CONFIGURATION ---
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbw5ofZN7TG-mV2Fg35OWvr73FGaFhHE3N9yDE6Jr0H_28tQZ4twgP-rKjCLSFsvwCN3/exec";
+  "https://script.google.com/macros/s/AKfycbxpRMXbjW5JAQb5YKVUhGfXkPDR1vOD0CFCVGVXOOxsK5nASGlxQudJi7YOAHjXfof7/exec";
 
 // Constants for local storage keys
 const LOCAL_STORAGE_KEY = 'userWorkoutData';
@@ -20,16 +20,14 @@ async function makeApiRequest(action, token, payload = {}) {
   }
 
   try {
+    // First, try a simple request without preflight
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: { 
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}` // Add authorization header
+        "Content-Type": "text/plain" // Use text/plain to avoid preflight
       },
       body: JSON.stringify({ action, token, payload }),
-      mode: 'cors',
-      credentials: 'include' // Include credentials for user-owned data
+      mode: 'cors'
     });
 
     if (!response.ok) {
