@@ -29,7 +29,7 @@
     <!-- App Styles -->
     <link rel="stylesheet" href="./src/style.css" />
     
-    <!-- Import Maps for ES modules -->
+    <!-- Enhanced Import Maps for ES modules with fallbacks -->
     <script type="importmap">
       {
         "imports": {
@@ -57,7 +57,7 @@
         overflow-x: hidden;
       }
       
-      /* Loading animation */
+      /* Enhanced Loading animation */
       .app-loading {
         position: fixed;
         top: 0;
@@ -99,6 +99,8 @@
         color: rgba(255, 255, 255, 0.7);
         font-size: 1rem;
         margin-bottom: 2rem;
+        text-align: center;
+        max-width: 300px;
       }
       
       .loading-spinner {
@@ -108,6 +110,13 @@
         border-radius: 50%;
         border-top-color: #00D4FF;
         animation: spin 1s ease-in-out infinite;
+      }
+      
+      .loading-status {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+        margin-top: 1rem;
+        text-align: center;
       }
       
       @keyframes pulse {
@@ -154,6 +163,7 @@
       <div class="loading-text">PROGRESSION</div>
       <div class="loading-subtitle">Adaptive Training Companion</div>
       <div class="loading-spinner"></div>
+      <div class="loading-status" id="loading-status">Initializing...</div>
     </div>
 
     <!-- Main App Container -->
@@ -161,35 +171,55 @@
       <app-shell></app-shell>
     </main>
 
-    <!-- Google APIs Loading Script with Enhanced Error Handling -->
+    <!-- Enhanced Google APIs Loading Script with Better Error Handling -->
     <script>
-      // Global variables to track API loading
+      // Global variables to track API loading and app status
       window.googleApisReady = {
         gapi: false,
         gsi: false,
         allReady: false
       };
 
+      // Loading status updates
+      function updateLoadingStatus(message) {
+        const statusElement = document.getElementById('loading-status');
+        if (statusElement) {
+          statusElement.textContent = message;
+        }
+        console.log('Loading status:', message);
+      }
+
       // Function called when GAPI loads
       function onGapiLoad() {
         console.log('GAPI loaded');
+        updateLoadingStatus('Loading Google services...');
         
-        // Load auth2 library
-        window.gapi.load('auth2', () => {
-          console.log('GAPI Auth2 loaded');
-          window.googleApisReady.gapi = true;
-          checkAllApisReady();
-          
-          // Initialize GAPI auth if the app is loaded
-          if (window.initializeGapi) {
-            window.initializeGapi();
-          }
-        });
+        try {
+          // Load auth2 library
+          window.gapi.load('auth2', () => {
+            console.log('GAPI Auth2 loaded');
+            window.googleApisReady.gapi = true;
+            checkAllApisReady();
+            
+            // Initialize GAPI auth if the app is loaded
+            if (window.initializeGapi) {
+              window.initializeGapi();
+            }
+          }, (error) => {
+            console.warn('GAPI Auth2 failed to load:', error);
+            window.googleApisReady.gapi = false;
+            handleGoogleApiError('Failed to load GAPI Auth2');
+          });
+        } catch (error) {
+          console.error('Error in onGapiLoad:', error);
+          handleGoogleApiError('GAPI initialization error');
+        }
       }
 
       // Function called when Google Identity Services loads
       function onGoogleLibraryLoad() {
         console.log('Google Identity Services loaded');
+        updateLoadingStatus('Google services ready...');
         window.googleApisReady.gsi = true;
         checkAllApisReady();
         
@@ -199,9 +229,10 @@
 
       // Check if all APIs are ready
       function checkAllApisReady() {
-        if (window.googleApisReady.gapi && window.googleApisReady.gsi && !window.googleApisReady.allReady) {
+        if (window.googleApisReady.gsi && !window.googleApisReady.allReady) {
           window.googleApisReady.allReady = true;
-          console.log('All Google APIs are ready');
+          console.log('Google APIs are ready');
+          updateLoadingStatus('Starting app...');
           window.dispatchEvent(new CustomEvent('google-apis-ready'));
         }
       }
@@ -211,16 +242,18 @@
         console.error('Google API loading error:', error);
         
         // Show user-friendly error message
-        const loadingText = document.querySelector('.loading-subtitle');
-        if (loadingText) {
-          loadingText.textContent = 'Loading without Google features...';
-          loadingText.style.color = '#FF6B35';
-        }
+        updateLoadingStatus('Loading without Google features...');
         
         // Continue without APIs - the app should still work with basic features
         setTimeout(() => {
+          updateLoadingStatus('App ready (offline mode)');
           hideLoadingScreen();
         }, 2000);
+        
+        // Dispatch offline mode event
+        window.dispatchEvent(new CustomEvent('app-offline-mode', {
+          detail: { reason: error }
+        }));
       }
 
       // Hide loading screen with smooth transition
@@ -245,35 +278,167 @@
         window.CustomEvent.prototype = window.Event.prototype;
       }
 
-      // App initialization
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM loaded, initializing app...');
-        
-        // Hide loading screen after app components are ready
-        setTimeout(() => {
-          hideLoadingScreen();
-        }, 3000); // Fallback timeout
-      });
+      // App initialization with timeout fallback
+      let appInitialized = false;
+      
+      function initializeAppFallback() {
+        if (!appInitialized) {
+          console.log('Initializing app with fallback method');
+          updateLoadingStatus('App starting...');
+          appInitialized = true;
+          
+          setTimeout(() => {
+            hideLoadingScreen();
+          }, 1000);
+        }
+      }
 
       // Listen for app-ready event from the main app
       window.addEventListener('app-ready', () => {
-        hideLoadingScreen();
+        if (!appInitialized) {
+          console.log('App ready event received');
+          appInitialized = true;
+          updateLoadingStatus('Ready!');
+          setTimeout(hideLoadingScreen, 500);
+        }
+      });
+
+      // Listen for offline mode events
+      window.addEventListener('app-offline-mode', (event) => {
+        console.log('App running in offline mode:', event.detail);
+        updateLoadingStatus('Running offline');
+      });
+
+      // Fallback timeout - ensure app loads even if everything fails
+      setTimeout(() => {
+        if (!appInitialized) {
+          console.warn('App initialization timeout - forcing load');
+          updateLoadingStatus('Loading complete');
+          initializeAppFallback();
+        }
+      }, 10000); // 10 second timeout
+
+      // DOM ready initialization
+      document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, starting initialization...');
+        updateLoadingStatus('Loading components...');
+        
+        // Additional fallback if Google APIs don't load
+        setTimeout(() => {
+          if (!window.googleApisReady.allReady && !appInitialized) {
+            console.log('Google APIs timeout - continuing without them');
+            handleGoogleApiError('Google APIs timeout');
+          }
+        }, 5000);
       });
     </script>
 
-    <!-- Load Google APIs with enhanced error handling -->
-    <script src="https://apis.google.com/js/api.js" 
-            onload="onGapiLoad()" 
-            onerror="handleGoogleApiError('Failed to load GAPI')" 
-            async defer></script>
-    
-    <script src="https://accounts.google.com/gsi/client" 
-            onload="onGoogleLibraryLoad()" 
-            onerror="handleGoogleApiError('Failed to load GSI')" 
-            async defer></script>
+    <!-- Load Google APIs with enhanced error handling and timeouts -->
+    <script>
+      // Load GAPI with timeout
+      (function() {
+        const gapiScript = document.createElement('script');
+        gapiScript.src = 'https://apis.google.com/js/api.js';
+        gapiScript.async = true;
+        gapiScript.defer = true;
+        
+        gapiScript.onload = function() {
+          console.log('GAPI script loaded successfully');
+          onGapiLoad();
+        };
+        
+        gapiScript.onerror = function(error) {
+          console.error('Failed to load GAPI script:', error);
+          handleGoogleApiError('Failed to load GAPI script');
+        };
+        
+        document.head.appendChild(gapiScript);
+        
+        // Timeout for GAPI loading
+        setTimeout(() => {
+          if (!window.gapi) {
+            console.warn('GAPI script loading timeout');
+            handleGoogleApiError('GAPI loading timeout');
+          }
+        }, 5000);
+      })();
 
-    <!-- Load main application -->
-    <script type="module" src="./src/main.js"></script>
+      // Load GSI with timeout
+      (function() {
+        const gsiScript = document.createElement('script');
+        gsiScript.src = 'https://accounts.google.com/gsi/client';
+        gsiScript.async = true;
+        gsiScript.defer = true;
+        
+        gsiScript.onload = function() {
+          console.log('GSI script loaded successfully');
+          onGoogleLibraryLoad();
+        };
+        
+        gsiScript.onerror = function(error) {
+          console.error('Failed to load GSI script:', error);
+          handleGoogleApiError('Failed to load GSI script');
+        };
+        
+        document.head.appendChild(gsiScript);
+        
+        // Timeout for GSI loading
+        setTimeout(() => {
+          if (!window.google || !window.google.accounts) {
+            console.warn('GSI script loading timeout');
+            handleGoogleApiError('GSI loading timeout');
+          }
+        }, 5000);
+      })();
+    </script>
+
+    <!-- Load main application with error handling -->
+    <script type="module">
+      try {
+        console.log('Loading main application module...');
+        updateLoadingStatus('Loading app modules...');
+        import('./src/main.js').catch(error => {
+          console.error('Failed to load main.js:', error);
+          updateLoadingStatus('App load error - retrying...');
+          
+          // Retry loading after a delay
+          setTimeout(() => {
+            import('./src/main.js').catch(retryError => {
+              console.error('Retry failed for main.js:', retryError);
+              updateLoadingStatus('Running in basic mode');
+              
+              // Last resort - show error to user
+              setTimeout(() => {
+                const errorDiv = document.createElement('div');
+                errorDiv.innerHTML = `
+                  <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                              background: #1F2233; color: white; padding: 2rem; border-radius: 12px; 
+                              text-align: center; z-index: 10000; max-width: 90%;">
+                    <h2 style="color: #ff6b6b; margin-bottom: 1rem;">Loading Error</h2>
+                    <p style="margin-bottom: 1.5rem;">Unable to load the app. Please check your connection and try again.</p>
+                    <button onclick="window.location.reload()" 
+                            style="background: linear-gradient(135deg, #00FF88, #00D4FF); border: none; 
+                                   color: #1A1A2E; padding: 12px 24px; border-radius: 8px; 
+                                   font-weight: 600; cursor: pointer;">
+                      Reload App
+                    </button>
+                  </div>
+                `;
+                document.body.appendChild(errorDiv);
+                hideLoadingScreen();
+              }, 1000);
+            });
+          }, 2000);
+        });
+      } catch (error) {
+        console.error('Critical error loading app:', error);
+        updateLoadingStatus('Critical error');
+        setTimeout(() => {
+          hideLoadingScreen();
+          alert('Critical error loading the app. Please refresh the page.');
+        }, 1000);
+      }
+    </script>
     
     <!-- Enhanced Service Worker Registration -->
     <script>
@@ -288,9 +453,9 @@
               const newWorker = registration.installing;
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New update available
                   console.log('New app version available!');
-                  // You could show a toast notification here
+                  // Show update notification
+                  window.dispatchEvent(new CustomEvent('app-update-available'));
                 }
               });
             });
@@ -303,34 +468,37 @@
 
       // Enhanced offline/online detection
       window.addEventListener('online', () => {
-        console.log('App is online');
+        console.log('Connection restored');
+        updateLoadingStatus('Back online');
         document.body.classList.remove('offline');
-        // Dispatch custom event for app components to handle
         window.dispatchEvent(new CustomEvent('app-online'));
       });
 
       window.addEventListener('offline', () => {
-        console.log('App is offline');
+        console.log('Connection lost');
         document.body.classList.add('offline');
-        // Dispatch custom event for app components to handle
         window.dispatchEvent(new CustomEvent('app-offline'));
       });
     </script>
 
-    <!-- Performance monitoring (optional) -->
+    <!-- Performance monitoring -->
     <script>
       // Basic performance monitoring
       window.addEventListener('load', () => {
         setTimeout(() => {
-          const perfData = performance.getEntriesByType('navigation')[0];
-          if (perfData) {
-            console.log('App load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
-            console.log('DOM ready time:', perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart, 'ms');
+          try {
+            const perfData = performance.getEntriesByType('navigation')[0];
+            if (perfData) {
+              console.log('App load time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+              console.log('DOM ready time:', perfData.domContentLoadedEventEnd - perfData.domContentLoadedEventStart, 'ms');
+            }
+          } catch (error) {
+            console.warn('Performance monitoring error:', error);
           }
         }, 0);
       });
 
-      // Report any unhandled errors for debugging
+      // Report critical errors for debugging
       window.addEventListener('error', (event) => {
         console.error('Global error:', {
           message: event.message,
@@ -339,10 +507,23 @@
           colno: event.colno,
           error: event.error
         });
+        
+        // Don't show error to user for minor issues
+        if (event.filename && event.filename.includes('extension')) {
+          // Browser extension error, ignore
+          return;
+        }
       });
 
       window.addEventListener('unhandledrejection', (event) => {
         console.error('Unhandled promise rejection:', event.reason);
+        
+        // Prevent app crash for network-related errors
+        if (event.reason && event.reason.message && 
+            (event.reason.message.includes('Failed to fetch') || 
+             event.reason.message.includes('Loading chunk'))) {
+          event.preventDefault();
+        }
       });
     </script>
   </body>
