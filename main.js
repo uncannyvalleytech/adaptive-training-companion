@@ -1,26 +1,19 @@
 /**
  * @file main.js
  * This is the primary entry point for the Adaptive Training Companion application.
- * It is responsible for loading the main application component and attaching it to the webpage.
  */
 
-// IMPORTANT: Define the global function BEFORE importing anything else
-// This global function is called by the Google Identity Services library
-// once it has fully loaded.
-window.onGoogleLibraryLoad = () => {
-  console.log("Google Identity Services library has loaded.");
-  window.dispatchEvent(new CustomEvent('google-library-loaded'));
-};
-
-// We are importing the main app component, which we will create later.
-// This line tells our app to load the code for the main user interface.
+// Import components and services
 import "./components/app-shell.js";
-// Import the new syncData function and getQueuedWorkoutsCount from the API service
 import { syncData, getQueuedWorkoutsCount } from "./services/api.js";
+import { initializeGapi } from "./services/google-auth.js";
 
 console.log("Adaptive Training Companion initialized!");
 
-// Call the new syncData function to handle any queued offline data
+// Make initializeGapi available globally for the HTML script
+window.initializeGapi = initializeGapi;
+
+// Call the syncData function to handle any queued offline data
 syncData();
 
 // Check for offline data on load and dispatch a custom event
@@ -30,3 +23,13 @@ if (queuedCount > 0) {
     detail: { count: queuedCount }
   }));
 }
+
+// Enhanced error handling
+window.addEventListener('unhandledrejection', event => {
+  console.error('Unhandled promise rejection:', event.reason);
+  event.preventDefault(); // Prevent the error from crashing the app
+});
+
+window.addEventListener('error', event => {
+  console.error('Global error:', event.error);
+});
