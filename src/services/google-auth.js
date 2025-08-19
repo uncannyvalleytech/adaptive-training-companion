@@ -1,10 +1,11 @@
 /**
  * @file google-auth.js
- * Updated to handle Sheets API access
+ * Fixed version for Sheets API access
  */
 
 let authCredential = null;
 let accessToken = null;
+let isGapiLoaded = false;
 
 const CLIENT_ID = "250304194666-7j8n6sslauu1betcqafmlb7pa779bimi.apps.googleusercontent.com";
 
@@ -17,6 +18,8 @@ const SCOPES = [
 ].join(' ');
 
 export function initializeSignIn(buttonContainer, onSignIn) {
+  console.log("Initializing Google Sign-In...");
+  
   if (!window.google || !window.google.accounts) {
     console.error("Google Identity Services library not loaded.");
     return;
@@ -27,20 +30,26 @@ export function initializeSignIn(buttonContainer, onSignIn) {
     window.google.accounts.id.initialize({
       client_id: CLIENT_ID,
       callback: async (credentialResponse) => {
-        console.log("ID token received, now requesting access token...");
+        console.log("ID token received:", credentialResponse);
         
         // Store the ID token
         authCredential = credentialResponse;
         
-        // Request additional scopes for Sheets access
+        // Try to get additional scopes, but don't fail if it doesn't work
         try {
-          await requestAdditionalScopes();
-          if (onSignIn) {
-            onSignIn(credentialResponse);
+          if (isGapiLoaded) {
+            await requestAdditionalScopes();
+            console.log("Additional scopes obtained successfully");
+          } else {
+            console.log("GAPI not loaded, proceeding with ID token only");
           }
         } catch (error) {
-          console.error("Failed to get additional permissions:", error);
-          // You might want to show an error message to the user here
+          console.warn("Failed to get additional permissions, proceeding with ID token:", error);
+          // Continue anyway - the ID token is sufficient for basic authentication
+        }
+        
+        if (onSignIn) {
+          onSignIn(credentialResponse);
         }
       },
     });
@@ -50,47 +59,93 @@ export function initializeSignIn(buttonContainer, onSignIn) {
       buttonContainer,
       { theme: "outline", size: "large", type: "standard" }
     );
+    
+    console.log("Google Sign-In button rendered successfully");
   } catch (error) {
     console.error("Error initializing Google Sign-In:", error);
   }
 }
 
 async function requestAdditionalScopes() {
+  if (!window.gapi || !window.gapi.auth2) {
+    console.log("GAPI auth2 not available");
+    return;
+  }
+
   return new Promise((resolve, reject) => {
-    // Load the OAuth2 library
-    window.gapi.load('auth2', () => {
-      window.gapi.auth2.init({
-        client_id: CLIENT_ID,
-      }).then(() => {
-        const authInstance = window.gapi.auth2.getAuthInstance();
-        
-        // Request additional scopes
-        authInstance.signIn({
-          scope: SCOPES
-        }).then((googleUser) => {
-          // Get the access token
-          accessToken = googleUser.getAuthResponse().access_token;
-          console.log("Access token obtained for Sheets API");
-          resolve();
-        }).catch((error) => {
-          console.error("Error getting additional scopes:", error);
-          reject(error);
-        });
-      }).catch(reject);
-    });
+    try {
+      const authInstance = window.gapi.auth2.getAuthInstance();
+      
+      if (!authInstance) {
+        console.log("No auth instance available");
+        return resolve();
+      }
+      
+      // Check if user is already signed in with required scopes
+      const currentUser = authInstance.currentUser.get();
+      if (currentUser.hasGrantedScopes(SCOPES)) {
+        accessToken = currentUser.getAuthResponse().access_token;
+        console.log("User already has required scopes");
+        return resolve();
+      }
+      
+      // Request additional scopes
+      currentUser.grant({
+        scope: SCOPES
+      }).then((response) => {
+        accessToken = response.access_token;
+        console.log("Additional scopes granted");
+        resolve();
+      }).catch((error) => {
+        console.warn("Error granting additional scopes:", error);
+        // Don't reject - continue with basic authentication
+        resolve();
+      });
+    } catch (error) {
+      console.warn("Exception in requestAdditionalScopes:", error);
+      resolve(); // Don't fail the entire auth flow
+    }
   });
 }
 
+// Initialize GAPI when available
+export function initializeGapi() {
+  if (!window.gapi) {
+    console.log("GAPI not available");
+    return;
+  }
+
+  try {
+    window.gapi.auth2.init({
+      client_id: CLIENT_ID,
+      scope: SCOPES
+    }).then(() => {
+      isGapiLoaded = true;
+      console.log("GAPI Auth2 initialized successfully");
+    }).catch((error) => {
+      console.warn("GAPI Auth2 initialization failed:", error);
+    });
+  } catch (error) {
+    console.warn("Exception initializing GAPI:", error);
+  }
+}
+
 export function signOut() {
+  console.log("Signing out...");
+  
   if (window.google && window.google.accounts) {
     window.google.accounts.id.disableAutoSelect();
   }
   
-  // Also sign out of OAuth2
+  // Also sign out of OAuth2 if available
   if (window.gapi && window.gapi.auth2) {
-    const authInstance = window.gapi.auth2.getAuthInstance();
-    if (authInstance) {
-      authInstance.signOut();
+    try {
+      const authInstance = window.gapi.auth2.getAuthInstance();
+      if (authInstance) {
+        authInstance.signOut().catch(console.warn);
+      }
+    } catch (error) {
+      console.warn("Error signing out of GAPI:", error);
     }
   }
   
