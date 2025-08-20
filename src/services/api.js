@@ -212,22 +212,32 @@ export async function getData(authToken) {
 export async function saveData(data, authToken) {
   // Always update local cache immediately for responsive UI
   const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-  let updatedData = data;
+  let updatedData = { ...data };
   
   if (cachedData) {
     try {
       const existing = JSON.parse(cachedData);
+      
+      // Merge all top-level properties from `data` into `existing`
       updatedData = { ...existing, ...data };
       
-      // Handle arrays properly (append workouts, replace templates)
+      // Specifically handle the 'workouts' and 'templates' arrays to append new data
       if (data.workouts && Array.isArray(data.workouts)) {
-        updatedData.workouts = [...(existing.workouts || []), ...data.workouts];
+          updatedData.workouts = [...(existing.workouts || []), ...data.workouts];
       }
+      
       if (data.templates && Array.isArray(data.templates)) {
-        updatedData.templates = data.templates; // Replace templates
+          // If templates are sent, replace the entire array
+          updatedData.templates = data.templates;
       }
+      
+      // Ensure nested objects like `baseMEV` are also merged
+      if (data.baseMEV) {
+          updatedData.baseMEV = { ...existing.baseMEV, ...data.baseMEV };
+      }
+
     } catch (e) {
-      console.warn("Error parsing cached data during save:", e);
+      console.warn("Error parsing cached data during save, overwriting local data:", e);
       updatedData = { ...createDefaultUserData(), ...data };
     }
   }
