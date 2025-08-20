@@ -234,7 +234,7 @@ class AppShell extends LitElement {
     return streak;
   }
   
-  _handleOnboardingComplete(e) {
+  async _handleOnboardingComplete(e) {
       const onboardingData = e.detail.userData;
       this.userData = { 
         ...createDefaultUserData(),
@@ -242,11 +242,20 @@ class AppShell extends LitElement {
         ...onboardingData, 
         onboardingComplete: true
       };
+      
+      // Instantiate the WorkoutEngine with the new user data
       const engine = new WorkoutEngine(this.userData);
-      this.userData.mesocycle = engine.generateMesocycle(['chest', 'back', 'legs', 'shoulders', 'arms']);
+      
+      // Generate the initial mesocycle based on the user's `daysPerWeek`
+      // The `onboarding-flow` component now passes `daysPerWeek` as a string,
+      // so we convert it to a number.
+      this.userData.mesocycle = engine.generateMesocycle(this.userData.daysPerWeek);
+      
       this.showOnboarding = false;
       this._showToast("Profile created! Your new workout plan is ready.", "success");
-      saveData(this.userData, this.userCredential.credential);
+      await saveData(this.userData, this.userCredential.credential);
+      // Re-fetch data to ensure UI is in sync with saved data
+      this.fetchUserData();
   }
   
   _exitWorkout() {
@@ -368,11 +377,11 @@ class AppShell extends LitElement {
         ${this.currentStreak > 0 ? html`<workout-streak .streak=${this.currentStreak}></workout-streak>` : ''}
         <nav class="home-nav-buttons">
           <button class="hub-option card-interactive" @click=${() => this.showReadinessModal = true}>
-            <div class="hub-option-icon">💪</div>
+            <div class="hub-option-icon">🏋️</div>
             <div class="hub-option-text"><h3>Start Workout</h3><p>Begin your training session</p></div>
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
-            <div class="hub-option-icon">📖</div>
+            <div class="hub-option-icon">📋</div>
             <div class="hub-option-text"><h3>Templates</h3><p>Custom workout routines</p></div>
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
@@ -412,7 +421,7 @@ class AppShell extends LitElement {
   renderErrorScreen() {
     return html`
       <div class="container error-container" role="alert">
-        <h2>⚠️ Error</h2>
+        <h2>❌ Error</h2>
         <p>${this.errorMessage}</p>
         <button class="btn btn-primary" @click=${() => window.location.reload()}>Reload App</button>
       </div>
@@ -436,10 +445,13 @@ class AppShell extends LitElement {
   }
 
   _handleReadinessSubmit(readinessData) {
+      // Use the WorkoutEngine to generate the daily workout based on readiness
       const engine = new WorkoutEngine(this.userData);
       const recoveryScore = engine.calculateRecoveryScore(readinessData);
       const readinessScore = engine.getDailyReadiness(recoveryScore);
+      
       const plannedWorkout = this._getPlannedWorkout();
+      
       if (plannedWorkout) {
           this.workout = engine.adjustWorkout(plannedWorkout, readinessScore);
           this._showToast(this.workout.adjustmentNote, "info");
@@ -451,10 +463,25 @@ class AppShell extends LitElement {
   }
 
   _getPlannedWorkout() {
-      if (!this.userData?.mesocycle?.weeks) return null;
+      // Check if mesocycle data is available
+      if (!this.userData?.mesocycle?.weeks) {
+          this._showToast("No mesocycle found. Please complete onboarding.", "error");
+          return null;
+      }
+      
       const engine = new WorkoutEngine(this.userData);
-      const currentWeekData = this.userData.mesocycle.weeks.find(w => w.week === this.userData.currentWeek);
-      return engine.generateDailyWorkout(['chest', 'shoulders', 'arms'], currentWeekData);
+      
+      // Get today's workout plan from the current mesocycle week
+      // This assumes a simple A/B/C rotation based on days per week and workouts completed
+      const workoutsPerWeek = Number(this.userData.daysPerWeek) || 4;
+      const workoutsCompleted = this.userData.workouts.filter(w => new Date(w.date).getFullYear() === new Date().getFullYear()).length;
+      const workoutIndex = workoutsCompleted % workoutsPerWeek;
+      
+      const muscleGroupsForDay = engine.getWorkoutSplit(workoutsPerWeek)[workoutIndex];
+      const currentWeekData = this.userData.mesocycle.weeks.find(w => w.week === this.userData.currentWeek) || 
+                              this.userData.mesocycle.weeks[0]; // Fallback to first week
+      
+      return engine.generateDailyWorkout(muscleGroupsForDay, currentWeekData);
   }
 
   createRenderRoot() {
