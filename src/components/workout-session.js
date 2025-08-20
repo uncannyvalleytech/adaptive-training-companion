@@ -66,7 +66,9 @@ class WorkoutSession extends LitElement {
     
     const totalSets = this.workout.exercises.reduce((acc, ex) => acc + (ex.sets?.length || 0), 0);
     const completedSets = this.workout.exercises.reduce((acc, ex) => {
-      return acc + (ex.sets?.filter(set => set.completed) || []).length;
+      // Correctly access the sets and check if they're completed
+      const setsForExercise = ex.sets || [];
+      return acc + setsForExercise.filter(set => set.completed).length;
     }, 0);
     
     this.workoutProgress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
@@ -118,12 +120,14 @@ class WorkoutSession extends LitElement {
   _nextExercise() {
       if (this.currentExerciseIndex < this.workout.exercises.length - 1) {
           this.currentExerciseIndex++;
+          this.requestUpdate();
       }
   }
   
   _previousExercise() {
       if (this.currentExerciseIndex > 0) {
           this.currentExerciseIndex--;
+          this.requestUpdate();
       }
   }
 
@@ -170,19 +174,21 @@ class WorkoutSession extends LitElement {
   // --- Data Handling ---
   _handleSetInput(e, setIndex, field) {
     const value = e.target.value;
-    if (!this.workout.exercises[this.currentExerciseIndex].sets[setIndex]) {
-        this.workout.exercises[this.currentExerciseIndex].sets[setIndex] = {};
+    const currentExercise = this.workout.exercises[this.currentExerciseIndex];
+    if (!currentExercise.sets[setIndex]) {
+        currentExercise.sets[setIndex] = {};
     }
-    this.workout.exercises[this.currentExerciseIndex].sets[setIndex][field] = value;
+    currentExercise.sets[setIndex][field] = value;
     this.requestUpdate();
   }
 
   _toggleSetComplete(setIndex) {
-    if (!this.workout.exercises[this.currentExerciseIndex].sets[setIndex]) {
-        this.workout.exercises[this.currentExerciseIndex].sets[setIndex] = {};
+    const currentExercise = this.workout.exercises[this.currentExerciseIndex];
+    if (!currentExercise.sets[setIndex]) {
+        currentExercise.sets[setIndex] = {};
     }
-    const isComplete = this.workout.exercises[this.currentExerciseIndex].sets[setIndex].completed;
-    this.workout.exercises[this.currentExerciseIndex].sets[setIndex].completed = !isComplete;
+    const isComplete = currentExercise.sets[setIndex].completed;
+    currentExercise.sets[setIndex].completed = !isComplete;
     
     if (!isComplete) {
         this.startRestTimer();
@@ -204,8 +210,11 @@ class WorkoutSession extends LitElement {
         const durationInSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
         const totalVolume = this.workout.exercises.reduce((total, exercise) => {
             const exerciseVolume = (exercise.sets || []).reduce((sum, set) => {
-                if (set.completed && set.weight && set.reps) {
-                    return sum + (parseInt(set.weight, 10) * parseInt(set.reps, 10));
+                // Ensure weight and reps are valid numbers
+                const weight = parseInt(set.weight, 10);
+                const reps = parseInt(set.reps, 10);
+                if (set.completed && !isNaN(weight) && !isNaN(reps)) {
+                    return sum + (weight * reps);
                 }
                 return sum;
             }, 0);
