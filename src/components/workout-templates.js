@@ -60,6 +60,7 @@ class WorkoutTemplates extends LitElement {
     this.newTemplateExercises = [...this.newTemplateExercises, { name: "", sets: 3, reps: 10, rpe: 7 }];
   }
 
+  // Correctly handle input for each exercise field
   _handleExerciseInput(index, field, value) {
     const updatedExercises = [...this.newTemplateExercises];
     updatedExercises[index][field] = value;
@@ -77,6 +78,7 @@ class WorkoutTemplates extends LitElement {
         const token = getCredential().credential;
         const newTemplate = {
             name: this.newTemplateName,
+            // Ensure sets, reps, and RPE are parsed as numbers and have fallbacks
             exercises: this.newTemplateExercises.map(ex => ({
                 name: ex.name,
                 sets: Array(Number(ex.sets) || 3).fill({}),
