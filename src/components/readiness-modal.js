@@ -16,8 +16,10 @@ class ReadinessModal extends LitElement {
       muscle_soreness: 3, // Lower is better
     };
   }
-
-  _handleSliderInput(field, value) {
+  
+  // This is the main correction: a direct event listener for the slider
+  _handleSliderInput(e) {
+    const { field, value } = e.target.dataset;
     this.readinessData = { ...this.readinessData, [field]: Number(value) };
     this.requestUpdate();
   }
@@ -51,7 +53,8 @@ class ReadinessModal extends LitElement {
                 type="range"
                 id="sleep_quality"
                 .value=${this.readinessData.sleep_quality}
-                @input=${e => this._handleSliderInput('sleep_quality', e.target.value)}
+                data-field="sleep_quality"
+                @input=${this._handleSliderInput}
                 min="1" max="10" step="1"
               />
             </div>
@@ -61,7 +64,8 @@ class ReadinessModal extends LitElement {
                 type="range"
                 id="energy_level"
                 .value=${this.readinessData.energy_level}
-                @input=${e => this._handleSliderInput('energy_level', e.target.value)}
+                data-field="energy_level"
+                @input=${this._handleSliderInput}
                 min="1" max="10" step="1"
               />
             </div>
@@ -71,7 +75,8 @@ class ReadinessModal extends LitElement {
                 type="range"
                 id="motivation"
                 .value=${this.readinessData.motivation}
-                @input=${e => this._handleSliderInput('motivation', e.target.value)}
+                data-field="motivation"
+                @input=${this._handleSliderInput}
                 min="1" max="10" step="1"
               />
             </div>
@@ -81,7 +86,8 @@ class ReadinessModal extends LitElement {
                 type="range"
                 id="muscle_soreness"
                 .value=${this.readinessData.muscle_soreness}
-                @input=${e => this._handleSliderInput('muscle_soreness', e.target.value)}
+                data-field="muscle_soreness"
+                @input=${this._handleSliderInput}
                 min="1" max="10" step="1"
               />
             </div>
