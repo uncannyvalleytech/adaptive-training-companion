@@ -19,7 +19,8 @@ class ReadinessModal extends LitElement {
   
   // This is the main correction: a direct event listener for the slider
   _handleSliderInput(e) {
-    const { field, value } = e.target.dataset;
+    const { field } = e.target.dataset;
+    const value = e.target.value;
     this.readinessData = { ...this.readinessData, [field]: Number(value) };
     this.requestUpdate();
   }
