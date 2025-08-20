@@ -50,7 +50,7 @@ export class WorkoutEngine {
     const base_mev = this.userProfile.baseMEV?.[muscleGroup] || this.baseMEV[muscleGroup] || 8;
     const muscle_size_factor = this.muscleSizeFactor[muscleGroup] || 0.2;
     const mev = base_mev * (1 + muscle_size_factor) * Math.pow(taf, 0.3);
-    const freqFactorMap = { 1: 0.8, 2: 1.0, 3: 1.2 };
+    const freqFactorMap = { 1: 0.8, 2: 1.0, 3: 1.2, 4: 1.2, 5: 1.3, 6: 1.4 };
     const trainingFrequencyFactor = freqFactorMap[trainingFrequency] || 1.3;
     const mrv = mev * (2.5 + rcs) * trainingFrequencyFactor;
     const mav = mev + (mrv - mev) * 0.7;
@@ -102,8 +102,8 @@ export class WorkoutEngine {
     return (sleep_quality + energy_level + motivation + sorenessInverse) / 4;
   }
 
-  getDailyReadiness(recoveryScore, performanceIndicator = 0) {
-    return (recoveryScore + (performanceIndicator + 10)) / 2;
+  getDailyReadiness(recoveryScore) {
+    return recoveryScore;
   }
 
   adjustWorkout(plannedWorkout, readinessScore) {
@@ -151,14 +151,36 @@ export class WorkoutEngine {
     scoredExercises.sort((a, b) => b.score - a.score);
     return scoredExercises.slice(0, count);
   }
+  
+  // --- Workout Split Logic ---
+  getWorkoutSplit(daysPerWeek) {
+    const splits = {
+      3: [['chest', 'back'], ['legs', 'arms'], ['shoulders', 'chest']],
+      4: [['upper', 'core'], ['lower', 'calves'], ['upper', 'core'], ['lower', 'calves']],
+      5: [['push'], ['pull'], ['legs'], ['upper'], ['lower']],
+      6: [['push'], ['pull'], ['legs'], ['push'], ['pull'], ['legs']],
+    };
+    // Correct split for 4 days is U/L, U/L, not U/L, U/L, U/L, U/L
+    const simplifiedSplits = {
+      3: [['chest', 'back'], ['legs', 'shoulders'], ['arms', 'chest']],
+      4: [['chest', 'shoulders', 'triceps'], ['back', 'biceps'], ['legs'], ['full body']],
+      5: [['chest'], ['back'], ['legs'], ['shoulders', 'arms'], ['full body']],
+      6: [['chest'], ['back'], ['legs'], ['shoulders'], ['arms'], ['full body']]
+    };
+    const splitForDays = simplifiedSplits[daysPerWeek] || simplifiedSplits[4];
+    return splitForDays.map(muscleGroups => muscleGroups.map(group => group.toLowerCase()));
+  }
 
   // --- 9. Periodization Model ---
-  generateMesocycle(muscleGroups, mesocycleLength = 5) {
+  generateMesocycle(daysPerWeek, mesocycleLength = 5) {
     const mesocycle = { weeks: [] };
+    const workoutSplit = this.getWorkoutSplit(daysPerWeek);
     for (let week = 1; week <= mesocycleLength; week++) {
       const weeklyPlan = { week: week, muscleData: {} };
-      for (const muscle of muscleGroups) {
-        const landmarks = this.getVolumeLandmarks(muscle);
+      // Map muscle groups to their correct volume landmarks and RPE targets
+      const uniqueMuscles = [...new Set(workoutSplit.flat())];
+      for (const muscle of uniqueMuscles) {
+        const landmarks = this.getVolumeLandmarks(muscle, daysPerWeek);
         const startingVolume = landmarks.mev * 1.1;
         const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
         weeklyPlan.muscleData[muscle] = {
@@ -170,7 +192,7 @@ export class WorkoutEngine {
       mesocycle.weeks.push(weeklyPlan);
     }
     const deloadWeek = { week: mesocycleLength + 1, isDeload: true, muscleData: {} };
-    for (const muscle of muscleGroups) {
+    for (const muscle of [...new Set(workoutSplit.flat())]) {
       const landmarks = this.getVolumeLandmarks(muscle);
       deloadWeek.muscleData[muscle] = {
         targetVolume: Math.round(landmarks.mev * 0.6),
@@ -205,9 +227,9 @@ export class WorkoutEngine {
     const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [] }; 
     for (const muscle of muscleGroupsForDay) {
         const musclePlan = weeklyPlan.muscleData[muscle];
-        const numExercises = musclePlan.targetVolume > 12 ? 3 : 2;
+        const numExercises = musclePlan?.targetVolume ? (musclePlan.targetVolume > 12 ? 3 : 2) : 2;
         const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
-        let setsRemaining = musclePlan.targetVolume;
+        let setsRemaining = musclePlan?.targetVolume ? musclePlan.targetVolume : 10;
         const exercisesWithSets = selected.map((ex, index) => {
             const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
             setsRemaining -= setsForThisEx;
