@@ -72,11 +72,13 @@ class OnboardingFlow extends LitElement {
     ];
   }
 
+  // Handles input from text, number, and slider fields
   _handleInputChange(field, value) {
     this.userData = { ...this.userData, [field]: value };
     this.error = "";
   }
   
+  // Correctly handles selection from choice buttons/cards and progresses the step
   _handleChoiceSelection(field, value) {
     this.userData = { ...this.userData, [field]: value };
     this._nextStep();
@@ -127,6 +129,7 @@ class OnboardingFlow extends LitElement {
 
   render() {
     const currentStepData = this.steps[this.step];
+    // Progress is now calculated based on all steps that require user input
     const progress = (this.step / (this.steps.length - 2)) * 100;
 
     return html`
@@ -169,6 +172,7 @@ class OnboardingFlow extends LitElement {
                 </div>
             `;
         case 'choice':
+            // Use _renderChoice for steps with choice buttons/cards
             return this._renderChoice(stepData);
         case 'loading':
             return html`<div class="loader"></div>`;
@@ -198,9 +202,13 @@ class OnboardingFlow extends LitElement {
               <div class="input-group slider-group">
                 <label for=${field.key}>${field.label}: <strong>${this.userData[field.key]}</strong></label>
                 <input
-                  type="range" id=${field.key} .value=${this.userData[field.key]}
+                  type="range"
+                  id=${field.key}
+                  .value=${this.userData[field.key]}
                   @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
-                  min=${field.min} max=${field.max} step=${field.step}
+                  min=${field.min}
+                  max=${field.max}
+                  step=${field.step}
                 />
               </div>
             `;
