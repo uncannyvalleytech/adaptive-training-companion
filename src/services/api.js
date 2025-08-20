@@ -26,10 +26,10 @@ async function makeApiRequest(action, token, payload = {}) {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/plain", // Use text/plain to avoid preflight issues
       },
       body: JSON.stringify(requestData),
-      mode: 'cors',
+      mode: 'no-cors', // Use no-cors mode to bypass the CORS policy for this request
     });
 
     if (!response.ok) {
@@ -74,7 +74,7 @@ export async function testApiConnection() {
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       body: JSON.stringify({ action: "test" }),
-      mode: 'cors',
+      mode: 'no-cors',
     });
     return response.ok;
   } catch (error) {
