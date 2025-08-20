@@ -35,12 +35,16 @@ class SettingsView extends LitElement {
     this.theme = newTheme;
     localStorage.setItem('theme', this.theme);
     this._dispatchEvent('theme-change', { theme: this.theme });
+    // Force a re-render to update the button's active state
+    this.requestUpdate();
   }
 
   _handleUnitsChange(newUnits) {
     this.units = newUnits;
     localStorage.setItem('units', this.units);
     this._dispatchEvent('units-change', { units: this.units });
+    // Force a re-render to update the button's active state
+    this.requestUpdate();
   }
   
   // This method correctly dispatches a 'sign-out' event which app-shell will now handle.
