@@ -139,7 +139,7 @@ class OnboardingFlow extends LitElement {
             </div>
           ` : ''}
 
-          <div class="step-content">
+          <div class="step active">
             <h2>${currentStepData.title}</h2>
             <p>${currentStepData.text}</p>
             
@@ -170,11 +170,10 @@ class OnboardingFlow extends LitElement {
                 </div>
             `;
         case 'choice':
-            // Use buttons for better accessibility and consistent behavior
             return html`
                 <div class="card-group ${stepData.vertical ? 'vertical' : ''}">
                   ${stepData.options.map(opt => html`
-                    <button class="goal-card card-interactive ${this.userData[stepData.field] === opt.value ? 'selected' : ''}" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
+                    <button class="goal-card card-interactive ${this.userData[stepData.field] == opt.value ? 'selected' : ''}" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
                       <h3>${opt.text}</h3>
                       ${opt.subtext ? html`<p>${opt.subtext}</p>` : ''}
                     </button>
