@@ -228,7 +228,7 @@ class OnboardingFlow extends LitElement {
                       ${field.options.map(opt => html`
                           <button 
                               class="choice-btn ${this.userData[field.key] === opt.value ? 'selected' : ''}"
-                              @click=${() => this._handleInputChange(field.key, opt.value)}>
+                              @click=${() => this._handleChoiceSelection(field.key, opt.value)}>
                               ${opt.text}
                           </button>
                       `)}
