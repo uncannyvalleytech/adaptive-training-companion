@@ -266,7 +266,16 @@ class WorkoutSession extends LitElement {
 
     return html`
       <div id="daily-workout-view" class="container">
-        <!-- Enhanced Header -->
+        <!-- Reusable header with a back button to exit the workout -->
+        <header class="app-header">
+          <button class="btn btn-icon" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))} aria-label="End Workout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          </button>
+          <h1>Workout Session</h1>
+          <div style="width: 48px;"></div> <!-- Spacer for centering title -->
+        </header>
+
+        <!-- Main Content -->
         <div class="workout-header">
             <h1 class="workout-title">${currentExercise.name}</h1>
             <p class="workout-subtitle">Exercise ${this.currentExerciseIndex + 1} of ${this.workout.exercises.length}</p>
