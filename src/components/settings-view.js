@@ -90,8 +90,19 @@ class SettingsView extends LitElement {
         </div>
         
         <div class="card settings-group">
-            <h3>Account</h3>
-            <button class="btn btn-secondary" @click=${this._handleSignOut}>Sign Out</button>
+          <h3>Account</h3>
+          <div class="setting-item">
+            <div style="flex: 1;">
+              <label>Google Sync</label>
+              <p style="font-size: var(--font-size-sm); color: var(--color-text-secondary); margin: var(--space-1) 0 0 0;">
+                Sync your data across devices with Google account
+              </p>
+            </div>
+            <button class="btn btn-secondary" disabled style="opacity: 0.6; cursor: not-allowed;">
+              Coming Soon
+            </button>
+          </div>
+          <button class="btn btn-ghost" @click=${this._handleSignOut}>Reset App</button>
         </div>
 
         ${this.showDeleteConfirm ? this.renderDeleteConfirmModal() : ''}
