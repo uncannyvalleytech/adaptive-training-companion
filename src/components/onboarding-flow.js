@@ -139,7 +139,7 @@ class OnboardingFlow extends LitElement {
             </div>
           ` : ''}
 
-          <div class="step active">
+          <div class="step-content">
             <h2>${currentStepData.title}</h2>
             <p>${currentStepData.text}</p>
             
