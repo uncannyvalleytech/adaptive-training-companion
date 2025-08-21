@@ -395,17 +395,19 @@ h4 { font-size: var(--font-size-xl); }
 #home-screen {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   text-align: center;
   min-height: 100vh;
   position: relative;
+  padding-top: 10vh; /* Adds more space at the top */
+  padding-bottom: 5vh; /* Adds more space at the bottom */
+  justify-content: center;
 }
 
 .home-nav-buttons {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-4);
+  gap: var(--space-6); /* Increased gap for more spacing */
   width: 100%;
   max-width: 400px;
   margin: var(--space-8) 0;
@@ -659,6 +661,34 @@ h4 { font-size: var(--font-size-xl); }
     transform: translateY(0);
   }
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+}
+
 
 @keyframes celebrationBounce {
   0% {
@@ -1420,6 +1450,34 @@ h4 { font-size: var(--font-size-xl); }
 .onboarding-wizard {
   max-width: 450px;
   width: 100%;
+  position: relative;
+  height: 100%;
+  min-height: 50vh; /* Ensure the container has enough height for the transition */
+  overflow: hidden; /* Hide overflowing content during transitions */
+}
+
+.onboarding-wizard .step {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding-bottom: 2rem;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.onboarding-wizard .step:not(.active) {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute; /* Keep non-active steps from taking up space */
+  transform: translateX(-100%); /* Slide previous step out */
+}
+
+.onboarding-wizard .step.active.slide-in-right {
+  animation: slideInRight 0.5s ease forwards;
+}
+
+.onboarding-wizard .step.active.slide-in-left {
+  animation: slideOutLeft 0.5s ease forwards;
 }
 
 .onboarding-wizard h2 {
