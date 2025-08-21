@@ -1,6 +1,5 @@
 import { LitElement, html } from "lit";
-import { saveData } from "../services/api.js";
-import { getCredential } from "../services/google-auth.js";
+import { saveDataLocally } from "../services/local-storage.js";
 import "./workout-feedback-modal.js";
 import "./motivational-elements.js";
 
@@ -236,14 +235,17 @@ class WorkoutSession extends LitElement {
             newPRs: [], 
         };
 
-        const token = getCredential().credential;
-        await saveData({ workouts: [workoutToSave] }, token);
+        const response = saveDataLocally({ workouts: [workoutToSave] });
 
-        this.dispatchEvent(new CustomEvent('workout-completed', {
-            detail: { workoutData: workoutToSave },
-            bubbles: true,
-            composed: true
-        }));
+        if (response.success) {
+            this.dispatchEvent(new CustomEvent('workout-completed', {
+                detail: { workoutData: workoutToSave },
+                bubbles: true,
+                composed: true
+            }));
+        } else {
+            throw new Error(response.error);
+        }
     } catch (error) {
         this.dispatchEvent(new CustomEvent('show-toast', { detail: { message: `Error saving workout: ${error.message}`, type: 'error' }, bubbles: true, composed: true }));
     } finally {
@@ -267,22 +269,18 @@ class WorkoutSession extends LitElement {
 
     return html`
       <div id="daily-workout-view" class="container">
-        <!-- Reusable header with a back button to exit the workout -->
         <header class="app-header">
           <button class="btn btn-icon" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))} aria-label="End Workout">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
           </button>
           <h1>Workout Session</h1>
-          <div style="width: 48px;"></div> <!-- Spacer for centering title -->
-        </header>
+          <div style="width: 48px;"></div> </header>
 
-        <!-- Main Content -->
         <div class="workout-header">
             <h1 class="workout-title">${currentExercise.name}</h1>
             <p class="workout-subtitle">Exercise ${this.currentExerciseIndex + 1} of ${this.workout.exercises.length}</p>
         </div>
 
-        <!-- Progress Bar -->
         <div class="progress-bar-container">
           <div class="progress-bar">
             <div class="progress-fill" style="width: ${this.workoutProgress}%"></div>
@@ -290,13 +288,11 @@ class WorkoutSession extends LitElement {
           <div class="progress-text">${Math.round(this.workoutProgress)}% Complete</div>
         </div>
 
-        <!-- Timer Section -->
         <div class="timer-section card">
             <div class="timer-display">${this.stopwatchDisplay}</div>
             <div class="timer-label">Workout Time</div>
         </div>
 
-        <!-- Rest Timer -->
         ${this.isResting ? html`
           <div class="rest-timer card">
             <progress-ring 
@@ -312,12 +308,10 @@ class WorkoutSession extends LitElement {
           </div>
         ` : ''}
 
-        <!-- Motivational Message -->
         ${this.showMotivation ? html`
           <motivational-message type="encouragement"></motivational-message>
         ` : ''}
 
-        <!-- Exercise Navigation -->
         <div class="exercise-navigation">
             <button class="btn btn-icon" @click=${this._previousExercise} ?disabled=${this.currentExerciseIndex === 0} aria-label="Previous Exercise">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
@@ -328,7 +322,6 @@ class WorkoutSession extends LitElement {
             </button>
         </div>
 
-        <!-- Current Exercise -->
         <div class="exercise-card card card-elevated">
             <div class="exercise-header">
                 <h3 class="exercise-name">${currentExercise.name}</h3>
@@ -367,7 +360,6 @@ class WorkoutSession extends LitElement {
             </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="workout-actions">
             <button class="btn btn-secondary" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))}>
                 End Workout
