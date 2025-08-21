@@ -16,7 +16,7 @@ class OnboardingFlow extends LitElement {
       training_months: 6,
       sleep_hours: 8,
       stress_level: 5,
-      daysPerWeek: '4', // Keep as string to match the options
+      daysPerWeek: 4,
       goal: 'hypertrophy',
     };
     this.error = "";
@@ -72,44 +72,16 @@ class OnboardingFlow extends LitElement {
     ];
   }
 
-  // Enhanced input change handler with better value parsing
   _handleInputChange(field, value) {
-    console.log('Input change:', field, value, typeof value); // Debug log
-    
-    // Parse the value appropriately based on field type
-    let parsedValue = value;
-    
-    if (field === 'age' || field === 'training_months') {
-      parsedValue = parseInt(value, 10);
-      if (isNaN(parsedValue)) parsedValue = 0;
-    } else if (field === 'sleep_hours') {
-      parsedValue = parseFloat(value);
-      if (isNaN(parsedValue)) parsedValue = 8;
-    } else if (field === 'stress_level') {
-      parsedValue = parseInt(value, 10);
-      if (isNaN(parsedValue)) parsedValue = 5;
-    }
-    
-    this.userData = { ...this.userData, [field]: parsedValue };
-    this.error = "";
-    
-    // Force re-render to update the UI
-    this.requestUpdate();
-    
-    console.log('Updated userData:', this.userData); // Debug log
-  }
-  
-  // Choice selection with immediate progression for choice-type steps
-  _handleChoiceSelection(field, value) {
-    console.log('Choice selection:', field, value); // Debug log
     this.userData = { ...this.userData, [field]: value };
     this.error = "";
     this.requestUpdate();
-    
-    // Auto-progress for choice steps
-    setTimeout(() => {
-      this._nextStep();
-    }, 300); // Small delay for visual feedback
+  }
+  
+  _handleChoiceSelection(field, value) {
+    this.userData = { ...this.userData, [field]: value };
+    this.requestUpdate(); // Ensure UI reflects the selection immediately
+    this._nextStep();
   }
 
   _validateStep() {
@@ -199,7 +171,17 @@ class OnboardingFlow extends LitElement {
                 </div>
             `;
         case 'choice':
-            return this._renderChoice(stepData);
+            // The click event listener is attached to the card itself
+            return html`
+                <div class="card-group ${stepData.vertical ? 'vertical' : ''}">
+                  ${stepData.options.map(opt => html`
+                    <div class="goal-card card-interactive" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
+                      <h3>${opt.text}</h3>
+                      ${opt.subtext ? html`<p>${opt.subtext}</p>` : ''}
+                    </div>
+                  `)}
+                </div>
+            `;
         case 'loading':
             return html`<div class="loader"></div>`;
         default:
@@ -210,37 +192,28 @@ class OnboardingFlow extends LitElement {
   _renderForm(fields) {
     return html`
       ${fields.map(field => {
-        const currentValue = this.userData[field.key];
-        
         switch(field.type) {
           case 'number':
             return html`
               <div class="input-group">
                 <label for=${field.key}>${field.label}</label>
                 <input
-                  type="number" 
-                  id=${field.key} 
-                  .value=${currentValue?.toString() || ''}
-                  @input=${e => this._handleInputChange(field.key, e.target.value)}
-                  @change=${e => this._handleInputChange(field.key, e.target.value)}
-                  min=${field.min} 
-                  max=${field.max} 
-                  placeholder="Enter ${field.label.toLowerCase()}"
-                  inputmode="numeric" 
-                  pattern="[0-9]*"
+                  type="number" id=${field.key} .value=${this.userData[field.key]}
+                  @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
+                  min=${field.min} max=${field.max} placeholder="Enter ${field.label.toLowerCase()}"
+                  inputmode="numeric" pattern="[0-9]*"
                 />
               </div>
             `;
           case 'slider':
             return html`
               <div class="input-group slider-group">
-                <label for=${field.key}>${field.label}: <strong>${currentValue}</strong></label>
+                <label for=${field.key}>${field.label}: <strong>${this.userData[field.key]}</strong></label>
                 <input
                   type="range"
                   id=${field.key}
-                  .value=${currentValue?.toString() || field.min?.toString()}
-                  @input=${e => this._handleInputChange(field.key, e.target.value)}
-                  @change=${e => this._handleInputChange(field.key, e.target.value)}
+                  .value=${this.userData[field.key]}
+                  @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
                   min=${field.min}
                   max=${field.max}
                   step=${field.step}
@@ -254,7 +227,7 @@ class OnboardingFlow extends LitElement {
                       <div class="button-options">
                       ${field.options.map(opt => html`
                           <button 
-                              class="choice-btn ${currentValue === opt.value ? 'selected' : ''}"
+                              class="choice-btn ${this.userData[field.key] === opt.value ? 'selected' : ''}"
                               @click=${() => this._handleInputChange(field.key, opt.value)}>
                               ${opt.text}
                           </button>
@@ -266,28 +239,6 @@ class OnboardingFlow extends LitElement {
         }
       })}
     `;
-  }
-
-  _renderChoice(stepData) {
-    const currentValue = this.userData[stepData.field];
-    
-    return html`
-      <div class="card-group ${stepData.vertical ? 'vertical' : ''}">
-        ${stepData.options.map(opt => html`
-          <div 
-            class="goal-card card-interactive ${currentValue === opt.value ? 'selected' : ''}" 
-            @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}
-          >
-            <h3>${opt.text}</h3>
-            ${opt.subtext ? html`<p>${opt.subtext}</p>` : ''}
-          </div>
-        `)}
-      </div>
-    `;
-  }
-
-  createRenderRoot() {
-    return this;
   }
 }
 
