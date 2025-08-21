@@ -107,8 +107,10 @@ class AchievementBadge extends LitElement {
     return html`
       <div class="achievement-card card ${this.unlocked ? 'unlocked' : 'locked'}">
         <span class="achievement-icon">${this.unlocked ? icon : '🔒'}</span>
-        <div class="achievement-name">${name}</div>
-        <div class="achievement-desc">${description}</div>
+        <div class="achievement-content">
+          <h4>${name}</h4>
+          <p>${description}</p>
+        </div>
         ${this.unlocked ? html`
           <div class="achievement-unlocked">✓ Unlocked</div>
         ` : ''}
@@ -282,10 +284,6 @@ class LevelProgress extends LitElement {
               <h3>${title}</h3>
               <p>Level ${this.currentLevel}</p>
             </div>
-          </div>
-          <div class="xp-counter">
-            <div class="xp-value">${this.currentXP.toLocaleString()}</div>
-            <div class="xp-label">XP</div>
           </div>
         </div>
         <div class="progress-bar">
