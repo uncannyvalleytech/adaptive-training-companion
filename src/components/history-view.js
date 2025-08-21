@@ -1,13 +1,12 @@
 /**
  * @file history-view.js
  * This component is responsible for displaying a history of the user's
- * completed workouts. It fetches the workout data from the backend and
+ * completed workouts. It fetches the workout data from local storage and
  * renders it as a list with data visualizations.
  */
 
 import { LitElement, html } from "lit";
-import { getData } from "../services/api.js";
-import { getCredential } from "../services/google-auth.js";
+import { getDataLocally } from "../services/local-storage.js";
 
 class HistoryView extends LitElement {
   static properties = {
@@ -61,20 +60,17 @@ class HistoryView extends LitElement {
     this.errorMessage = "";
 
     try {
-      const token = getCredential().credential;
-      if (!token) {
-        throw new Error("User not authenticated.");
-      }
-
-      const response = await getData(token);
-      if (response && response.data && response.data.workouts) {
+      const data = getDataLocally();
+      if (data && data.workouts) {
         // Sort workouts by date, newest to oldest for display
-        const sortedWorkouts = response.data.workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const sortedWorkouts = data.workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
         this.workouts = sortedWorkouts;
         this.filteredWorkouts = this._applyFilters();
         this.isLoading = false;
       } else {
-        throw new Error(response.error || "Unexpected API response format.");
+        this.workouts = [];
+        this.filteredWorkouts = [];
+        this.isLoading = false;
       }
     } catch (error) {
       console.error("Failed to fetch workout history:", error);
