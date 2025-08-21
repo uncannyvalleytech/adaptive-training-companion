@@ -80,7 +80,7 @@ class OnboardingFlow extends LitElement {
   
   _handleChoiceSelection(field, value) {
     this.userData = { ...this.userData, [field]: value };
-    this.requestUpdate(); // Ensure UI reflects the selection immediately
+    this.requestUpdate();
     this._nextStep();
   }
 
@@ -171,14 +171,14 @@ class OnboardingFlow extends LitElement {
                 </div>
             `;
         case 'choice':
-            // The click event listener is attached to the card itself
+            // Use buttons for better accessibility and consistent behavior
             return html`
                 <div class="card-group ${stepData.vertical ? 'vertical' : ''}">
                   ${stepData.options.map(opt => html`
-                    <div class="goal-card card-interactive" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
+                    <button class="goal-card card-interactive" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
                       <h3>${opt.text}</h3>
                       ${opt.subtext ? html`<p>${opt.subtext}</p>` : ''}
-                    </div>
+                    </button>
                   `)}
                 </div>
             `;
@@ -239,6 +239,10 @@ class OnboardingFlow extends LitElement {
         }
       })}
     `;
+  }
+
+  createRenderRoot() {
+    return this;
   }
 }
 
