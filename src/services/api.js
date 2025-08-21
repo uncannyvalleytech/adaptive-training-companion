@@ -1,47 +1,36 @@
 /**
  * @file api.js
- * Enhanced API service with improved CORS handling and offline support
+ * FIXED: Proper CORS handling and request formatting for Google Apps Script
  */
 
-// --- CONFIGURATION ---
-const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx-ZBJGrN6nygXcgIrk0Q2iINC9eZ8t5xngsAcwYPWudLryJzGsrt02Zw0lqbwmz8YB/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-ZBJGrN6nygXcgIrk0Q2iINC9eZ8t5xngsAcwYPWudLryJzGsrt02Zw0lqbwmz8YB/exec";
 
-// Constants for local storage keys
 const LOCAL_STORAGE_KEY = 'userWorkoutData';
 const OFFLINE_QUEUE_KEY = 'offlineWorkoutQueue';
 
 /**
- * Enhanced API request function with better CORS handling
+ * Enhanced API request function with proper CORS handling
  */
 async function makeApiRequest(action, token, payload = {}) {
-  if (!token) {
+  if (!token && action !== 'test') {
     return { success: false, error: "Authentication token is missing." };
   }
 
-  // Prepare the request data
   const requestData = { action, token, payload };
 
   try {
+    // First, try a simple fetch with proper headers
     const response = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain", // Use text/plain to avoid preflight issues
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(requestData),
-      mode: 'no-cors', // Use no-cors mode to bypass the CORS policy for this request
+      // Remove mode: 'no-cors' - this was causing issues
     });
 
     if (!response.ok) {
-      if (response.status === 401) {
-        throw new Error("Authentication failed. Please sign in again.");
-      } else if (response.status === 403) {
-        throw new Error("Permission denied. Please check your Google account permissions.");
-      } else if (response.status === 0 || response.status >= 500) {
-        throw new Error("Server temporarily unavailable. Please try again later.");
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const data = await response.json();
@@ -50,11 +39,17 @@ async function makeApiRequest(action, token, payload = {}) {
   } catch (error) {
     console.error("API Request Failed:", error);
     
-    // Provide more specific error messages
+    // Provide specific error handling
     if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
       return { 
         success: false, 
         error: "Unable to connect to server. Please check your internet connection.",
+        isNetworkError: true
+      };
+    } else if (error.message.includes('CORS')) {
+      return {
+        success: false,
+        error: "CORS error - please check server configuration.",
         isNetworkError: true
       };
     } else {
@@ -67,21 +62,34 @@ async function makeApiRequest(action, token, payload = {}) {
 }
 
 /**
- * Test the API connection with a simple POST
+ * Test the API connection
  */
 export async function testApiConnection() {
   try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "test" }),
-      mode: 'no-cors',
-    });
-    return response.ok;
+    const response = await makeApiRequest("test");
+    return response.success;
   } catch (error) {
     console.error("API connection test failed:", error);
     return false;
   }
 }
+
+/**
+ * Initialize API with connection test
+ */
+export async function initializeApi() {
+  const isConnected = await testApiConnection();
+  console.log('API connection test:', isConnected ? 'PASSED' : 'FAILED');
+  
+  if (!isConnected) {
+    console.warn('API not accessible, running in offline mode');
+  }
+  
+  return isConnected;
+}
+
+// Keep all your other existing functions (getData, saveData, deleteData, etc.)
+// Just replace the makeApiRequest function with the fixed version above
 
 /**
  * Create default user data structure
@@ -400,18 +408,4 @@ export async function syncData() {
     console.warn(`Synced ${syncedCount} items, ${failedItems.length} failed`);
     return { success: true, syncedCount, failedCount: failedItems.length };
   }
-}
-
-/**
- * Initialize API with connection test
- */
-export async function initializeApi() {
-  const isConnected = await testApiConnection();
-  console.log('API connection test:', isConnected ? 'PASSED' : 'FAILED');
-  
-  if (!isConnected) {
-    console.warn('API not accessible, running in offline mode');
-  }
-  
-  return isConnected;
 }
