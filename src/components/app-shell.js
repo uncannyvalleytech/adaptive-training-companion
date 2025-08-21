@@ -243,18 +243,13 @@ class AppShell extends LitElement {
         onboardingComplete: true
       };
       
-      // Instantiate the WorkoutEngine with the new user data
       const engine = new WorkoutEngine(this.userData);
       
-      // Generate the initial mesocycle based on the user's `daysPerWeek`
-      // The `onboarding-flow` component now passes `daysPerWeek` as a string,
-      // so we convert it to a number.
-      this.userData.mesocycle = engine.generateMesocycle(this.userData.daysPerWeek);
+      this.userData.mesocycle = engine.generateMesocycle(Number(this.userData.daysPerWeek));
       
       this.showOnboarding = false;
       this._showToast("Profile created! Your new workout plan is ready.", "success");
       await saveData(this.userData, this.userCredential.credential);
-      // Re-fetch data to ensure UI is in sync with saved data
       this.fetchUserData();
   }
   
@@ -316,15 +311,14 @@ class AppShell extends LitElement {
     `;
   }
   
-  // NEW: Reusable header with back button
   _renderHeader(title) {
     return html`
       <header class="app-header">
-        <button class="btn btn-icon" @click=${this._goBack} aria-label="Back">
+        <button class="btn btn-icon" @click=${() => this._goBack()} aria-label="Back">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
         </button>
         <h1>${title}</h1>
-        <div style="width: 48px;"></div> <!-- Spacer for centering title -->
+        <div style="width: 48px;"></div>
       </header>
     `;
   }
@@ -333,11 +327,10 @@ class AppShell extends LitElement {
     if (!this.userCredential) return this.loadingMessage ? this.renderSkeletonScreen() : this.renderLoginScreen();
     if (this.errorMessage) return this.renderErrorScreen();
     if (!this.userData) return this.renderSkeletonScreen(this.loadingMessage);
-    if (this.showOnboarding) return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete}></onboarding-flow>`;
-    if (this.showReadinessModal) return html`<readiness-modal .onSubmit=${(data) => this._handleReadinessSubmit(data)} .onClose=${() => this.showReadinessModal = false}></readiness-modal>`;
+    if (this.showOnboarding) return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete.bind(this)}></onboarding-flow>`;
+    if (this.showReadinessModal) return html`<readiness-modal .onSubmit=${this._handleReadinessSubmit.bind(this)} .onClose=${() => this.showReadinessModal = false}></readiness-modal>`;
     if (this.isWorkoutActive) return html`<workout-session .workout=${this.workout}></workout-session>`;
 
-    // UPDATED: Added headers to all sub-views
     switch (this.currentView) {
       case "home": return this.renderHomeScreen();
       case "templates": return html`<div class="container">${this._renderHeader("Templates")}<workout-templates></workout-templates></div>`;
@@ -365,7 +358,6 @@ class AppShell extends LitElement {
     `;
   }
   
-  // UPDATED: Settings button moved and centered
   renderHomeScreen() {
     return html`
       <div id="home-screen" class="container">
@@ -433,7 +425,7 @@ class AppShell extends LitElement {
       if (!workout) return this.renderHomeScreen();
       return html`
           <div class="container">
-              <header class="app-header"><h1>Workout Complete!</h1></header>
+              ${this._renderHeader("Workout Complete!")}
               <div class="card">
                   <p>Duration: ${Math.floor(workout.durationInSeconds / 60)}m ${workout.durationInSeconds % 60}s</p>
                   <p>Total Volume: ${workout.totalVolume} ${this.units}</p>
@@ -445,7 +437,6 @@ class AppShell extends LitElement {
   }
 
   _handleReadinessSubmit(readinessData) {
-      // Use the WorkoutEngine to generate the daily workout based on readiness
       const engine = new WorkoutEngine(this.userData);
       const recoveryScore = engine.calculateRecoveryScore(readinessData);
       const readinessScore = engine.getDailyReadiness(recoveryScore);
@@ -463,7 +454,6 @@ class AppShell extends LitElement {
   }
 
   _getPlannedWorkout() {
-      // Check if mesocycle data is available
       if (!this.userData?.mesocycle?.weeks) {
           this._showToast("No mesocycle found. Please complete onboarding.", "error");
           return null;
@@ -471,15 +461,13 @@ class AppShell extends LitElement {
       
       const engine = new WorkoutEngine(this.userData);
       
-      // Get today's workout plan from the current mesocycle week
-      // This assumes a simple A/B/C rotation based on days per week and workouts completed
       const workoutsPerWeek = Number(this.userData.daysPerWeek) || 4;
       const workoutsCompleted = this.userData.workouts.filter(w => new Date(w.date).getFullYear() === new Date().getFullYear()).length;
       const workoutIndex = workoutsCompleted % workoutsPerWeek;
       
       const muscleGroupsForDay = engine.getWorkoutSplit(workoutsPerWeek)[workoutIndex];
       const currentWeekData = this.userData.mesocycle.weeks.find(w => w.week === this.userData.currentWeek) || 
-                              this.userData.mesocycle.weeks[0]; // Fallback to first week
+                              this.userData.mesocycle.weeks[0];
       
       return engine.generateDailyWorkout(muscleGroupsForDay, currentWeekData);
   }
