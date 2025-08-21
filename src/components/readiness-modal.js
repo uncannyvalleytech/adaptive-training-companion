@@ -17,7 +17,6 @@ class ReadinessModal extends LitElement {
     };
   }
   
-  // This is the main correction: a direct event listener for the slider
   _handleSliderInput(e) {
     const { field } = e.target.dataset;
     const value = e.target.value;
@@ -37,10 +36,17 @@ class ReadinessModal extends LitElement {
     }
   }
 
+  // This function ensures the modal only closes on a direct click to the overlay
+  _handleOverlayClick(e) {
+    if (e.target === e.currentTarget) {
+      this._handleClose();
+    }
+  }
+
   render() {
     return html`
-      <div class="modal-overlay" @click=${this._handleClose}>
-        <div class="modal-content card" @click=${e => e.stopPropagation()}>
+      <div class="modal-overlay" @click=${this._handleOverlayClick}>
+        <div class="modal-content card">
           <div class="modal-header">
             <h2 id="modal-title">Daily Readiness</h2>
             <button class="close-button" @click=${this._handleClose} aria-label="Close readiness modal">✖</button>
