@@ -1,5 +1,5 @@
 import { LitElement, html } from "lit";
-import { initializeSignIn, signOut, validateAuth, getCredential } from "../services/google-auth.js";
+import { initializeSignIn, signOut, validateAuth, getCredential, ensureGoogleLibraryLoaded } from "../services/google-auth.js";
 import { getData, saveData, deleteData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
 import { WorkoutEngine } from "../services/workout-engine.js";
 
@@ -93,15 +93,27 @@ class AppShell extends LitElement {
     }
   }
 
-  setupSignInButton() {
-      setTimeout(() => {
-        const signInButtonContainer = this.querySelector("#google-signin-button");
-        if (signInButtonContainer) {
-            initializeSignIn(signInButtonContainer, (credential) => {
-              this._handleSignIn(credential, false);
-            });
-        }
-      }, 50);
+  async setupSignInButton() {
+    try {
+      // Wait until the Google library is confirmed to be loaded
+      await ensureGoogleLibraryLoaded();
+      
+      // Now it's safe to find the button and initialize it
+      const signInButtonContainer = this.querySelector("#google-signin-button");
+      if (signInButtonContainer) {
+        initializeSignIn(signInButtonContainer, (credential) => {
+          this._handleSignIn(credential, false);
+        });
+      }
+    } catch (error) {
+      console.error("Could not initialize Google Sign-In:", error.message);
+      // The fallback UI will be rendered by the auth service
+      const signInButtonContainer = this.querySelector("#google-signin-button");
+      if(signInButtonContainer){
+        // Manually trigger the fallback if the promise rejects
+        initializeSignIn(signInButtonContainer, ()=>{});
+      }
+    }
   }
 
   _applyTheme(newTheme) {
