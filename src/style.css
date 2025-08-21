@@ -1722,3 +1722,14 @@ h4 { font-size: var(--font-size-xl); }
   font-size: var(--font-size-sm);
   margin-bottom: var(--space-4);
 }
+.goal-card.selected {
+  border-color: var(--color-accent-primary) !important;
+  background: rgba(0, 212, 255, 0.1) !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3) !important;
+}
+
+.choice-btn.selected {
+  background: var(--gradient-primary) !important;
+  color: white !important;
+  border-color: var(--color-accent-primary) !important;
+}
