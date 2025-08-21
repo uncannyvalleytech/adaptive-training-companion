@@ -1,6 +1,5 @@
 import { LitElement, html } from "lit";
-import { initializeSignIn, signOut, validateAuth, getCredential, ensureGoogleLibraryLoaded } from "../services/google-auth.js";
-import { getData, saveData, deleteData, syncData, getQueuedWorkoutsCount } from "../services/api.js";
+import { saveDataLocally, getDataLocally, deleteDataLocally } from "../services/local-storage.js";
 import { WorkoutEngine } from "../services/workout-engine.js";
 
 // Import all view components
@@ -58,7 +57,7 @@ class AppShell extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    window.addEventListener('google-library-loaded', this._initAuth.bind(this));
+    this._initLocalMode();
     window.addEventListener('app-online', this._handleOnlineMode.bind(this));
     window.addEventListener('theme-change', (e) => this._applyTheme(e.detail.theme));
     window.addEventListener('units-change', (e) => (this.units = e.detail.units));
@@ -70,50 +69,25 @@ class AppShell extends LitElement {
     this.addEventListener('sign-out', this._handleSignOut.bind(this));
     this.addEventListener('delete-data', this._handleDeleteData.bind(this));
     this._applyTheme();
-    this._initAuth();
   }
   
-  _initAuth() {
-    const authPreference = localStorage.getItem('userAuthPreference');
-    if (authPreference === 'google') {
-        this.loadingMessage = "Authenticating session...";
-        const credential = getCredential();
-        const validation = validateAuth();
-        if (credential && validation.valid) {
-            this._handleSignIn(credential, true);
-        } else {
-             this.loadingMessage = "";
-             this.setupSignInButton();
-        }
-    } else if (authPreference === 'offline') {
-        this._startOfflineMode(true);
+  _initLocalMode() {
+    this.loadingMessage = "Loading your data...";
+    
+    // Always start in local mode
+    const localData = getDataLocally();
+    if (localData) {
+      this.userData = localData;
+      this._initializeGamificationData();
+      if (!this.userData.onboardingComplete) this.showOnboarding = true;
     } else {
-        this.loadingMessage = "";
-        this.setupSignInButton();
+      this.userData = createDefaultUserData();
+      this.showOnboarding = true;
     }
-  }
-
-  async setupSignInButton() {
-    try {
-      // Wait until the Google library is confirmed to be loaded
-      await ensureGoogleLibraryLoaded();
-      
-      // Now it's safe to find the button and initialize it
-      const signInButtonContainer = this.querySelector("#google-signin-button");
-      if (signInButtonContainer) {
-        initializeSignIn(signInButtonContainer, (credential) => {
-          this._handleSignIn(credential, false);
-        });
-      }
-    } catch (error) {
-      console.error("Could not initialize Google Sign-In:", error.message);
-      // The fallback UI will be rendered by the auth service
-      const signInButtonContainer = this.querySelector("#google-signin-button");
-      if(signInButtonContainer){
-        // Manually trigger the fallback if the promise rejects
-        initializeSignIn(signInButtonContainer, ()=>{});
-      }
-    }
+    
+    this.userCredential = { credential: 'local-mode-user' };
+    this.offlineMode = true;
+    this.loadingMessage = "";
   }
 
   _applyTheme(newTheme) {
@@ -123,8 +97,7 @@ class AppShell extends LitElement {
 
   _handleOnlineMode() {
     this.offlineMode = false;
-    this._showToast("Connection restored! Syncing data...", "success");
-    syncData();
+    this._showToast("Connection restored!", "success");
   }
 
   _showToast(message, type = 'success', duration = 4000) {
@@ -132,27 +105,17 @@ class AppShell extends LitElement {
     setTimeout(() => { this.toast = null; }, duration);
   }
 
-  _handleSignIn(credential, isAutoSignIn = false) {
-    this.userCredential = credential;
-    localStorage.setItem('userAuthPreference', 'google');
-    if (!isAutoSignIn) this._showToast("Successfully signed in!", "success");
-    this.fetchUserData();
-  }
-
   async fetchUserData() {
     this.loadingMessage = "Loading your data...";
     this.errorMessage = "";
     try {
-      const token = this.userCredential?.credential;
-      if (!token) throw new Error("Authentication token not available.");
-      const response = await getData(token);
-      if (response.success && response.data) {
-        this.userData = response.data;
+      const response = getDataLocally();
+      if (response) {
+        this.userData = response;
         this._initializeGamificationData();
         if (!this.userData.onboardingComplete) this.showOnboarding = true;
-        if (response.warning) this._showToast(response.warning, "info", 6000);
       } else {
-        throw new Error(response.error || "Failed to fetch data.");
+        throw new Error("Failed to fetch data.");
       }
     } catch (error) {
       this.errorMessage = "Could not load your profile. Please try again.";
@@ -161,37 +124,13 @@ class AppShell extends LitElement {
     }
   }
 
-  _startOfflineMode(isAutoStart = false) {
-    localStorage.setItem('userAuthPreference', 'offline');
-    this.offlineMode = true;
-    this.userCredential = { credential: 'offline-mode-user' };
-    const localData = localStorage.getItem('userWorkoutData');
-    if (localData) {
-        try {
-            this.userData = JSON.parse(localData);
-            if (!this.userData.onboardingComplete) this.showOnboarding = true;
-        } catch (e) {
-            this.userData = createDefaultUserData();
-            this.showOnboarding = true;
-        }
-    } else {
-        this.userData = createDefaultUserData();
-        this.showOnboarding = true;
-    }
-    if (!isAutoStart) this._showToast("Started in offline mode.", "info");
-    this._initializeGamificationData();
-    this.loadingMessage = "";
-  }
-
   _handleSignOut() {
-    signOut(); 
-    localStorage.removeItem('userAuthPreference');
     this.userCredential = null;
     this.userData = null;
     this.currentView = 'home';
     this._viewHistory = ['home'];
     this._showToast("You have been signed out.", "info");
-    this.setupSignInButton();
+    this._initLocalMode(); // Restart in local mode
   }
   
   _setView(view) {
@@ -261,8 +200,10 @@ class AppShell extends LitElement {
       
       this.showOnboarding = false;
       this._showToast("Profile created! Your new workout plan is ready.", "success");
-      await saveData(this.userData, this.userCredential.credential);
-      this.fetchUserData();
+      
+      // Save locally
+      saveDataLocally(this.userData);
+      this.fetchUserData = () => Promise.resolve(); // No-op since data is already loaded
   }
   
   _exitWorkout() {
@@ -280,10 +221,13 @@ class AppShell extends LitElement {
           this._showToast("Level Up!", "success");
       }
       this.userLevel = Math.floor(this.userXP / 1000) + 1;
+      
       this.userData.workouts.push(this.lastCompletedWorkout);
       this.userData.totalXP = this.userXP;
       this.currentStreak = this._calculateStreak(this.userData.workouts);
-      await saveData(this.userData, this.userCredential.credential);
+      
+      // Save locally instead of to API
+      saveDataLocally(this.userData);
       this.currentView = "summary";
   }
 
@@ -293,20 +237,9 @@ class AppShell extends LitElement {
   }
   
   async _handleDeleteData() {
-    const token = this.userCredential?.credential;
-    if (!token || this.offlineMode) {
-        localStorage.removeItem('userWorkoutData');
-        this._showToast("Local data deleted.", "info");
-        this._handleSignOut();
-        return;
-    }
-    const response = await deleteData(token);
-    if (response.success) {
-        this._showToast("All data successfully deleted.", "success");
-        this._handleSignOut();
-    } else {
-        this._showToast(`Error: ${response.error}`, "error");
-    }
+    deleteDataLocally();
+    this._showToast("All data deleted.", "info");
+    this._handleSignOut();
   }
 
   _getTimeOfDay() {
@@ -327,7 +260,7 @@ class AppShell extends LitElement {
     return html`
       <header class="app-header">
         <button class="btn btn-icon" @click=${() => this._goBack()} aria-label="Back">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
         </button>
         <h1>${title}</h1>
         <div style="width: 48px;"></div>
@@ -336,7 +269,7 @@ class AppShell extends LitElement {
   }
 
   _renderCurrentView() {
-    if (!this.userCredential) return this.loadingMessage ? this.renderSkeletonScreen() : this.renderLoginScreen();
+    if (!this.userCredential) return this.renderLoginScreen();
     if (this.errorMessage) return this.renderErrorScreen();
     if (!this.userData) return this.renderSkeletonScreen(this.loadingMessage);
     if (this.showOnboarding) return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete.bind(this)}></onboarding-flow>`;
@@ -355,19 +288,9 @@ class AppShell extends LitElement {
   }
 
   renderLoginScreen() {
-    return html`
-      <div class="onboarding-container">
-        <h1 class="display-text">PROGRESSION</h1>
-        <p class="main-title" style="font-size: 1.25rem; margin-bottom: 2rem;">Adaptive Training Companion</p>
-        <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-            <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Choose how to save your data:</p>
-            <div id="google-signin-button" style="margin-bottom: 1rem;"></div>
-            <button class="btn btn-secondary" @click=${() => this._startOfflineMode(false)}>
-                Stay Offline (Save to Device)
-            </button>
-        </div>
-      </div>
-    `;
+    // Auto-start local mode instead of showing login
+    this._initLocalMode();
+    return this.renderSkeletonScreen("Setting up your profile...");
   }
   
   renderHomeScreen() {
