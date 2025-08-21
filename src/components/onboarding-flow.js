@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 
 class OnboardingFlow extends LitElement {
   static properties = {
@@ -6,6 +6,14 @@ class OnboardingFlow extends LitElement {
     userData: { type: Object },
     error: { type: String },
   };
+
+  static styles = css`
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+  `;
 
   constructor() {
     super();
@@ -53,9 +61,9 @@ class OnboardingFlow extends LitElement {
       {
         title: "Training Availability",
         text: "How many days per week can you realistically commit to training?",
-        type: "choice",
+        type: "choice-grid",
         field: "daysPerWeek",
-        options: [{ value: "3", text: "3 Days" }, { value: "4", text: "4 Days" }, { value: "5", text: "5 Days" }, { value: "6", text: "6 Days" }],
+        options: [{ value: 3, text: "3 Days" }, { value: 4, text: "4 Days" }, { value: 5, text: "5 Days" }, { value: 6, text: "6 Days" }],
       },
       {
         title: "What is your primary fitness goal?",
@@ -147,7 +155,7 @@ class OnboardingFlow extends LitElement {
 
             ${this._renderStepContent(currentStepData)}
 
-            ${currentStepData.type === 'form' || currentStepData.type === 'choice' ? html`
+            ${currentStepData.type === 'form' || currentStepData.type === 'choice' || currentStepData.type === 'choice-grid' ? html`
               <div class="button-group">
                 <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>Back</button>
                 <button class="btn btn-primary cta-button" @click=${this._nextStep}>Next</button>
@@ -176,6 +184,16 @@ class OnboardingFlow extends LitElement {
                     <button class="goal-card card-interactive ${this.userData[stepData.field] == opt.value ? 'selected' : ''}" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
                       <h3>${opt.text}</h3>
                       ${opt.subtext ? html`<p>${opt.subtext}</p>` : ''}
+                    </button>
+                  `)}
+                </div>
+            `;
+        case 'choice-grid':
+            return html`
+                <div class="card-group choice-grid">
+                  ${stepData.options.map(opt => html`
+                    <button class="goal-card card-interactive ${this.userData[stepData.field] == opt.value ? 'selected' : ''}" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
+                      <h3>${opt.text}</h3>
                     </button>
                   `)}
                 </div>
