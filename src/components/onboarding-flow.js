@@ -81,7 +81,6 @@ class OnboardingFlow extends LitElement {
   _handleChoiceSelection(field, value) {
     this.userData = { ...this.userData, [field]: value };
     this.requestUpdate();
-    this._nextStep();
   }
 
   _validateStep() {
