@@ -199,7 +199,7 @@ class OnboardingFlow extends LitElement {
                 <label for=${field.key}>${field.label}</label>
                 <input
                   type="number" id=${field.key} .value=${this.userData[field.key]}
-                  @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
+                  @input=${e => { e.stopPropagation(); this._handleInputChange(field.key, Number(e.target.value)); }}
                   min=${field.min} max=${field.max} placeholder="Enter ${field.label.toLowerCase()}"
                   inputmode="numeric" pattern="[0-9]*"
                 />
@@ -213,7 +213,7 @@ class OnboardingFlow extends LitElement {
                   type="range"
                   id=${field.key}
                   .value=${this.userData[field.key]}
-                  @input=${e => this._handleInputChange(field.key, Number(e.target.value))}
+                  @input=${e => { e.stopPropagation(); this._handleInputChange(field.key, Number(e.target.value)); }}
                   min=${field.min}
                   max=${field.max}
                   step=${field.step}
