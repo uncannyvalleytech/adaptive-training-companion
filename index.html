@@ -6,30 +6,24 @@
     <title>Progression - Adaptive Training Companion</title>
     <meta name="description" content="Your intelligent workout partner that adapts to you in real-time. Track progress, unlock achievements, and reach new fitness levels." />
     
-    <!-- Enhanced Meta Tags for PWA -->
     <meta name="theme-color" content="#1A1A2E" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Progression" />
     
-    <!-- Preconnect to External Resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://apis.google.com">
     <link rel="preconnect" href="https://accounts.google.com">
     <link rel="preconnect" href="https://cdn.skypack.dev">
     
-    <!-- Enhanced Google Fonts Loading -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Favicon and App Icons -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231A1A2E'/><text y='.9em' x='.1em' font-size='80'>💪</text></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>潮</text></svg>" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231A1A2E'/><text y='.9em' x='.1em' font-size='80'>潮</text></svg>" />
 
-    <!-- App Styles -->
     <link rel="stylesheet" href="./src/style.css" />
     
-    <!-- Enhanced Import Maps for ES modules with fallbacks -->
     <script type="importmap">
       {
         "imports": {
@@ -41,10 +35,8 @@
       }
     </script>
     
-    <!-- Chart.js for enhanced data visualizations -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     
-    <!-- Performance optimization styles -->
     <style>
       /* Critical CSS for faster initial load */
       body {
@@ -157,21 +149,18 @@
     </style>
   </head>
   <body class="safe-area">
-    <!-- Enhanced Loading Screen -->
     <div class="app-loading" id="app-loading">
-      <div class="loading-logo">💪</div>
+      <div class="loading-logo">潮</div>
       <div class="loading-text">PROGRESSION</div>
       <div class="loading-subtitle">Adaptive Training Companion</div>
       <div class="loading-spinner"></div>
       <div class="loading-status" id="loading-status">Initializing...</div>
     </div>
 
-    <!-- Main App Container -->
     <main>
       <app-shell></app-shell>
     </main>
 
-    <!-- Enhanced Google APIs Loading Script with Better Error Handling -->
     <script>
       // Global variables to track API loading and app status
       window.googleApisReady = {
@@ -333,7 +322,6 @@
       });
     </script>
 
-    <!-- Load Google APIs with enhanced error handling and timeouts -->
     <script>
       // Load GAPI with timeout
       (function() {
@@ -392,7 +380,6 @@
       })();
     </script>
 
-    <!-- Load main application with error handling -->
     <script type="module">
       try {
         console.log('Loading main application module...');
@@ -440,7 +427,6 @@
       }
     </script>
     
-    <!-- Enhanced Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', async () => {
@@ -481,7 +467,6 @@
       });
     </script>
 
-    <!-- Performance monitoring -->
     <script>
       // Basic performance monitoring
       window.addEventListener('load', () => {
