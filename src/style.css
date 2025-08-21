@@ -1427,12 +1427,14 @@ h4 { font-size: var(--font-size-xl); }
 .onboarding-wizard {
   max-width: 450px;
   width: 100%;
-  /* This was causing the overlap. Removing the `position` properties. */
+  /* The onboarding wizard should not be positioned absolutely */
 }
 
 .onboarding-wizard .step {
-  /* This was also causing the overlap. Setting to default flow. */
+  /* Hide non-active steps completely from the flow */
   transition: opacity 0.5s ease, transform 0.5s ease;
+  height: auto;
+  overflow: hidden;
 }
 
 /* Reverting the animations to fix the layout issue */
