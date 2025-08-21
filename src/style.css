@@ -193,16 +193,6 @@ h4 { font-size: var(--font-size-xl); }
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
 }
 
-/* FIXED: Remove transform on hover to prevent click interference */
-.card-interactive:hover .set-input,
-.card-interactive:hover button,
-.card-interactive:hover input {
-  transform: none;
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
 /* =============================================== */
 /* 5. ENHANCED BUTTON SYSTEM                      */
 /* =============================================== */
@@ -222,7 +212,6 @@ h4 { font-size: var(--font-size-xl); }
   text-decoration: none;
   min-height: 48px;
   padding: var(--space-4) var(--space-6);
-  /* FIXED: Ensure buttons are always clickable */
   pointer-events: auto;
   z-index: 10;
 }
@@ -278,7 +267,6 @@ h4 { font-size: var(--font-size-xl); }
   height: 48px;
   border-radius: var(--radius-full);
   padding: 0;
-  /* FIXED: Ensure icon buttons are always clickable */
   pointer-events: auto;
   z-index: 20;
 }
@@ -288,7 +276,6 @@ h4 { font-size: var(--font-size-xl); }
   width: 100%;
   font-size: var(--font-size-lg);
   min-height: 56px;
-  /* FIXED: Ensure CTA buttons are always clickable */
   pointer-events: auto;
   z-index: 10;
 }
@@ -399,15 +386,15 @@ h4 { font-size: var(--font-size-xl); }
   text-align: center;
   min-height: 100vh;
   position: relative;
-  padding-top: 10vh; /* Adds more space at the top */
-  padding-bottom: 5vh; /* Adds more space at the bottom */
+  padding-top: 10vh;
+  padding-bottom: 5vh;
   justify-content: center;
 }
 
 .home-nav-buttons {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6); /* Increased gap for more spacing */
+  gap: var(--space-6);
   width: 100%;
   max-width: 400px;
   margin: var(--space-8) 0;
@@ -427,7 +414,6 @@ h4 { font-size: var(--font-size-xl); }
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  /* FIXED: Ensure hub options are always clickable */
   pointer-events: auto;
   z-index: 10;
 }
@@ -448,7 +434,6 @@ h4 { font-size: var(--font-size-xl); }
   opacity: 0.1;
 }
 
-/* FIXED: Remove transform on hover to prevent click interference */
 .hub-option:hover {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
@@ -588,7 +573,6 @@ h4 { font-size: var(--font-size-xl); }
   font-weight: 600;
   text-align: center;
   transition: all 0.3s ease;
-  /* FIXED: Ensure inputs are always clickable and focusable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -599,7 +583,6 @@ h4 { font-size: var(--font-size-xl); }
   border-color: var(--color-accent-primary);
   background: rgba(0, 212, 255, 0.1);
   box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
-  /* FIXED: Ensure focused inputs stay on top */
   z-index: 20;
 }
 
@@ -616,7 +599,6 @@ h4 { font-size: var(--font-size-xl); }
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  /* FIXED: Ensure complete buttons are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -803,7 +785,6 @@ h4 { font-size: var(--font-size-xl); }
   padding: var(--space-2);
   border-radius: var(--radius-sm);
   transition: all 0.3s ease;
-  /* FIXED: Ensure close buttons are always clickable */
   pointer-events: auto;
   z-index: 30;
 }
@@ -1427,28 +1408,24 @@ h4 { font-size: var(--font-size-xl); }
 .onboarding-wizard {
   max-width: 450px;
   width: 100%;
-  /* The onboarding wizard should not be positioned absolutely */
 }
 
 .onboarding-wizard .step {
-  /* Hide non-active steps completely from the flow */
   transition: opacity 0.5s ease, transform 0.5s ease;
   height: auto;
   overflow: hidden;
 }
 
-/* Reverting the animations to fix the layout issue */
 .onboarding-wizard .step:not(.active) {
   opacity: 0;
   pointer-events: none;
-  display: none; /* Use display: none to completely hide non-active steps */
+  display: none;
 }
 
 .onboarding-wizard .step.active {
-  display: block; /* Ensure active step is visible */
-  animation: fadeIn 0.5s ease; /* Use a simple fade-in effect instead */
+  display: block;
+  animation: fadeIn 0.5s ease;
 }
-
 
 .onboarding-wizard h2 {
   font-family: var(--font-display);
@@ -1478,7 +1455,7 @@ h4 { font-size: var(--font-size-xl); }
   margin-bottom: var(--space-8);
   position: relative;
   overflow: hidden;
-  margin: var(--space-8) 0; /* Add top and bottom margin for spacing */
+  margin: var(--space-8) 0;
 }
 
 .progress-bar .progress {
@@ -1514,7 +1491,6 @@ h4 { font-size: var(--font-size-xl); }
   font-size: var(--font-size-lg);
   font-weight: 600;
   transition: all 0.3s ease;
-  /* FIXED: Ensure form inputs are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1536,7 +1512,6 @@ h4 { font-size: var(--font-size-xl); }
   border-radius: var(--radius-full);
   outline: none;
   transition: background 0.2s;
-  /* FIXED: Ensure range inputs are always interactive */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1578,7 +1553,6 @@ h4 { font-size: var(--font-size-xl); }
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  /* FIXED: Ensure choice buttons are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1611,7 +1585,6 @@ h4 { font-size: var(--font-size-xl); }
   text-align: left;
   cursor: pointer;
   transition: all 0.3s ease;
-  /* FIXED: Ensure goal cards are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1663,7 +1636,6 @@ h4 { font-size: var(--font-size-xl); }
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  /* FIXED: Ensure secondary buttons are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1748,7 +1720,6 @@ h4 { font-size: var(--font-size-xl); }
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.3s ease;
-  /* FIXED: Ensure toggle buttons are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1772,7 +1743,6 @@ h4 { font-size: var(--font-size-xl); }
   width: 100%;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  /* FIXED: Ensure danger buttons are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1815,7 +1785,6 @@ h4 { font-size: var(--font-size-xl); }
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  /* FIXED: Ensure template cards are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1868,7 +1837,6 @@ h4 { font-size: var(--font-size-xl); }
   padding: var(--space-3);
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
-  /* FIXED: Ensure exercise editor inputs are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1897,7 +1865,6 @@ h4 { font-size: var(--font-size-xl); }
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   width: 60px;
-  /* FIXED: Ensure exercise detail inputs are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -1929,7 +1896,6 @@ h4 { font-size: var(--font-size-xl); }
 
 .workout-card {
   cursor: pointer;
-  /* FIXED: Ensure workout cards are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -2032,7 +1998,6 @@ h4 { font-size: var(--font-size-xl); }
   padding: var(--space-3);
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
-  /* FIXED: Ensure filter controls are always interactive */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -2101,7 +2066,6 @@ h4 { font-size: var(--font-size-xl); }
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  /* FIXED: Ensure icon buttons are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -2159,7 +2123,6 @@ h4 { font-size: var(--font-size-xl); }
 .slider-group input[type="range"] {
   width: 100%;
   margin-top: var(--space-2);
-  /* FIXED: Ensure modal sliders are always interactive */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -2210,7 +2173,6 @@ h4 { font-size: var(--font-size-xl); }
 .answer-option input[type="radio"] {
   position: absolute;
   opacity: 0;
-  /* FIXED: Ensure radio inputs are always interactive */
   pointer-events: auto;
   z-index: 10;
 }
@@ -2225,7 +2187,6 @@ h4 { font-size: var(--font-size-xl); }
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all 0.3s ease;
-  /* FIXED: Ensure answer option labels are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -2268,7 +2229,6 @@ h4 { font-size: var(--font-size-xl); }
 .link-card {
   cursor: pointer;
   transition: all 0.3s ease;
-  /* FIXED: Ensure link cards are always clickable */
   pointer-events: auto;
   position: relative;
   z-index: 10;
@@ -2330,15 +2290,26 @@ textarea,
   z-index: 10;
 }
 
-/* Prevent any parent hover effects from interfering with child interactions */
-.card-interactive:hover button,
-.card-interactive:hover input,
-.card-interactive:hover select,
-.card-interactive:hover textarea,
-.card-interactive:hover [role="button"] {
+/* Fixed: Prevent any hover effects from blocking interactions */
+.card:hover *,
+.card-interactive:hover *,
+.hub-option:hover *,
+.workout-card:hover *,
+.template-card:hover *,
+.goal-card:hover *,
+.set-row:hover *,
+.answer-option:hover * {
   pointer-events: auto !important;
   position: relative;
   z-index: 20;
+}
+
+/* Fixed: Remove transforms that can cause visual artifacts */
+.card-interactive:hover,
+.hub-option:hover,
+.workout-card:hover,
+.template-card:hover,
+.goal-card:hover {
   transform: none !important;
 }
 
