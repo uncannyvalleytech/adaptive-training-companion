@@ -13,8 +13,6 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://apis.google.com">
-    <link rel="preconnect" href="https://accounts.google.com">
     <link rel="preconnect" href="https://cdn.skypack.dev">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -145,11 +143,6 @@
         }
       }
 
-      function onGoogleLibraryLoad() {
-        console.log('Google Identity Services loaded');
-        window.dispatchEvent(new CustomEvent('google-library-loaded'));
-      }
-      
       // Listen for the app to signal it's ready
       window.addEventListener('app-ready', hideLoadingScreen);
 
@@ -157,9 +150,6 @@
       // This ensures the UI is usable even if a JS error occurs during init
       setTimeout(hideLoadingScreen, 8000); 
     </script>
-    
-    <script async defer src="https://apis.google.com/js/api.js"></script>
-    <script async defer src="https://accounts.google.com/gsi/client" onload="onGoogleLibraryLoad()"></script>
     
     <script type="module" src="./src/main.js"></script>
     
