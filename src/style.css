@@ -574,7 +574,17 @@ h4 { font-size: var(--font-size-xl); }
   background: rgba(0, 212, 255, 0.1);
   box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
 }
+/* Add these new lines: */
+.set-input:focus,
+.form-inputs input:focus {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
 
+.card-interactive:hover .set-input {
+  transform: none;
+}
 .set-complete-btn {
   width: 40px;
   height: 40px;
