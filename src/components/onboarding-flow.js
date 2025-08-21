@@ -147,7 +147,7 @@ class OnboardingFlow extends LitElement {
 
             ${this._renderStepContent(currentStepData)}
 
-            ${currentStepData.type === 'form' ? html`
+            ${currentStepData.type === 'form' || currentStepData.type === 'choice' ? html`
               <div class="button-group">
                 <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>Back</button>
                 <button class="btn btn-primary cta-button" @click=${this._nextStep}>Next</button>
@@ -174,7 +174,7 @@ class OnboardingFlow extends LitElement {
             return html`
                 <div class="card-group ${stepData.vertical ? 'vertical' : ''}">
                   ${stepData.options.map(opt => html`
-                    <button class="goal-card card-interactive" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
+                    <button class="goal-card card-interactive ${this.userData[stepData.field] === opt.value ? 'selected' : ''}" @click=${() => this._handleChoiceSelection(stepData.field, opt.value)}>
                       <h3>${opt.text}</h3>
                       ${opt.subtext ? html`<p>${opt.subtext}</p>` : ''}
                     </button>
