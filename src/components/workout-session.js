@@ -173,6 +173,7 @@ class WorkoutSession extends LitElement {
 
   // --- Data Handling ---
   _handleSetInput(e, setIndex, field) {
+    e.stopPropagation();
     const value = e.target.value;
     const currentExercise = this.workout.exercises[this.currentExerciseIndex];
     if (!currentExercise.sets[setIndex]) {
