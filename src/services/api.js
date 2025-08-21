@@ -3,7 +3,7 @@
  * FIXED: Proper CORS handling and request formatting for Google Apps Script
  */
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-ZBJGrN6nygXcgIrk0Q2iINC9eZ8t5xngsAcwYPWudLryJzGsrt02Zw0lqbwmz8YB/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyk79adY2KP0eIKdlW6wArIKMTtJYOAcFBOkg5T3y8I8SQkQWHZrg4mUyqYnojsaVZo/exec";
 
 const LOCAL_STORAGE_KEY = 'userWorkoutData';
 const OFFLINE_QUEUE_KEY = 'offlineWorkoutQueue';
