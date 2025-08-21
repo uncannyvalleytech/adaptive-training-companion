@@ -667,29 +667,6 @@ h4 { font-size: var(--font-size-xl); }
   to { opacity: 1; }
 }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideOutLeft {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-}
-
-
 @keyframes celebrationBounce {
   0% {
     opacity: 0;
@@ -1450,35 +1427,26 @@ h4 { font-size: var(--font-size-xl); }
 .onboarding-wizard {
   max-width: 450px;
   width: 100%;
-  position: relative;
-  height: 100%;
-  min-height: 50vh; /* Ensure the container has enough height for the transition */
-  overflow: hidden; /* Hide overflowing content during transitions */
+  /* This was causing the overlap. Removing the `position` properties. */
 }
 
 .onboarding-wizard .step {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding-bottom: 2rem;
+  /* This was also causing the overlap. Setting to default flow. */
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
+/* Reverting the animations to fix the layout issue */
 .onboarding-wizard .step:not(.active) {
   opacity: 0;
   pointer-events: none;
-  position: absolute; /* Keep non-active steps from taking up space */
-  transform: translateX(-100%); /* Slide previous step out */
+  display: none; /* Use display: none to completely hide non-active steps */
 }
 
-.onboarding-wizard .step.active.slide-in-right {
-  animation: slideInRight 0.5s ease forwards;
+.onboarding-wizard .step.active {
+  display: block; /* Ensure active step is visible */
+  animation: fadeIn 0.5s ease; /* Use a simple fade-in effect instead */
 }
 
-.onboarding-wizard .step.active.slide-in-left {
-  animation: slideOutLeft 0.5s ease forwards;
-}
 
 .onboarding-wizard h2 {
   font-family: var(--font-display);
@@ -1508,6 +1476,7 @@ h4 { font-size: var(--font-size-xl); }
   margin-bottom: var(--space-8);
   position: relative;
   overflow: hidden;
+  margin: var(--space-8) 0; /* Add top and bottom margin for spacing */
 }
 
 .progress-bar .progress {
