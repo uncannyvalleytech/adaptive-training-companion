@@ -5,8 +5,7 @@
  */
 
 import { LitElement, html } from "lit";
-import { saveData, getData } from "../services/api.js";
-import { getCredential } from "../services/google-auth.js";
+import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
 
 class WorkoutTemplates extends LitElement {
   static properties = {
@@ -38,16 +37,8 @@ class WorkoutTemplates extends LitElement {
   async _fetchTemplates() {
     this.isLoading = true;
     try {
-      const token = getCredential().credential;
-      if (!token) {
-        throw new Error("User not authenticated.");
-      }
-      const response = await getData(token);
-      if (response && response.data && response.data.templates) {
-        this.templates = response.data.templates;
-      } else {
-        this.templates = [];
-      }
+      const data = getDataLocally();
+      this.templates = data?.templates || [];
     } catch (error) {
       this.errorMessage = "Failed to load templates.";
       console.error(error);
@@ -75,7 +66,6 @@ class WorkoutTemplates extends LitElement {
   async _saveTemplate() {
     this.isSaving = true;
     try {
-        const token = getCredential().credential;
         const newTemplate = {
             name: this.newTemplateName,
             // Ensure sets, reps, and RPE are parsed as numbers and have fallbacks
@@ -87,7 +77,7 @@ class WorkoutTemplates extends LitElement {
             }))
         };
         const updatedTemplates = [...this.templates, newTemplate];
-        const response = await saveData({ templates: updatedTemplates }, token);
+        const response = saveDataLocally({ templates: updatedTemplates });
 
         if (response.success) {
             this.templates = updatedTemplates;
