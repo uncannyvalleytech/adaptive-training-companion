@@ -268,8 +268,8 @@ class WorkoutSession extends LitElement {
       <div id="daily-workout-view" class="container">
         <!-- Enhanced Header -->
         <div class="workout-header">
-            <h1 class="workout-title">${this.workout.name}</h1>
-            <p class="workout-subtitle">${new Date().toLocaleDateString()} • ${this.workout.exercises.length} exercises</p>
+            <h1 class="workout-title">${currentExercise.name}</h1>
+            <p class="workout-subtitle">Exercise ${this.currentExerciseIndex + 1} of ${this.workout.exercises.length}</p>
         </div>
 
         <!-- Progress Bar -->
@@ -277,7 +277,7 @@ class WorkoutSession extends LitElement {
           <div class="progress-bar">
             <div class="progress-fill" style="width: ${this.workoutProgress}%"></div>
           </div>
-          <div class="progress-text">Exercise ${this.currentExerciseIndex + 1} of ${this.workout.exercises.length} • ${Math.round(this.workoutProgress)}% Complete</div>
+          <div class="progress-text">${Math.round(this.workoutProgress)}% Complete</div>
         </div>
 
         <!-- Timer Section -->
