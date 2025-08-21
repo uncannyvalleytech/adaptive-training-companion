@@ -1,2685 +1,385 @@
-/* =============================================== */
-/* 1. DESIGN TOKENS - ENHANCED                     */
-/* =============================================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap');
-
-:root {
-  /* Enhanced Typography */
-  --font-display: 'Sora', system-ui;
-  --font-body: 'Inter', system-ui;
-  --font-family-primary: var(--font-body);
-
-  /* Expanded Color System - Dark Theme */
-  --color-surface-primary: #1A1A2E;
-  --color-surface-secondary: #1F2233;
-  --color-surface-tertiary: #2A2D3D;
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #A9A9B3;
-  --color-text-tertiary: #6C6C6C;
-  
-  /* Energetic Accent Colors */
-  --color-accent-primary: #00D4FF;
-  --color-accent-primary-hover: #33E1FF;
-  --color-accent-secondary: #00FF88;
-  --color-accent-purple: #7C3AED;
-  --color-accent-orange: #FF6B35;
-  --color-accent-gold: #FFD700;
-  
-  /* State Colors */
-  --color-state-success: #00FF88;
-  --color-state-warning: #FF6B35;
-  --color-state-error: #f85149;
-  --color-glow-focus: rgba(0, 212, 255, 0.5);
-  
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #00D4FF, #7C3AED);
-  --gradient-success: linear-gradient(135deg, #00FF88, #00D4FF);
-  --gradient-energy: linear-gradient(135deg, #FF6B35, #F7931E);
-  --gradient-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-  
-  --border-color: #3A3D4D;
-  --shadow-light: rgba(42, 45, 61, 0.7);
-  --shadow-dark: rgba(0, 0, 0, 0.3);
-
-  /* Enhanced Typography Scale */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.5rem;
-  --font-size-xxl: 2rem;
-  --font-size-display-sm: 2.25rem;
-  --font-size-display-md: 2.75rem;
-  --font-size-display-lg: 3.5rem;
-
-  /* Enhanced Spacing */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  /* Modern Radius System */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
-}
-
-/* Light Theme Overrides - NOW FULLY IMPLEMENTED */
-body[data-theme="light"] {
-  --color-surface-primary: #f8fafc;
-  --color-surface-secondary: #f1f5f9;
-  --color-surface-tertiary: #e2e8f0;
-  --color-text-primary: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-text-tertiary: #94a3b8;
-  --border-color: #e2e8f0;
-  --shadow-light: rgba(226, 232, 240, 0.7);
-  --shadow-dark: rgba(0, 0, 0, 0.1);
-  
-  /* Light theme specific gradients and colors */
-  --color-accent-primary: #1e71ff;
-  --color-accent-primary-hover: #3a82ff;
-  --color-accent-secondary: #22c55e;
-  --color-accent-purple: #a855f7;
-  --color-accent-orange: #f97316;
-  --color-accent-gold: #f59e0b;
-
-  --gradient-primary: linear-gradient(135deg, #1e71ff, #a855f7);
-  --gradient-success: linear-gradient(135deg, #22c55e, #1e71ff);
-  --gradient-energy: linear-gradient(135deg, #f97316, #f59e0b);
-  --gradient-surface: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.02));
-  
-  --color-state-error: #ef4444;
-  --color-state-warning: #f97316;
-  --color-state-success: #22c55e;
-  --color-glow-focus: rgba(30, 113, 255, 0.5);
-}
-
-/* =============================================== */
-/* 2. ENHANCED GLOBAL STYLES                       */
-/* =============================================== */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-body);
-  /* REVISED: Use a variable for background to support light/dark theme switch */
-  background: var(--color-surface-primary);
-  color: var(--color-text-primary);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  padding: var(--space-4);
-  min-height: 100vh;
-  /* REVISED: Background gradient for body based on theme */
-  transition: background 0.3s ease;
-}
-
-body[data-theme="dark"] {
-  background: linear-gradient(135deg, var(--color-surface-primary) 0%, #16213e 50%, #0f1419 100%);
-}
-
-body[data-theme="light"] {
-  background: linear-gradient(135deg, #f8fafc 0%, #eef2f6 50%, #e2e8f0 100%);
-}
-
-.container {
-  max-width: 430px;
-  margin: 0 auto;
-  padding: var(--space-4);
-  position: relative;
-}
-
-/* =============================================== */
-/* 3. ENHANCED TYPOGRAPHY                          */
-/* =============================================== */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  color: var(--color-text-primary);
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: var(--space-4);
-}
-
-h1 { font-size: var(--font-size-display-md); }
-h2 { font-size: var(--font-size-display-sm); }
-h3 { font-size: var(--font-size-xxl); }
-h4 { font-size: var(--font-size-xl); }
-
-.display-text {
-  font-family: var(--font-display);
-  font-size: var(--font-size-display-lg);
-  font-weight: 800;
-  background: var(--gradient-success);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.main-title {
-  text-align: center;
-  font-size: var(--font-size-display-md);
-  font-weight: 800;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* =============================================== */
-/* 4. MODERN CARD SYSTEM                          */
-/* =============================================== */
-.card {
-  background: var(--gradient-surface);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-body[data-theme="light"] .card::before {
-  background: linear-gradient(45deg, rgba(30, 113, 255, 0.1), rgba(168, 85, 247, 0.1));
-}
-
-.card:hover::before {
-  opacity: 1;
-}
-
-.card-elevated {
-  box-shadow: 0 20px 40px var(--shadow-dark);
-}
-
-.card-interactive {
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.card-interactive:hover {
-  box-shadow: 0 25px 50px var(--shadow-dark);
-}
-
-/* FIXED: Remove transform on hover to prevent click interference */
-.card-interactive:hover .set-input,
-.card-interactive:hover button,
-.card-interactive:hover input {
-  transform: none;
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-/* =============================================== */
-/* 5. ENHANCED BUTTON SYSTEM                      */
-/* =============================================== */
-.btn {
-  border: none;
-  border-radius: var(--radius-lg);
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: var(--font-size-md);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  min-height: 48px;
-  padding: var(--space-4) var(--space-6);
-  /* FIXED: Ensure buttons are always clickable */
-  pointer-events: auto;
-  z-index: 10;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.5s ease;
-}
-
-.btn:hover::before {
-  left: 100%;
-}
-
-.btn-primary {
-  background: var(--gradient-success);
-  color: var(--color-surface-primary);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 35px var(--shadow-light);
-}
-
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--color-text-primary);
-}
-
-body[data-theme="light"] .btn-secondary {
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: var(--color-text-primary);
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-}
-
-body[data-theme="light"] .btn-secondary:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.btn-ghost {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--color-text-primary);
-}
-
-body[data-theme="light"] .btn-ghost {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: var(--color-text-primary);
-}
-
-.btn-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  padding: 0;
-  /* FIXED: Ensure icon buttons are always clickable */
-  pointer-events: auto;
-  z-index: 20;
-}
-
-.cta-button {
-  @extend .btn, .btn-primary;
-  width: 100%;
-  font-size: var(--font-size-lg);
-  min-height: 56px;
-  /* FIXED: Ensure CTA buttons are always clickable */
-  pointer-events: auto;
-  z-index: 10;
-}
-
-/* =============================================== */
-/* 6. GAMIFICATION ELEMENTS                       */
-/* =============================================== */
-.level-system {
-  background: var(--gradient-surface);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-}
-
-body[data-theme="light"] .level-system {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.level-badge {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.level-icon {
-  width: 48px;
-  height: 48px;
-  background: var(--gradient-energy);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  position: relative;
-  z-index: 1;
-}
-
-.xp-value {
-  font-family: var(--font-display);
-  font-size: var(--font-size-xxl);
-  font-weight: 800;
-  background: var(--gradient-success);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.progress-bar {
-  height: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin: var(--space-4) 0;
-}
-
-body[data-theme="light"] .progress-bar {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.progress-fill {
-  height: 100%;
-  background: var(--gradient-success);
-  border-radius: var(--radius-sm);
-  position: relative;
-  transition: width 0.8s ease;
-}
-
-.progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  animation: shimmer 2s infinite;
-}
-
-body[data-theme="light"] .progress-fill::after {
-  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
-}
-
-/* Streak Flame */
-.streak-flame {
-  width: 80px;
-  height: 80px;
-  background: var(--gradient-energy);
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32px;
-  margin: 0 auto var(--space-4);
-  animation: flicker 1.5s ease-in-out infinite alternate;
-  position: relative;
-}
-
-.streak-flame::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
-  background: var(--gradient-energy);
-  border-radius: var(--radius-full);
-  opacity: 0.3;
-  animation: pulse 2s infinite;
-}
-
-/* =============================================== */
-/* 7. HOME SCREEN ENHANCEMENTS                    */
-/* =============================================== */
-#home-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  min-height: 100vh;
-  position: relative;
-  padding-top: 10vh; /* Adds more space at the top */
-  padding-bottom: 5vh; /* Adds more space at the bottom */
-  justify-content: center;
-}
-
-.home-nav-buttons {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-6); /* Increased gap for more spacing */
-  width: 100%;
-  max-width: 400px;
-  margin: var(--space-8) 0;
-}
-
-.hub-option {
-  background: var(--gradient-surface);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  /* FIXED: Ensure hub options are always clickable */
-  pointer-events: auto;
-  z-index: 10;
-}
-
-body[data-theme="light"] .hub-option {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.hub-option::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--gradient-primary);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.hub-option:hover::before {
-  opacity: 0.1;
-}
-
-/* FIXED: Remove transform on hover to prevent click interference */
-.hub-option:hover {
-  box-shadow: 0 20px 40px var(--shadow-dark);
-}
-
-.hub-option-icon {
-  width: 48px;
-  height: 48px;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  position: relative;
-  z-index: 1;
-}
-
-.hub-option-text {
-  position: relative;
-  z-index: 1;
-}
-
-.hub-option-text h3 {
-  margin: 0;
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-}
-
-/* =============================================== */
-/* 8. WORKOUT SESSION ENHANCEMENTS                */
-/* =============================================== */
-.workout-header {
-  text-align: center;
-  margin-bottom: var(--space-8);
-}
-
-.workout-title {
-  font-family: var(--font-display);
-  font-size: var(--font-size-display-sm);
-  font-weight: 800;
-  background: var(--gradient-success);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: var(--space-2);
-}
-
-.timer-container {
-  background: var(--gradient-surface);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-8);
-  margin-bottom: var(--space-6);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-body[data-theme="light"] .timer-container {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.timer-display {
-  font-family: var(--font-display);
-  font-size: var(--font-size-display-md);
-  font-weight: 800;
-  background: var(--gradient-success);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: var(--space-2);
-}
-
-.exercise-card {
-  background: var(--gradient-surface);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
-}
-
-body[data-theme="light"] .exercise-card {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.exercise-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-5);
-}
-
-.exercise-name {
-  font-family: var(--font-display);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-text-primary);
-}
-
-.target-reps {
-  background: var(--gradient-success);
-  color: var(--color-surface-primary);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-xl);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.set-row {
-  display: grid;
-  grid-template-columns: 40px 1fr 1fr 50px;
-  gap: var(--space-3);
-  align-items: center;
-  padding: var(--space-4);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
-}
-
-body[data-theme="light"] .set-row {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.set-row:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(0, 212, 255, 0.3);
-}
-
-body[data-theme="light"] .set-row:hover {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(30, 113, 255, 0.3);
-}
-
-.set-number {
-  color: var(--color-accent-primary);
-  font-weight: 700;
-  font-size: var(--font-size-md);
-  text-align: center;
-}
-
-.set-input {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  text-align: center;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure inputs are always clickable and focusable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .set-input {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-  color: var(--color-text-primary);
-}
-
-.set-input:focus {
-  outline: none;
-  border-color: var(--color-accent-primary);
-  background: rgba(0, 212, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
-  /* FIXED: Ensure focused inputs stay on top */
-  z-index: 20;
-}
-
-body[data-theme="light"] .set-input:focus {
-  background: rgba(30, 113, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(30, 113, 255, 0.2);
-}
-
-.set-complete-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  background: transparent;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  /* FIXED: Ensure complete buttons are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .set-complete-btn {
-  border-color: rgba(0, 0, 0, 0.2);
-  color: var(--color-text-secondary);
-}
-
-.set-complete-btn.completed {
-  background: var(--gradient-success);
-  border-color: var(--color-accent-secondary);
-  color: var(--color-surface-primary);
-}
-
-.set-complete-btn:hover {
-  transform: scale(1.1);
-}
-
-/* =============================================== */
-/* 9. ENHANCED ANIMATIONS                         */
-/* =============================================== */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes flicker {
-  0% { transform: scale(1) rotate(-1deg); filter: brightness(1); }
-  100% { transform: scale(1.05) rotate(1deg); filter: brightness(1.2); }
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 0.3; }
-  50% { transform: scale(1.2); opacity: 0.1; }
-  100% { transform: scale(1.4); opacity: 0; }
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+/**
+ * @file motivational-elements.js
+ * Reusable components for gamification and motivation
+ */
+
+import { LitElement, html } from "lit";
+
+// Daily Challenge Card Component
+class DailyChallengeCard extends LitElement {
+  static properties = {
+    challenge: { type: Object },
+    progress: { type: Number },
+  };
+
+  constructor() {
+    super();
+    this.challenge = {};
+    this.progress = 0;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  render() {
+    const { title, description, reward, total } = this.challenge;
+    const progressPercent = (this.progress / total) * 100;
+
+    return html`
+      <div class="challenge-card card">
+        <div class="challenge-header">
+          <div class="challenge-icon">💪</div>
+          <div class="challenge-reward">+${reward} XP</div>
+        </div>
+        <div class="challenge-title">${title}</div>
+        <div class="challenge-description">${description}</div>
+        <div class="challenge-progress">
+          <div class="challenge-progress-fill" style="width: ${progressPercent}%"></div>
+        </div>
+        <div class="challenge-progress-text">${this.progress}/${total} completed</div>
+      </div>
+    `;
+  }
+
+  createRenderRoot() {
+    return this;
   }
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+// Motivational Quote Component
+class MotivationalQuote extends LitElement {
+  static properties = {
+    quote: { type: String },
+    author: { type: String },
+  };
 
-@keyframes celebrationBounce {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3);
+  constructor() {
+    super();
+    this.quote = "";
+    this.author = "";
+    this._quotes = [
+      { text: "The groundwork for all happiness is good health.", author: "Leigh Hunt" },
+      { text: "Strength does not come from physical capacity. It comes from an indomitable will.", author: "Mahatma Gandhi" },
+      { text: "The first wealth is health.", author: "Ralph Waldo Emerson" },
+      { text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn" },
+      { text: "What seems impossible today will one day become your warm-up.", author: "Unknown" },
+    ];
   }
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._selectRandomQuote();
   }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+
+  _selectRandomQuote() {
+    const randomQuote = this._quotes[Math.floor(Math.random() * this._quotes.length)];
+    this.quote = randomQuote.text;
+    this.author = randomQuote.author;
   }
-}
 
-.slide-in {
-  animation: slideInUp 0.6s ease forwards;
-}
-
-.celebration-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--gradient-success);
-  backdrop-filter: blur(20px);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-10);
-  text-align: center;
-  z-index: 1000;
-  animation: celebrationBounce 0.8s ease-out;
-}
-
-/* =============================================== */
-/* 10. LOADING STATES & SKELETONS                 */
-/* =============================================== */
-.skeleton {
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.1) 25%, 
-    rgba(255, 255, 255, 0.2) 50%, 
-    rgba(255, 255, 255, 0.1) 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: var(--radius-sm);
-}
-
-body[data-theme="light"] .skeleton {
-  background: linear-gradient(90deg, 
-    rgba(0, 0, 0, 0.05) 25%, 
-    rgba(0, 0, 0, 0.1) 50%, 
-    rgba(0, 0, 0, 0.05) 75%
-  );
-}
-
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.skeleton-text {
-  height: 16px;
-  margin-bottom: var(--space-2);
-}
-
-.skeleton-title {
-  height: 32px;
-  width: 60%;
-  margin: 0 auto var(--space-4);
-}
-
-.skeleton-btn-large {
-  height: 56px;
-  width: 100%;
-  margin-bottom: var(--space-4);
-}
-
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-radius: var(--radius-full);
-  border-top-color: var(--color-accent-primary);
-  animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* =============================================== */
-/* 11. PROGRESS RING COMPONENT                    */
-/* =============================================== */
-.progress-ring {
-  position: relative;
-}
-
-.progress-ring__progress {
-  transform-origin: center;
-  transform: rotate(-90deg);
-  transition: stroke-dashoffset 0.3s linear;
-  stroke-linecap: round;
-}
-
-/* =============================================== */
-/* 12. MODAL SYSTEM                               */
-/* =============================================== */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  width: 90%;
-  max-width: 500px;
-  max-height: 80vh;
-  overflow-y: auto;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-4);
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: var(--font-size-xl);
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
-  transition: all 0.3s ease;
-  /* FIXED: Ensure close buttons are always clickable */
-  pointer-events: auto;
-  z-index: 30;
-}
-
-.close-button:hover {
-  color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-body[data-theme="light"] .close-button:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-/* =============================================== */
-/* 13. TOAST NOTIFICATIONS                        */
-/* =============================================== */
-.toast-notification {
-  position: fixed;
-  bottom: var(--space-8);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius-lg);
-  color: white;
-  font-weight: 600;
-  z-index: 2000;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-  background: var(--gradient-surface);
-}
-
-body[data-theme="light"] .toast-notification {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.toast-notification.success {
-  background: var(--gradient-success);
-  color: var(--color-surface-primary);
-}
-
-.toast-notification.error {
-  background: linear-gradient(135deg, #f85149, #dc2626);
-}
-
-.toast-notification.info {
-  background: var(--gradient-primary);
-}
-
-/* =============================================== */
-/* 14. RESPONSIVE DESIGN                          */
-/* =============================================== */
-@media (max-width: 480px) {
-  .container {
-    padding: var(--space-3);
+  render() {
+    return html`
+      <div class="quote-card card">
+        <div class="quote-text">${this.quote}</div>
+        <div class="quote-author">— ${this.author}</div>
+      </div>
+    `;
   }
-  
-  .timer-display {
-    font-size: var(--font-size-display-sm);
-  }
-  
-  .set-row {
-    gap: var(--space-2);
-  }
-  
-  .hub-option {
-    padding: var(--space-4);
-  }
-  
-  .card {
-    padding: var(--space-4);
+
+  createRenderRoot() {
+    return this;
   }
 }
 
-/* =============================================== */
-/* 15. UTILITY CLASSES                            */
-/* =============================================== */
-.text-center { text-align: center; }
-.text-gradient {
-  background: var(--gradient-success);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+// Achievement Badge Component
+class AchievementBadge extends LitElement {
+  static properties = {
+    achievement: { type: Object },
+    unlocked: { type: Boolean },
+  };
 
-.divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: var(--space-6) 0;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
-
-/* Focus styles for accessibility */
-.btn:focus-visible,
-.set-input:focus-visible,
-.hub-option:focus-visible {
-  outline: 2px solid var(--color-accent-primary);
-  outline-offset: 2px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .card {
-    border-width: 2px;
+  constructor() {
+    super();
+    this.achievement = {};
+    this.unlocked = false;
   }
-  
-  .btn {
-    border: 2px solid currentColor;
+
+  render() {
+    const { name, description, icon } = this.achievement;
+
+    return html`
+      <div class="achievement-card card ${this.unlocked ? 'unlocked' : 'locked'}">
+        <span class="achievement-icon">${this.unlocked ? icon : '🔒'}</span>
+        <div class="achievement-content">
+          <h4>${name}</h4>
+          <p>${description}</p>
+        </div>
+        ${this.unlocked ? html`
+          <div class="achievement-unlocked">✓ Unlocked</div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  createRenderRoot() {
+    return this;
   }
 }
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+// Progress Ring Component (Enhanced)
+class ProgressRing extends LitElement {
+  static properties = {
+    radius: { type: Number },
+    stroke: { type: Number },
+    progress: { type: Number },
+    color: { type: String },
+    showValue: { type: Boolean },
+    value: { type: String },
+  };
+
+  constructor() {
+    super();
+    this.radius = 40;
+    this.stroke = 8;
+    this.progress = 0;
+    this.color = 'var(--gradient-success)';
+    this.showValue = false;
+    this.value = '';
+  }
+
+  render() {
+    const normalizedRadius = this.radius - this.stroke * 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (this.progress / 100) * circumference;
+
+    return html`
+      <div class="progress-ring-container" style="position: relative; display: inline-block;">
+        <svg
+          height=${this.radius * 2}
+          width=${this.radius * 2}
+          class="progress-ring"
+        >
+          <defs>
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#00D4FF"/>
+              <stop offset="100%" style="stop-color:#00FF88"/>
+            </linearGradient>
+          </defs>
+          <circle
+            class="progress-ring__background"
+            stroke="rgba(255, 255, 255, 0.1)"
+            stroke-width=${this.stroke}
+            fill="transparent"
+            r=${normalizedRadius}
+            cx=${this.radius}
+            cy=${this.radius}
+          />
+          <circle
+            class="progress-ring__progress"
+            stroke="url(#progressGradient)"
+            stroke-width=${this.stroke}
+            stroke-dasharray=${circumference + ' ' + circumference}
+            style="stroke-dashoffset:${strokeDashoffset}"
+            fill="transparent"
+            r=${normalizedRadius}
+            cx=${this.radius}
+            cy=${this.radius}
+          />
+        </svg>
+        ${this.showValue ? html`
+          <div class="progress-ring-value" style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: white;
+            font-size: ${this.radius / 3}px;
+          ">${this.value}</div>
+        ` : ''}
+      </div>
+    `;
+  }
+
+  createRenderRoot() {
+    return this;
   }
 }
 
-/* Print styles */
-@media print {
-  .btn,
-  .modal-overlay,
-  .toast-notification {
-    display: none !important;
+// Workout Streak Display
+class WorkoutStreak extends LitElement {
+  static properties = {
+    streak: { type: Number },
+    size: { type: String },
+  };
+
+  constructor() {
+    super();
+    this.streak = 0;
+    this.size = 'medium'; // small, medium, large
   }
-  
-  .container {
-    max-width: none;
-    padding: 0;
+
+  render() {
+    const sizeClasses = {
+      small: 'streak-small',
+      medium: 'streak-medium', 
+      large: 'streak-large'
+    };
+
+    return html`
+      <div class="streak-container ${sizeClasses[this.size]} card">
+        <div class="streak-flame">🔥</div>
+        <div class="streak-count">${this.streak}</div>
+        <div class="streak-label">${this.streak === 1 ? 'Day' : 'Days'} Streak</div>
+      </div>
+    `;
   }
-  
-  .card {
-    break-inside: avoid;
-    border: 1px solid #000;
-  }
-}
 
-/* =============================================== */
-/* 16. GAMIFICATION COMPONENT STYLES              */
-/* =============================================== */
-
-/* Challenge Cards */
-.challenge-card {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(0, 212, 255, 0.2));
-  border: 1px solid rgba(124, 58, 237, 0.3);
-  border-radius: var(--radius-xl);
-  padding: var(--space-5);
-  position: relative;
-  overflow: hidden;
-  margin-bottom: var(--space-4);
-}
-
-body[data-theme="light"] .challenge-card {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(30, 113, 255, 0.2));
-  border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.challenge-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-}
-
-.challenge-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.challenge-reward {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-xl);
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  color: var(--color-accent-gold);
-}
-
-body[data-theme="light"] .challenge-reward {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.challenge-title {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.challenge-description {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-4);
-}
-
-.challenge-progress {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-bottom: var(--space-2);
-}
-
-body[data-theme="light"] .challenge-progress {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.challenge-progress-fill {
-  height: 100%;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-sm);
-  transition: width 0.8s ease;
-}
-
-.challenge-progress-text {
-  text-align: right;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-}
-
-/* Quote Cards */
-.quote-card {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
-  border: 1px solid rgba(0, 255, 136, 0.2);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  text-align: center;
-  margin-bottom: var(--space-6);
-  position: relative;
-  overflow: hidden;
-}
-
-body[data-theme="light"] .quote-card {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(30, 113, 255, 0.1));
-  border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.quote-text {
-  font-size: var(--font-size-lg);
-  font-weight: 500;
-  color: var(--color-text-primary);
-  font-style: italic;
-  margin-bottom: var(--space-3);
-  line-height: 1.5;
-  position: relative;
-  z-index: 1;
-}
-
-.quote-author {
-  color: var(--color-accent-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  position: relative;
-  z-index: 1;
-}
-
-.quote-card::before {
-  content: '"';
-  position: absolute;
-  top: 10px;
-  left: 20px;
-  font-size: 60px;
-  color: rgba(0, 255, 136, 0.2);
-  font-family: serif;
-}
-
-body[data-theme="light"] .quote-card::before {
-  color: rgba(34, 197, 94, 0.2);
-}
-
-.quote-card::after {
-  content: '"';
-  position: absolute;
-  bottom: 10px;
-  right: 20px;
-  font-size: 60px;
-  color: rgba(0, 255, 136, 0.2);
-  font-family: serif;
-}
-
-body[data-theme="light"] .quote-card::after {
-  color: rgba(34, 197, 94, 0.2);
-}
-
-/* Achievement Cards */
-.achievement-card {
-  text-align: center;
-  padding: var(--space-5);
-  margin-bottom: var(--space-4);
-  transition: all 0.3s ease;
-}
-
-.achievement-card.unlocked {
-  border-color: rgba(0, 255, 136, 0.3);
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
-}
-
-body[data-theme="light"] .achievement-card.unlocked {
-  border-color: rgba(34, 197, 94, 0.3);
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(30, 113, 255, 0.1));
-}
-
-.achievement-card.locked {
-  opacity: 0.6;
-}
-
-.achievement-icon {
-  font-size: 32px;
-  margin-bottom: var(--space-3);
-  display: block;
-}
-
-.achievement-name {
-  color: var(--color-text-primary);
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  margin-bottom: var(--space-2);
-}
-
-.achievement-desc {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  line-height: 1.4;
-}
-
-.achievement-unlocked {
-  color: var(--color-accent-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: 600;
-  margin-top: var(--space-2);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Streak Components */
-.streak-container {
-  background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(247, 147, 30, 0.2));
-  border: 1px solid rgba(255, 107, 53, 0.3);
-  border-radius: var(--radius-xl);
-  padding: var(--space-5);
-  text-align: center;
-  margin-bottom: var(--space-6);
-}
-
-body[data-theme="light"] .streak-container {
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(245, 158, 11, 0.2));
-  border: 1px solid rgba(249, 115, 22, 0.3);
-}
-
-.streak-small {
-  padding: var(--space-3);
-}
-
-.streak-medium {
-  padding: var(--space-5);
-}
-
-.streak-large {
-  padding: var(--space-8);
-}
-
-.streak-count {
-  font-family: var(--font-display);
-  font-size: var(--font-size-display-sm);
-  font-weight: 800;
-  color: var(--color-accent-orange);
-  margin-bottom: var(--space-1);
-}
-
-.streak-small .streak-count {
-  font-size: var(--font-size-xl);
-}
-
-.streak-large .streak-count {
-  font-size: var(--font-size-display-md);
-}
-
-.streak-label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 600;
-}
-
-/* Motivational Messages */
-.motivational-message {
-  background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
-  border: 1px solid rgba(0, 255, 136, 0.2);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin: var(--space-4) 0;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  animation: slideInUp 0.5s ease;
-}
-
-body[data-theme="light"] .motivational-message {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(30, 113, 255, 0.1));
-  border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.message-icon {
-  font-size: 24px;
-}
-
-.message-text {
-  color: var(--color-accent-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 600;
-  margin: 0;
-}
-
-/* Progress Bar Enhancements */
-.progress-bar-container {
-  margin: var(--space-6) 0;
-}
-
-.progress-bar {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  margin-bottom: var(--space-2);
-}
-
-body[data-theme="light"] .progress-bar {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.progress-text {
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-}
-
-/* =============================================== */
-/* 17. ENHANCED WORKOUT SESSION STYLES            */
-/* =============================================== */
-
-.workout-subtitle {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 500;
-  margin-bottom: var(--space-2);
-}
-
-.rest-timer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-6);
-  padding: var(--space-6);
-  text-align: center;
-}
-
-.rest-controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.exercise-navigation {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: var(--space-6) 0;
-  padding: 0 var(--space-2);
-}
-
-.exercise-indicator {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  font-weight: 600;
-}
-
-.sets-container {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.set-row.completed {
-  background: rgba(0, 255, 136, 0.1);
-  border-color: rgba(0, 255, 136, 0.3);
-}
-
-body[data-theme="light"] .set-row.completed {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.3);
-}
-
-.workout-actions {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-8);
-  padding-bottom: var(--space-8);
-}
-
-.workout-actions .btn {
-  flex: 1;
-}
-
-/* =============================================== */
-/* 18. HOME SCREEN ENHANCEMENTS                   */
-/* =============================================== */
-
-.home-header {
-  text-align: center;
-  margin-bottom: var(--space-8);
-}
-
-.greeting {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-lg);
-  font-weight: 500;
-  margin-bottom: var(--space-2);
-}
-
-.level-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-5);
-}
-
-.xp-counter {
-  text-align: right;
-}
-
-.xp-label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.hub-option-text p {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  margin: var(--space-1) 0 0 0;
-}
-
-.home-footer-actions {
-  display: flex;
-  justify-content: center;
-  margin-top: var(--space-8);
-}
-
-/* =============================================== */
-/* 19. RESPONSIVE ENHANCEMENTS                    */
-/* =============================================== */
-
-@media (max-width: 480px) {
-  .rest-timer {
-    flex-direction: column;
-    gap: var(--space-4);
-  }
-  
-  .exercise-navigation {
-    padding: 0;
-  }
-  
-  .workout-actions {
-    flex-direction: column;
-  }
-  
-  .level-header {
-    flex-direction: column;
-    text-align: center;
-    gap: var(--space-3);
-  }
-  
-  .xp-counter {
-    text-align: center;
-  }
-  
-  .home-nav-buttons {
-    gap: var(--space-3);
-  }
-  
-  .hub-option {
-    padding: var(--space-4);
-  }
-  
-  .challenge-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
+  createRenderRoot() {
+    return this;
   }
 }
 
-/* =============================================== */
-/* 20. ADDITIONAL UTILITY CLASSES                 */
-/* =============================================== */
-
-.fade-in {
-  animation: fadeIn 0.5s ease;
-}
-
-.slide-up {
-  animation: slideInUp 0.6s ease;
-}
-
-.bounce {
-  animation: bounce 0.6s ease;
-}
-
-.pulse-glow {
-  animation: pulseGlow 2s infinite;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-10px); }
-  60% { transform: translateY(-5px); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 5px rgba(0, 212, 255, 0.5); }
-  50% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.8); }
-}
-
-.visually-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
-
-/* =============================================== */
-/* 21. ONBOARDING & READINESS STYLES              */
-/* =============================================== */
-
-.onboarding-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  text-align: center;
-  padding: var(--space-8) var(--space-4);
-}
-
-.onboarding-wizard {
-  max-width: 450px;
-  width: 100%;
-}
-
-.onboarding-wizard .step {
-  /* REVISED: Use display: none to completely remove non-active steps from the layout */
-  display: none;
-  transition: opacity 0.5s ease;
-}
-
-.onboarding-wizard .step.active {
-  /* REVISED: Ensure the active step is visible */
-  display: block;
-  animation: fadeIn 0.5s ease; 
-}
-
-
-.onboarding-wizard h2 {
-  font-family: var(--font-display);
-  font-size: var(--font-size-display-sm);
-  font-weight: 800;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: var(--space-4);
-}
-
-.onboarding-wizard p {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  margin-bottom: var(--space-6);
-}
-
-.onboarding-wizard .cta-button {
-  margin-top: var(--space-6);
-}
-
-.progress-bar {
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--space-8);
-  position: relative;
-  overflow: hidden;
-  margin: var(--space-8) 0;
-}
-
-body[data-theme="light"] .progress-bar {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.progress-bar .progress {
-  height: 100%;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-full);
-  transition: width 0.5s ease-in-out;
-}
-
-.form-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-  text-align: left;
-}
-
-.input-group label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  margin-bottom: var(--space-2);
-  display: block;
-}
-
-.input-group input[type="number"],
-.input-group input[type="text"] {
-  width: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure form inputs are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .input-group input[type="number"],
-body[data-theme="light"] .input-group input[type="text"] {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-  color: var(--color-text-primary);
-}
-
-.input-group input[type="number"]:focus,
-.input-group input[type="text"]:focus {
-  outline: none;
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
-  z-index: 20;
-}
-
-body[data-theme="light"] .input-group input[type="number"]:focus,
-body[data-theme="light"] .input-group input[type="text"]:focus {
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px rgba(30, 113, 255, 0.2);
-}
-
-.input-group input[type="range"] {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-full);
-  outline: none;
-  transition: background 0.2s;
-  /* FIXED: Ensure range inputs are always interactive */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .input-group input[type="range"] {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.input-group input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: var(--gradient-primary);
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  border: 2px solid var(--color-surface-primary);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
-  transition: box-shadow 0.2s;
-}
-
-body[data-theme="light"] .input-group input[type="range"]::-webkit-slider-thumb {
-  border: 2px solid var(--color-surface-primary);
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
-}
-
-.input-group input[type="range"]::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.5);
-}
-
-body[data-theme="light"] .input-group input[type="range"]::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 0 4px rgba(30, 113, 255, 0.5);
-}
-
-.choice-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.button-options {
-  display: flex;
-  gap: var(--space-3);
-}
-
-.choice-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--color-text-secondary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-3) var(--space-6);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure choice buttons are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .choice-btn {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-.choice-btn.selected {
-  background: var(--gradient-primary);
-  color: white;
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
-  transform: translateY(-2px);
-}
-
-body[data-theme="light"] .choice-btn.selected {
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 15px rgba(30, 113, 255, 0.4);
-}
-
-.card-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.card-group.vertical .goal-card {
-  width: 100%;
-}
-
-.goal-card {
-  background: var(--gradient-surface);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure goal cards are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .goal-card {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.goal-card:hover {
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-.goal-card.selected {
-  border-color: var(--color-accent-primary) !important;
-  background: rgba(0, 212, 255, 0.1) !important;
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3) !important;
-}
-
-body[data-theme="light"] .goal-card.selected {
-  background: rgba(30, 113, 255, 0.1) !important;
-  box-shadow: 0 0 20px rgba(30, 113, 255, 0.3) !important;
-}
-
-.goal-card h3 {
-  font-family: var(--font-display);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  margin-bottom: var(--space-2);
-}
-
-.goal-card p {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  margin-bottom: 0;
-}
-
-.button-group {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-}
-
-.button-group .cta-button,
-.button-group .secondary-button {
-  flex: 1;
-}
-
-.secondary-button {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--color-text-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-6);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure secondary buttons are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  min-height: 48px;
-}
-
-body[data-theme="light"] .secondary-button {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-.secondary-button:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-}
-
-body[data-theme="light"] .secondary-button:hover {
-  background: rgba(0, 0, 0, 0.15);
-}
-
-.error-message {
-  color: var(--color-state-error);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-4);
-}
-
-.loader {
-  width: 48px;
-  height: 48px;
-  border: 5px solid rgba(255, 255, 255, 0.2);
-  border-bottom-color: var(--color-accent-primary);
-  border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: spin 1s linear infinite;
-  margin-top: var(--space-8);
-}
-
-body[data-theme="light"] .loader {
-  border-color: rgba(0, 0, 0, 0.1);
-  border-bottom-color: var(--color-accent-primary);
-}
-
-/* =============================================== */
-/* 22. SETTINGS VIEW STYLES                       */
-/* =============================================== */
-
-.settings-container {
-  padding-bottom: var(--space-16);
-}
-
-.settings-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-5);
-}
-
-.settings-group h3 {
-  font-size: var(--font-size-lg);
-  font-weight: 700;
-  color: var(--color-accent-primary);
-  margin: 0;
-}
-
-.settings-group .setting-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.settings-group .setting-item label {
-  font-size: var(--font-size-md);
-  color: var(--color-text-primary);
-  font-weight: 500;
-}
-
-.button-toggle-group {
-  display: inline-flex;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-1);
-  gap: var(--space-1);
-}
-
-body[data-theme="light"] .button-toggle-group {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.toggle-btn {
-  border: none;
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  font-size: var(--font-size-sm);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure toggle buttons are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-.toggle-btn.active {
-  background: var(--color-surface-primary);
-  color: var(--color-text-primary);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-body[data-theme="light"] .toggle-btn.active {
-  background: var(--color-surface-primary);
-  color: var(--color-text-primary);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.btn-danger {
-  background: var(--color-state-error);
-  color: white;
-  border-radius: var(--radius-lg);
-  padding: var(--space-4) var(--space-6);
-  font-weight: 700;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  /* FIXED: Ensure danger buttons are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-.btn-danger:hover {
-  background: #e53e3e;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(248, 81, 73, 0.3);
-}
-
-.danger-zone {
-  border: 1px solid var(--color-state-error);
-  background: linear-gradient(135deg, rgba(248, 81, 73, 0.1), rgba(248, 81, 73, 0.05));
-}
-
-.danger-zone h3 {
-  color: var(--color-state-error);
-}
-
-.danger-zone p {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--space-4);
-}
-
-/* =============================================== */
-/* 23. TEMPLATE STYLES                            */
-/* =============================================== */
-
-.templates-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-}
-
-.template-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  /* FIXED: Ensure template cards are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-.template-card:hover {
-  box-shadow: 0 10px 30px var(--shadow-dark);
-}
-
-.template-info {
-  flex: 1;
-}
-
-.template-info h3 {
-  margin: 0 0 var(--space-1) 0;
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-}
-
-.template-info p {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-.new-template-form {
-  margin-top: var(--space-6);
-}
-
-.exercise-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin: var(--space-6) 0;
-}
-
-.exercise-editor {
-  padding: var(--space-4);
-}
-
-.exercise-editor-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.exercise-editor-header input {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-md);
-  /* FIXED: Ensure exercise editor inputs are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .exercise-editor-header input {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-  color: var(--color-text-primary);
-}
-
-.exercise-details {
-  display: flex;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
-.exercise-details label {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-}
-
-.exercise-details input {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  width: 60px;
-  /* FIXED: Ensure exercise detail inputs are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .exercise-details input {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-.form-actions {
-  display: flex;
-  gap: var(--space-4);
-  justify-content: space-between;
-  margin-top: var(--space-6);
-}
-
-.no-data {
-  text-align: center;
-  color: var(--color-text-secondary);
-  font-style: italic;
-  padding: var(--space-8);
-}
-
-/* =============================================== */
-/* 24. HISTORY VIEW STYLES                        */
-/* =============================================== */
-
-.history-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.workout-card {
-  cursor: pointer;
-  /* FIXED: Ensure workout cards are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-.workout-card:hover {
-  box-shadow: 0 10px 30px var(--shadow-dark);
-}
-
-.workout-summary {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-}
-
-.workout-name {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  margin: 0;
-}
-
-.workout-date {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-}
-
-.workout-details {
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.workout-details.collapsed {
-  max-height: 0;
-  opacity: 0;
-}
-
-.workout-details.expanded {
-  max-height: 1000px;
-  opacity: 1;
-}
-
-.workout-metrics {
-  display: flex;
-  gap: var(--space-4);
-  margin-bottom: var(--space-4);
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-}
-
-.exercise-item {
-  margin-bottom: var(--space-4);
-  padding: var(--space-3);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: var(--radius-md);
-}
-
-body[data-theme="light"] .exercise-item {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.exercise-title-group {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.exercise-icon {
-  width: 20px;
-  height: 20px;
-}
-
-.set-list {
-  list-style: none;
-  padding: 0;
-  margin: var(--space-3) 0 0 0;
-}
-
-.set-item {
-  padding: var(--space-2) 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-body[data-theme="light"] .set-item {
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.set-item:last-child {
-  border-bottom: none;
-}
-
-.filter-controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.filter-controls .input-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.filter-controls input,
-.filter-controls select {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-md);
-  /* FIXED: Ensure filter controls are always interactive */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .filter-controls input,
-body[data-theme="light"] .filter-controls select {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-  color: var(--color-text-primary);
-}
-
-.filter-controls input:focus,
-.filter-controls select:focus {
-  outline: none;
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
-}
-
-body[data-theme="light"] .filter-controls input:focus,
-body[data-theme="light"] .filter-controls select:focus {
-  box-shadow: 0 0 0 3px rgba(30, 113, 255, 0.2);
-}
-
-.summary-card {
-  text-align: center;
-  margin-bottom: var(--space-6);
-}
-
-.progress-card {
-  margin-bottom: var(--space-8);
-}
-
-.personal-record {
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.2);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  margin-bottom: var(--space-4);
-  font-size: var(--font-size-sm);
-  color: var(--color-accent-secondary);
-}
-
-body[data-theme="light"] .personal-record {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.2);
-  color: var(--color-accent-secondary);
-}
-
-.chart-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-6);
-  margin-top: var(--space-4);
-}
-
-.chart-container canvas {
-  max-height: 300px;
-}
-
-.section-title {
-  font-family: var(--font-display);
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  color: var(--color-accent-primary);
-  margin: var(--space-8) 0 var(--space-4) 0;
-  text-align: center;
-}
-
-.header-actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.icon-btn {
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure icon buttons are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .icon-btn {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.icon-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: var(--color-text-primary);
-}
-
-body[data-theme="light"] .icon-btn:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
-
-/* =============================================== */
-/* 25. APP HEADER STYLES                          */
-/* =============================================== */
-
-.app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-6);
-  padding: var(--space-4) 0;
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  text-align: center;
-  flex: 1;
-}
-
-/* =============================================== */
-/* 26. MODAL ENHANCEMENTS                         */
-/* =============================================== */
-
-.modal-subtitle {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-md);
-  margin-bottom: var(--space-6);
-  line-height: 1.5;
-}
-
-.slider-group {
-  margin-bottom: var(--space-5);
-}
-
-.slider-group label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-3);
-  color: var(--color-text-primary);
-  font-weight: 500;
-}
-
-.slider-group input[type="range"] {
-  width: 100%;
-  margin-top: var(--space-2);
-  /* FIXED: Ensure modal sliders are always interactive */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-/* =============================================== */
-/* 27. TIMER SECTION STYLES                       */
-/* =============================================== */
-
-.timer-section {
-  text-align: center;
-  margin-bottom: var(--space-6);
-}
-
-.timer-label {
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* =============================================== */
-/* 28. FEEDBACK MODAL STYLES                      */
-/* =============================================== */
-
-.question-group {
-  margin-bottom: var(--space-6);
-}
-
-.question-title {
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-4);
-}
-
-.answer-options {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.answer-option {
-  position: relative;
-}
-
-.answer-option input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  /* FIXED: Ensure radio inputs are always interactive */
-  pointer-events: auto;
-  z-index: 10;
-}
-
-.answer-option label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure answer option labels are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-body[data-theme="light"] .answer-option label {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.1);
-}
-
-.answer-option input[type="radio"]:checked + label {
-  background: rgba(0, 212, 255, 0.2);
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-}
-
-body[data-theme="light"] .answer-option input[type="radio"]:checked + label {
-  background: rgba(30, 113, 255, 0.2);
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 15px rgba(30, 113, 255, 0.3);
-}
-
-.answer-option label:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-body[data-theme="light"] .answer-option label:hover {
-  background: rgba(0, 0, 0, 0.1);
-  border-color: rgba(0, 0, 0, 0.2);
-}
-
-.option-icon {
-  font-size: 20px;
-  width: 24px;
-  text-align: center;
-}
-
-.option-text {
-  flex: 1;
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-
-.submit-section {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-8);
-  justify-content: flex-end;
-}
-
-/* =============================================== */
-/* 29. LINK CARD STYLES                           */
-/* =============================================== */
-
-.link-card {
-  cursor: pointer;
-  transition: all 0.3s ease;
-  /* FIXED: Ensure link cards are always clickable */
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
-}
-
-.link-card:hover {
-  box-shadow: 0 10px 30px var(--shadow-dark);
-}
-
-/* =============================================== */
-/* 30. ERROR CONTAINER STYLES                     */
-/* =============================================== */
-
-.error-container {
-  text-align: center;
-  padding: var(--space-8);
-}
-
-.empty-state-container {
-  text-align: center;
-  padding: var(--space-8);
-}
-
-/* =============================================== */
-/* 31. SKELETON ENHANCEMENTS                      */
-/* =============================================== */
-
-.skeleton-card-title {
-  height: 24px;
-  width: 80%;
-  margin-bottom: var(--space-3);
-}
-
-.skeleton-text-short {
-  height: 16px;
-  width: 60%;
-  margin-bottom: var(--space-2);
-}
-
-.skeleton-chart-container {
-  height: 200px;
-  width: 100%;
-  margin-top: var(--space-4);
-}
-
-/* =============================================== */
-/* 32. FINAL INTERACTIVE FIXES                    */
-/* =============================================== */
-
-/* Ensure all interactive elements are always clickable */
-button,
-input,
-select,
-textarea,
-[role="button"],
-[tabindex]:not([tabindex="-1"]) {
-  pointer-events: auto !important;
-  position: relative;
-  z-index: 10;
-}
-
-/* Prevent any parent hover effects from interfering with child interactions */
-.card-interactive:hover button,
-.card-interactive:hover input,
-.card-interactive:hover select,
-.card-interactive:hover textarea,
-.card-interactive:hover [role="button"] {
-  pointer-events: auto !important;
-  position: relative;
-  z-index: 20;
-  transform: none !important;
-}
-
-/* Ensure touch targets are large enough on mobile */
-@media (max-width: 768px) {
-  button,
-  input,
-  select,
-  .btn,
-  [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
+// Level Progress Component
+class LevelProgress extends LitElement {
+  static properties = {
+    currentLevel: { type: Number },
+    currentXP: { type: Number },
+    xpToNext: { type: Number },
+    levelTitle: { type: String },
+  };
+
+  constructor() {
+    super();
+    this.currentLevel = 1;
+    this.currentXP = 0;
+    this.xpToNext = 1000;
+    this.levelTitle = 'Fitness Novice';
   }
-  
-  .set-complete-btn {
-    width: 44px;
-    height: 44px;
+
+  getLevelTitle(level) {
+    const titles = {
+      1: 'Fitness Novice',
+      2: 'Training Apprentice',
+      3: 'Gym Regular',
+      4: 'Strength Seeker',
+      5: 'Fitness Enthusiast',
+      6: 'Training Warrior',
+      7: 'Muscle Builder',
+      8: 'Strength Master',
+      9: 'Fitness Legend',
+      10: 'Iron Champion'
+    };
+    return titles[level] || `Level ${level} Master`;
   }
-  
-  .btn-icon {
-    width: 48px;
-    height: 48px;
+
+  render() {
+    const progressPercent = ((this.currentXP % 1000) / 1000) * 100;
+    const title = this.getLevelTitle(this.currentLevel);
+
+    return html`
+      <div class="level-system card">
+        <div class="level-header">
+          <div class="level-badge">
+            <div class="level-icon">⚡</div>
+            <div class="level-info">
+              <h3>${title}</h3>
+              <p>Level ${this.currentLevel}</p>
+            </div>
+          </div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${progressPercent}%"></div>
+        </div>
+        <div class="progress-text">${this.currentXP % 1000} / ${this.xpToNext} XP to next level</div>
+      </div>
+    `;
+  }
+
+  createRenderRoot() {
+    return this;
   }
 }
 
-/* Accessibility: Ensure focus is always visible */
-*:focus-visible {
-  outline: 2px solid var(--color-accent-primary) !important;
-  outline-offset: 2px !important;
-  z-index: 100 !important;
+// Motivational Messages Component
+class MotivationalMessage extends LitElement {
+  static properties = {
+    message: { type: String },
+    type: { type: String },
+    icon: { type: String },
+  };
+
+  constructor() {
+    super();
+    this.message = '';
+    this.type = 'encouragement'; // encouragement, achievement, progress, challenge
+    this.icon = '💪';
+    this._messages = {
+      encouragement: [
+        { text: "You're crushing it! Keep going!", icon: '💪' },
+        { text: "Every rep counts! You've got this!", icon: '🔥' },
+        { text: "Strong work! Your future self will thank you!", icon: '⚡' },
+        { text: "Progress over perfection - you're doing amazing!", icon: '🎯' }
+      ],
+      achievement: [
+        { text: "New personal record! You're unstoppable!", icon: '🏆' },
+        { text: "Achievement unlocked! Keep reaching new heights!", icon: '🎖️' },
+        { text: "You just leveled up! Incredible work!", icon: '⭐' }
+      ],
+      progress: [
+        { text: "Look how far you've come! The gains are real!", icon: '📈' },
+        { text: "Your consistency is paying off!", icon: '📊' },
+        { text: "Progress alert: You're getting stronger every day!", icon: '💯' }
+      ],
+      challenge: [
+        { text: "Challenge accepted! Time to push your limits!", icon: '🎯' },
+        { text: "New challenge unlocked! Ready to level up?", icon: '🚀' },
+        { text: "Your next challenge awaits - let's do this!", icon: '⚡' }
+      ]
+    };
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (!this.message) {
+      this._selectRandomMessage();
+    }
+  }
+
+  _selectRandomMessage() {
+    const messages = this._messages[this.type] || this._messages.encouragement;
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    this.message = randomMessage.text;
+    this.icon = randomMessage.icon;
+  }
+
+  render() {
+    return html`
+      <div class="motivational-message card">
+        <div class="message-icon">${this.icon}</div>
+        <p class="message-text">${this.message}</p>
+      </div>
+    `;
+  }
+
+  createRenderRoot() {
+    return this;
+  }
 }
 
-/* Ensure modals and overlays don't interfere with clicks */
-.modal-overlay {
-  pointer-events: auto;
-}
+// Export all components
+customElements.define('daily-challenge-card', DailyChallengeCard);
+customElements.define('motivational-quote', MotivationalQuote);
+customElements.define('achievement-badge', AchievementBadge);
+customElements.define('progress-ring', ProgressRing);
+customElements.define('workout-streak', WorkoutStreak);
+customElements.define('level-progress', LevelProgress);
+customElements.define('motivational-message', MotivationalMessage);
 
-.modal-content {
-  pointer-events: auto;
-  position: relative;
-  z-index: 1001;
-}
-
-.modal-content * {
-  pointer-events: auto;
-}
+export {
+  DailyChallengeCard,
+  MotivationalQuote,
+  AchievementBadge,
+  ProgressRing,
+  WorkoutStreak,
+  LevelProgress,
+  MotivationalMessage
+};
