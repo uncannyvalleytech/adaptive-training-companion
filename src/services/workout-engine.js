@@ -80,18 +80,18 @@ export class WorkoutEngine {
   }
     
   // --- 4. Intensity Prescription ---
-  calculateTargetRPE(exerciseType, currentVolume, mrv) {
-    const baseRPE = exerciseType === 'compound' ? 8.0 : 8.5;
+  calculateTargetRIR(exerciseType, currentVolume, mrv) {
+    const baseRIR = exerciseType === 'compound' ? 2 : 1; // Start with a base RIR of 2 for compounds, 1 for isolation
     let fatigueAdjustment = 0;
-    if (currentVolume / mrv > 0.8) fatigueAdjustment = 0.5;
-    if (currentVolume / mrv < 0.4) fatigueAdjustment = -0.5;
-    const volumeAdjustment = 0;
-    return baseRPE + fatigueAdjustment + volumeAdjustment;
+    if (currentVolume / mrv > 0.8) fatigueAdjustment = -1; // Closer to MRV, push closer to failure (lower RIR)
+    if (currentVolume / mrv < 0.4) fatigueAdjustment = 1; // Far from MRV, can leave more in the tank (higher RIR)
+    
+    return baseRIR + fatigueAdjustment;
   }
 
-  suggestLoadProgression(previousLoad, lastSessionRPE, targetRPE) {
-    if (lastSessionRPE < targetRPE - 0.5) return previousLoad * 1.025;
-    if (lastSessionRPE > targetRPE + 0.5) return previousLoad * 0.975;
+  suggestLoadProgression(previousLoad, lastSessionRIR, targetRIR) {
+    if (lastSessionRIR > targetRIR + 1) return previousLoad * 1.025; // Too easy, more reps in reserve than targeted
+    if (lastSessionRIR < targetRIR -1) return previousLoad * 0.975; // Too hard, less reps in reserve
     return previousLoad;
   }
 
@@ -160,7 +160,6 @@ export class WorkoutEngine {
       5: [['push'], ['pull'], ['legs'], ['upper'], ['lower']],
       6: [['push'], ['pull'], ['legs'], ['push'], ['pull'], ['legs']],
     };
-    // Correct split for 4 days is U/L, U/L, not U/L, U/L, U/L, U/L
     const simplifiedSplits = {
       3: [['chest', 'back'], ['legs', 'shoulders'], ['arms', 'chest']],
       4: [['chest', 'shoulders', 'triceps'], ['back', 'biceps'], ['legs'], ['full body']],
@@ -177,7 +176,6 @@ export class WorkoutEngine {
     const workoutSplit = this.getWorkoutSplit(daysPerWeek);
     for (let week = 1; week <= mesocycleLength; week++) {
       const weeklyPlan = { week: week, muscleData: {} };
-      // Map muscle groups to their correct volume landmarks and RPE targets
       const uniqueMuscles = [...new Set(workoutSplit.flat())];
       for (const muscle of uniqueMuscles) {
         const landmarks = this.getVolumeLandmarks(muscle, daysPerWeek);
@@ -185,8 +183,8 @@ export class WorkoutEngine {
         const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
         weeklyPlan.muscleData[muscle] = {
           targetVolume: targetVolume,
-          targetRPE_compound: this.calculateTargetRPE('compound', targetVolume, landmarks.mrv),
-          targetRPE_isolation: this.calculateTargetRPE('isolation', targetVolume, landmarks.mrv),
+          targetRIR_compound: this.calculateTargetRIR('compound', targetVolume, landmarks.mrv),
+          targetRIR_isolation: this.calculateTargetRIR('isolation', targetVolume, landmarks.mrv),
         };
       }
       mesocycle.weeks.push(weeklyPlan);
@@ -196,8 +194,8 @@ export class WorkoutEngine {
       const landmarks = this.getVolumeLandmarks(muscle);
       deloadWeek.muscleData[muscle] = {
         targetVolume: Math.round(landmarks.mev * 0.6),
-        targetRPE_compound: 7.0,
-        targetRPE_isolation: 7.5,
+        targetRIR_compound: 4, 
+        targetRIR_isolation: 4,
       };
     }
     mesocycle.weeks.push(deloadWeek);
@@ -207,9 +205,9 @@ export class WorkoutEngine {
   // --- 10. Long-term Progression ---
   adaptVolumeLandmarks() {
     const taf = this.calculateTAF();
-    let adaptationRate = 0.01; // Advanced
-    if (taf < 1.5) adaptationRate = 0.05; // Beginner
-    else if (taf < 2.5) adaptationRate = 0.025; // Intermediate
+    let adaptationRate = 0.01; 
+    if (taf < 1.5) adaptationRate = 0.05; 
+    else if (taf < 2.5) adaptationRate = 0.025; 
 
     const currentBaseMEV = this.userProfile.baseMEV || this.baseMEV;
     const newBaseMEV = {};
