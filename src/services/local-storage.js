@@ -14,6 +14,8 @@ function createDefaultUserData() {
   const defaultTemplates = [
     {
         name: "Beginner Full Body A/B - Workout A",
+        primaryFocus: "Full Body",
+        daysPerWeek: 2,
         exercises: [
             { name: "Barbell Squat", sets: [{}, {}, {}], targetReps: "8-10" },
             { name: "Barbell Bench Press", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -24,6 +26,8 @@ function createDefaultUserData() {
     },
     {
         name: "Beginner Full Body A/B - Workout B",
+        primaryFocus: "Full Body",
+        daysPerWeek: 2,
         exercises: [
             { name: "Barbell Deadlift", sets: [{}, {}, {}], targetReps: "6-8" },
             { name: "Overhead Press (Barbell or Dumbbell)", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -34,6 +38,8 @@ function createDefaultUserData() {
     },
     {
         name: "Beginner Dumbbell Full Body - Workout A",
+        primaryFocus: "Full Body",
+        daysPerWeek: 2,
         exercises: [
             { name: "Goblet Squat", sets: [{}, {}, {}], targetReps: "10-15" },
             { name: "Push-Ups", sets: [{}, {}, {}], targetReps: "AMRAP" },
@@ -45,6 +51,8 @@ function createDefaultUserData() {
     },
     {
         name: "Beginner Dumbbell Full Body - Workout B",
+        primaryFocus: "Full Body",
+        daysPerWeek: 2,
         exercises: [
             { name: "Dumbbell Reverse Lunge", sets: [{}, {}, {}], targetReps: "10-12 per leg" },
             { name: "Dumbbell Floor Press", sets: [{}, {}, {}], targetReps: "10-15" },
@@ -55,7 +63,9 @@ function createDefaultUserData() {
         ]
     },
     {
-        name: "Intermediate Upper/Lower (2-Day)",
+        name: "Intermediate Upper/Lower (2-Day) - Upper",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 2,
         exercises: [
             { name: "Barbell Bench Press", sets: [{}, {}, {}], targetReps: "6-10" },
             { name: "Bent Over Row", sets: [{}, {}, {}], targetReps: "6-10" },
@@ -63,7 +73,14 @@ function createDefaultUserData() {
             { name: "Lat Pulldown", sets: [{}, {}, {}], targetReps: "10-12" },
             { name: "Dumbbell Lateral Raise", sets: [{}, {}], targetReps: "12-15" },
             { name: "Barbell Curl", sets: [{}, {}], targetReps: "12-15" },
-            { name: "Triceps Rope Pushdown", sets: [{}, {}], targetReps: "12-15" },
+            { name: "Triceps Rope Pushdown", sets: [{}, {}], targetReps: "12-15" }
+        ]
+    },
+     {
+        name: "Intermediate Upper/Lower (2-Day) - Lower",
+        primaryFocus: "Lower Body",
+        daysPerWeek: 2,
+        exercises: [
             { name: "Barbell Squat", sets: [{}, {}, {}], targetReps: "6-10" },
             { name: "Romanian Deadlift", sets: [{}, {}, {}], targetReps: "8-10" },
             { name: "Leg Press", sets: [{}, {}, {}], targetReps: "10-12" },
@@ -74,6 +91,8 @@ function createDefaultUserData() {
     },
     {
         name: "Classic Beginner Full Body - Workout A",
+        primaryFocus: "Full Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Squats", sets: [{}, {}, {}], targetReps: "8-10" },
             { name: "Bench Press", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -84,6 +103,8 @@ function createDefaultUserData() {
     },
     {
         name: "Classic Beginner Full Body - Workout B",
+        primaryFocus: "Full Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Deadlifts (Conventional or Romanian)", sets: [{}, {}, {}], targetReps: "6-8" },
             { name: "Pull-Ups (or Lat Pulldowns)", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -94,6 +115,8 @@ function createDefaultUserData() {
     },
     {
         name: "Beginner Full Body (3 Unique Days) - Day 1",
+        primaryFocus: "Full Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Trap Bar Deadlift", sets: [{}, {}, {}], targetReps: "3-5" },
             { name: "Incline Dumbbell Bench Press", sets: [{}, {}, {}], targetReps: "8-12" },
@@ -104,6 +127,8 @@ function createDefaultUserData() {
     },
     {
         name: "Beginner Full Body (3 Unique Days) - Day 2",
+        primaryFocus: "Full Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Front Squats", sets: [{}, {}, {}], targetReps: "3-5" },
             { name: "Bent Over Row", sets: [{}, {}, {}], targetReps: "5-8" },
@@ -114,6 +139,8 @@ function createDefaultUserData() {
     },
     {
         name: "Beginner Full Body (3 Unique Days) - Day 3",
+        primaryFocus: "Full Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Bench Press", sets: [{}, {}, {}], targetReps: "3-5" },
             { name: "Leg Press", sets: [{}, {}, {}], targetReps: "6-10" },
@@ -124,6 +151,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Push/Pull/Legs (PPL) - Push",
+        primaryFocus: "Push",
+        daysPerWeek: 3,
         exercises: [
             { name: "Barbell Bench Press", sets: [{}, {}, {}], targetReps: "6-10" },
             { name: "Seated Dumbbell Shoulder Press", sets: [{}, {}, {}], targetReps: "8-12" },
@@ -134,6 +163,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Push/Pull/Legs (PPL) - Pull",
+        primaryFocus: "Pull",
+        daysPerWeek: 3,
         exercises: [
             { name: "Deadlifts", sets: [{}, {}, {}], targetReps: "5-8" },
             { name: "Pull-Ups (or Lat Pulldowns)", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -144,6 +175,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Push/Pull/Legs (PPL) - Legs",
+        primaryFocus: "Legs",
+        daysPerWeek: 3,
         exercises: [
             { name: "Barbell Squats", sets: [{}, {}, {}], targetReps: "6-10" },
             { name: "Romanian Deadlifts", sets: [{}, {}, {}], targetReps: "10-12" },
@@ -154,6 +187,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Upper/Lower Split (U/L/U) - Upper Body 1",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Barbell Bench Press", sets: [{}, {}, {}], targetReps: "6-8" },
             { name: "Barbell Bent Over Row", sets: [{}, {}, {}], targetReps: "6-8" },
@@ -164,6 +199,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Upper/Lower Split (U/L/U) - Upper Body 2",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Overhead Press", sets: [{}, {}, {}], targetReps: "6-8" },
             { name: "Pull-Ups (weighted if possible)", sets: [{}, {}, {}], targetReps: "AMRAP" },
@@ -174,6 +211,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Upper/Lower Split (U/L/U) - Lower Body",
+        primaryFocus: "Lower Body",
+        daysPerWeek: 3,
         exercises: [
             { name: "Barbell Squats", sets: [{}, {}, {}], targetReps: "6-8" },
             { name: "Romanian Deadlifts", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -184,6 +223,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Upper/Lower Split (Strength Focus) - Upper Body Strength",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 4,
         exercises: [
             { name: "Barbell Bench Press", sets: [{}, {}, {}, {}], targetReps: "4-6" },
             { name: "Weighted Pull-Ups", sets: [{}, {}, {}, {}], targetReps: "4-6" },
@@ -194,6 +235,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Upper/Lower Split (Strength Focus) - Lower Body Strength",
+        primaryFocus: "Lower Body",
+        daysPerWeek: 4,
         exercises: [
             { name: "Barbell Back Squat", sets: [{}, {}, {}, {}], targetReps: "4-6" },
             { name: "Conventional Deadlift", sets: [{}, {}, {}], targetReps: "4-6" },
@@ -204,6 +247,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Upper/Lower Split (Hypertrophy Focus) - Upper Body Hypertrophy",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 4,
         exercises: [
             { name: "Incline Dumbbell Press", sets: [{}, {}, {}, {}], targetReps: "8-12" },
             { name: "Lat Pulldown", sets: [{}, {}, {}, {}], targetReps: "8-12" },
@@ -215,6 +260,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Upper/Lower Split (Hypertrophy Focus) - Lower Body Hypertrophy",
+        primaryFocus: "Lower Body",
+        daysPerWeek: 4,
         exercises: [
             { name: "Goblet Squat", sets: [{}, {}, {}, {}], targetReps: "10-15" },
             { name: "Romanian Deadlift", sets: [{}, {}, {}, {}], targetReps: "10-12" },
@@ -226,6 +273,8 @@ function createDefaultUserData() {
     },
     {
         name: "Women's Focused Upper/Lower Split (Strength Focus) - Upper Body Strength",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 4,
         exercises: [
             { name: "Flat Machine Press", sets: [{}, {}, {}, {}], targetReps: "6" },
             { name: "Dumbbell Row", sets: [{}, {}, {}, {}], targetReps: "6" },
@@ -236,6 +285,8 @@ function createDefaultUserData() {
     },
     {
         name: "Women's Focused Upper/Lower Split (Strength Focus) - Lower Body Strength",
+        primaryFocus: "Glutes",
+        daysPerWeek: 4,
         exercises: [
             { name: "Smith Machine Squat", sets: [{}, {}, {}, {}], targetReps: "6" },
             { name: "Deadlift", sets: [{}, {}, {}, {}], targetReps: "6" },
@@ -246,6 +297,8 @@ function createDefaultUserData() {
     },
     {
         name: "Women's Focused Upper/Lower Split (Hypertrophy Focus) - Upper Body Hypertrophy",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 4,
         exercises: [
             { name: "Incline Dumbbell Bench Press", sets: [{}, {}, {}], targetReps: "12" },
             { name: "Seated Cable Row", sets: [{}, {}, {}], targetReps: "12" },
@@ -257,6 +310,8 @@ function createDefaultUserData() {
     },
     {
         name: "Women's Focused Upper/Lower Split (Hypertrophy Focus) - Lower Body Hypertrophy",
+        primaryFocus: "Glutes",
+        daysPerWeek: 4,
         exercises: [
             { name: "Goblet Squat", sets: [{}, {}, {}], targetReps: "12" },
             { name: "Dumbbell Romanian Deadlift", sets: [{}, {}, {}], targetReps: "12" },
@@ -267,6 +322,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Body Part Split - Chest & Triceps",
+        primaryFocus: "Chest",
+        daysPerWeek: 4,
         exercises: [
             { name: "Bench Press", sets: [{}, {}, {}, {}], targetReps: "6-10" },
             { name: "Incline Dumbbell Press", sets: [{}, {}, {}], targetReps: "8-12" },
@@ -278,6 +335,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Body Part Split - Back & Biceps",
+        primaryFocus: "Back",
+        daysPerWeek: 4,
         exercises: [
             { name: "Deadlift", sets: [{}, {}, {}], targetReps: "5" },
             { name: "Wide Grip Pull-Up (or Lat Pulldown)", sets: [{}, {}, {}], targetReps: "10-12" },
@@ -289,6 +348,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Body Part Split - Legs",
+        primaryFocus: "Legs",
+        daysPerWeek: 4,
         exercises: [
             { name: "Squat", sets: [{}, {}, {}, {}], targetReps: "6-10" },
             { name: "Leg Press", sets: [{}, {}, {}], targetReps: "15-20" },
@@ -300,6 +361,8 @@ function createDefaultUserData() {
     },
     {
         name: "Intermediate Body Part Split - Shoulders & Abs",
+        primaryFocus: "Shoulders",
+        daysPerWeek: 4,
         exercises: [
             { name: "Seated Barbell Press", sets: [{}, {}, {}, {}], targetReps: "6-10" },
             { name: "Seated Arnold Press", sets: [{}, {}, {}], targetReps: "8-12" },
@@ -312,6 +375,8 @@ function createDefaultUserData() {
     },
     {
         name: "Classic 5-Day Body Part Split - Chest",
+        primaryFocus: "Chest",
+        daysPerWeek: 5,
         exercises: [
             { name: "Incline Barbell Bench Press", sets: [{}, {}, {}, {}], targetReps: "8-12" },
             { name: "Flat Dumbbell Bench Press", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -322,6 +387,8 @@ function createDefaultUserData() {
     },
     {
         name: "Classic 5-Day Body Part Split - Back",
+        primaryFocus: "Back",
+        daysPerWeek: 5,
         exercises: [
             { name: "Wide Grip Pull-Up (Weighted)", sets: [{}, {}, {}, {}], targetReps: "Max reps" },
             { name: "Bent-Over Barbell Row", sets: [{}, {}, {}, {}], targetReps: "8-10" },
@@ -332,6 +399,8 @@ function createDefaultUserData() {
     },
     {
         name: "Classic 5-Day Body Part Split - Shoulders",
+        primaryFocus: "Shoulders",
+        daysPerWeek: 5,
         exercises: [
             { name: "Seated Dumbbell Press", sets: [{}, {}, {}, {}], targetReps: "8-12" },
             { name: "One-Arm Cable Lateral Raise", sets: [{}, {}, {}], targetReps: "12-15 per arm" },
@@ -342,6 +411,8 @@ function createDefaultUserData() {
     },
     {
         name: "Classic 5-Day Body Part Split - Legs",
+        primaryFocus: "Legs",
+        daysPerWeek: 5,
         exercises: [
             { name: "Barbell Squat", sets: [{}, {}, {}, {}], targetReps: "8-10" },
             { name: "Leg Press", sets: [{}, {}, {}], targetReps: "12-15" },
@@ -352,6 +423,8 @@ function createDefaultUserData() {
     },
     {
         name: "Classic 5-Day Body Part Split - Arms & Abs",
+        primaryFocus: "Arms",
+        daysPerWeek: 5,
         exercises: [
             { name: "Close Grip Bench Press", sets: [{}, {}, {}, {}], targetReps: "8-10" },
             { name: "Barbell Curl", sets: [{}, {}, {}, {}], targetReps: "8-10" },
@@ -364,26 +437,38 @@ function createDefaultUserData() {
     },
     {
         name: "The Hybrid PPL + U/L Split - Push",
+        primaryFocus: "Push",
+        daysPerWeek: 5,
         exercises: []
     },
     {
         name: "The Hybrid PPL + U/L Split - Pull",
+        primaryFocus: "Pull",
+        daysPerWeek: 5,
         exercises: []
     },
     {
         name: "The Hybrid PPL + U/L Split - Legs",
+        primaryFocus: "Legs",
+        daysPerWeek: 5,
         exercises: []
     },
     {
         name: "The Hybrid PPL + U/L Split - Upper Body",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 5,
         exercises: []
     },
     {
         name: "The Hybrid PPL + U/L Split - Lower Body",
+        primaryFocus: "Lower Body",
+        daysPerWeek: 5,
         exercises: []
     },
     {
         name: "The Nippard Hybrid Split - Upper Body (Strength Focus)",
+        primaryFocus: "Upper Body",
+        daysPerWeek: 5,
         exercises: [
             { name: "Incline Bench Press", sets: [{}, {}, {}], targetReps: "6-8" },
             { name: "Weighted Pull-Up", sets: [{}, {}, {}], targetReps: "6-8" },
@@ -395,6 +480,8 @@ function createDefaultUserData() {
     },
     {
         name: "The Nippard Hybrid Split - Lower Body (Strength Focus)",
+        primaryFocus: "Lower Body",
+        daysPerWeek: 5,
         exercises: [
             { name: "Barbell Back Squat", sets: [{}, {}, {}, {}], targetReps: "5-7" },
             { name: "Romanian Deadlift", sets: [{}, {}, {}], targetReps: "8-10" },
@@ -404,6 +491,8 @@ function createDefaultUserData() {
     },
     {
         name: "The Nippard Hybrid Split - Push (Hypertrophy Focus)",
+        primaryFocus: "Push",
+        daysPerWeek: 5,
         exercises: [
             { name: "Dumbbell Bench Press", sets: [{}, {}, {}, {}], targetReps: "10-12" },
             { name: "Seated Cable Fly", sets: [{}, {}, {}], targetReps: "12-15" },
@@ -413,6 +502,8 @@ function createDefaultUserData() {
     },
     {
         name: "The Nippard Hybrid Split - Pull (Hypertrophy Focus)",
+        primaryFocus: "Pull",
+        daysPerWeek: 5,
         exercises: [
             { name: "Lat Pulldown (Neutral Grip)", sets: [{}, {}, {}, {}], targetReps: "10-12" },
             { name: "Machine Row", sets: [{}, {}, {}], targetReps: "12-15" },
@@ -422,6 +513,8 @@ function createDefaultUserData() {
     },
     {
         name: "The Nippard Hybrid Split - Legs (Hypertrophy Focus)",
+        primaryFocus: "Legs",
+        daysPerWeek: 5,
         exercises: [
             { name: "Barbell Hip Thrust", sets: [{}, {}, {}, {}], targetReps: "10-12" },
             { name: "Bulgarian Split Squat", sets: [{}, {}, {}], targetReps: "12-15 per leg" },
@@ -432,6 +525,8 @@ function createDefaultUserData() {
     },
     {
         name: "5-Day Women's Workout Program - Legs (Quad Focus)",
+        primaryFocus: "Legs",
+        daysPerWeek: 5,
         exercises: [
             { name: "Squat", sets: [{}, {}, {}, {}], targetReps: "6-12" },
             { name: "Leg Press", sets: [{}, {}, {}], targetReps: "12-15" },
@@ -441,6 +536,8 @@ function createDefaultUserData() {
     },
     {
         name: "5-Day Women's Workout Program - Back & Biceps",
+        primaryFocus: "Back",
+        daysPerWeek: 5,
         exercises: [
             { name: "Pull Downs", sets: [{}, {}, {}, {}], targetReps: "6-12" },
             { name: "One Arm Dumbbell Row", sets: [{}, {}, {}], targetReps: "12-15" },
@@ -450,6 +547,8 @@ function createDefaultUserData() {
     },
     {
         name: "5-Day Women's Workout Program - Glutes & Hamstrings",
+        primaryFocus: "Glutes",
+        daysPerWeek: 5,
         exercises: [
             { name: "Barbell Hip Thrust", sets: [{}, {}, {}, {}], targetReps: "6-12" },
             { name: "Romanian Deadlift", sets: [{}, {}, {}], targetReps: "12-15" },
@@ -459,6 +558,8 @@ function createDefaultUserData() {
     },
     {
         name: "5-Day Women's Workout Program - Chest & Shoulders",
+        primaryFocus: "Chest",
+        daysPerWeek: 5,
         exercises: [
             { name: "Dumbbell Bench Press", sets: [{}, {}, {}, {}], targetReps: "6-12" },
             { name: "Incline Dumbbell Press", sets: [{}, {}, {}], targetReps: "12-15" },
@@ -468,6 +569,8 @@ function createDefaultUserData() {
     },
     {
         name: "5-Day Women's Workout Program - Full Lower Body & Arms",
+        primaryFocus: "Lower Body",
+        daysPerWeek: 5,
         exercises: [
             { name: "Deadlifts", sets: [{}, {}, {}, {}], targetReps: "6-12" },
             { name: "Good Mornings", sets: [{}, {}, {}], targetReps: "12-15" },
