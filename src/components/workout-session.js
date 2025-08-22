@@ -33,6 +33,7 @@ class WorkoutSession extends LitElement {
       Object.keys(allGroups).forEach(group => {
         this.expandedGroups[group] = true;
       });
+      this.requestUpdate();
     }
   }
 
@@ -56,14 +57,26 @@ class WorkoutSession extends LitElement {
   }
 
   _handleSetInput(exerciseIndex, setIndex, field, value) {
-    this.workout.exercises[exerciseIndex].sets[setIndex][field] = value;
-    this.requestUpdate();
+    // Find the original exercise in the workout object to modify it
+    const originalExercise = this.workout.exercises.find(ex => ex.originalIndex === exerciseIndex);
+    if(originalExercise) {
+        if (!originalExercise.sets[setIndex]) {
+            originalExercise.sets[setIndex] = {};
+        }
+        originalExercise.sets[setIndex][field] = value;
+        this.requestUpdate();
+    }
   }
 
   _toggleSetComplete(exerciseIndex, setIndex) {
-    const set = this.workout.exercises[exerciseIndex].sets[setIndex];
-    set.completed = !set.completed;
-    this.requestUpdate();
+    const originalExercise = this.workout.exercises.find(ex => ex.originalIndex === exerciseIndex);
+     if(originalExercise) {
+        const set = originalExercise.sets[setIndex];
+        if(set){
+            set.completed = !set.completed;
+            this.requestUpdate();
+        }
+    }
   }
 
   async _completeWorkout() {
@@ -119,7 +132,7 @@ class WorkoutSession extends LitElement {
       return {};
     }
     return this.workout.exercises.reduce((acc, exercise, index) => {
-      const group = exercise.muscleGroup.toUpperCase() || 'GENERAL';
+      const group = (exercise.muscleGroup || 'GENERAL').toUpperCase();
       if (!acc[group]) {
         acc[group] = [];
       }
