@@ -146,6 +146,7 @@ export class WorkoutEngine {
     if (!availableExercises) return [];
     const scoredExercises = availableExercises.map(ex => ({
       ...ex,
+      muscleGroup: muscleGroup,
       score: this.calculateEPS(ex, context),
     }));
     scoredExercises.sort((a, b) => b.score - a.score);
