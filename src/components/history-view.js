@@ -450,7 +450,7 @@ class HistoryView extends LitElement {
   
   _exportData() {
     // Flatten workout data into a CSV format
-    const headers = ["date", "workoutName", "exerciseName", "category", "muscleGroup", "setNumber", "reps", "weight_lbs", "weight_kg", "rpe", "rir"];
+    const headers = ["date", "workoutName", "exerciseName", "category", "muscleGroup", "setNumber", "reps", "weight_lbs", "weight_kg", "rir"];
     let csvContent = headers.join(",") + "\n";
 
     this.workouts.forEach(workout => {
@@ -467,7 +467,6 @@ class HistoryView extends LitElement {
             set.reps,
             set.weight,
             (set.weight * 0.453592).toFixed(1),
-            set.rpe,
             set.rir
           ];
           csvContent += row.join(",") + "\n";
