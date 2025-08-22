@@ -6,6 +6,7 @@
 
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
+import { exerciseDatabase } from "../services/exercise-database.js";
 
 class WorkoutTemplates extends LitElement {
   static properties = {
@@ -27,7 +28,7 @@ class WorkoutTemplates extends LitElement {
     this.errorMessage = "";
     this.showNewTemplateForm = false;
     this.newTemplateName = "";
-    this.newTemplateExercises = [];
+    this.newTemplateExercises = [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }];
     this.isSaving = false;
     this.selectedFocus = "all";
     this.selectedFrequency = "all";
@@ -52,12 +53,19 @@ class WorkoutTemplates extends LitElement {
   }
 
   _addExerciseToTemplate() {
-    this.newTemplateExercises = [...this.newTemplateExercises, { name: "", sets: 3, reps: 10, rir: 2 }];
+    this.newTemplateExercises = [...this.newTemplateExercises, { muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }];
   }
 
   _handleExerciseInput(index, field, value) {
     const updatedExercises = [...this.newTemplateExercises];
     updatedExercises[index][field] = value;
+    this.newTemplateExercises = updatedExercises;
+  }
+  
+  _handleMuscleGroupChange(index, value) {
+    const updatedExercises = [...this.newTemplateExercises];
+    updatedExercises[index].muscleGroup = value;
+    updatedExercises[index].name = ""; // Reset exercise name when muscle group changes
     this.newTemplateExercises = updatedExercises;
   }
 
@@ -202,12 +210,19 @@ class WorkoutTemplates extends LitElement {
           ${this.newTemplateExercises.map((exercise, index) => html`
             <div class="exercise-editor card">
               <div class="exercise-editor-header">
-                <input
-                  type="text"
-                  .value=${exercise.name}
-                  @input=${(e) => this._handleExerciseInput(index, 'name', e.target.value)}
-                  placeholder="Exercise Name"
-                />
+                <div class="exercise-selectors">
+                  <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(index, e.target.value)}>
+                    <option value="">Select Muscle</option>
+                    ${Object.keys(exerciseDatabase).map(muscle => html`<option value="${muscle}">${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
+                  </select>
+
+                  ${exercise.muscleGroup ? html`
+                    <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(index, 'name', e.target.value)}>
+                      <option value="">Select Exercise</option>
+                      ${exerciseDatabase[exercise.muscleGroup].map(ex => html`<option value="${ex.name}">${ex.name}</option>`)}
+                    </select>
+                  ` : ''}
+                </div>
                 <button class="btn-icon" @click=${() => this._removeExercise(index)}>
                   ✖️
                 </button>
