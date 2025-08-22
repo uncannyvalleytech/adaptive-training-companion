@@ -16,6 +16,8 @@ class WorkoutTemplates extends LitElement {
     newTemplateName: { type: String },
     newTemplateExercises: { type: Array },
     isSaving: { type: Boolean },
+    selectedFocus: { type: String },
+    selectedFrequency: { type: String },
   };
 
   constructor() {
@@ -27,6 +29,8 @@ class WorkoutTemplates extends LitElement {
     this.newTemplateName = "";
     this.newTemplateExercises = [];
     this.isSaving = false;
+    this.selectedFocus = "all";
+    this.selectedFrequency = "all";
   }
 
   connectedCallback() {
@@ -51,7 +55,6 @@ class WorkoutTemplates extends LitElement {
     this.newTemplateExercises = [...this.newTemplateExercises, { name: "", sets: 3, reps: 10, rpe: 7 }];
   }
 
-  // Correctly handle input for each exercise field
   _handleExerciseInput(index, field, value) {
     const updatedExercises = [...this.newTemplateExercises];
     updatedExercises[index][field] = value;
@@ -68,7 +71,6 @@ class WorkoutTemplates extends LitElement {
     try {
         const newTemplate = {
             name: this.newTemplateName,
-            // Ensure sets, reps, and RPE are parsed as numbers and have fallbacks
             exercises: this.newTemplateExercises.map(ex => ({
                 name: ex.name,
                 sets: Array(Number(ex.sets) || 3).fill({}),
@@ -103,6 +105,22 @@ class WorkoutTemplates extends LitElement {
     }));
   }
 
+  _handleFocusChange(e) {
+    this.selectedFocus = e.target.value;
+  }
+
+  _handleFrequencyChange(e) {
+    this.selectedFrequency = e.target.value;
+  }
+
+  _getFilteredTemplates() {
+    return this.templates.filter(template => {
+      const focusMatch = this.selectedFocus === 'all' || template.primaryFocus === this.selectedFocus;
+      const frequencyMatch = this.selectedFrequency === 'all' || template.daysPerWeek == this.selectedFrequency;
+      return focusMatch && frequencyMatch;
+    });
+  }
+
   render() {
     if (this.isLoading) {
       return html`<p>Loading templates...</p>`;
@@ -122,13 +140,35 @@ class WorkoutTemplates extends LitElement {
   }
 
   _renderTemplateList() {
+    const filteredTemplates = this._getFilteredTemplates();
+    const focusOptions = [...new Set(this.templates.map(t => t.primaryFocus))];
+    const frequencyOptions = [...new Set(this.templates.map(t => t.daysPerWeek))].sort((a,b) => a-b);
+
     return html`
       <button class="cta-button" @click=${() => this.showNewTemplateForm = true}>
         Create New Template
       </button>
+
+      <div class="filter-controls card">
+          <div class="input-group">
+            <label for="focus-select">Primary Focus:</label>
+            <select id="focus-select" @change=${this._handleFocusChange}>
+              <option value="all">All</option>
+              ${focusOptions.map(focus => html`<option value="${focus}">${focus}</option>`)}
+            </select>
+          </div>
+          <div class="input-group">
+            <label for="frequency-select">Workout Frequency (days/week):</label>
+            <select id="frequency-select" @change=${this._handleFrequencyChange}>
+              <option value="all">All</option>
+               ${frequencyOptions.map(days => html`<option value="${days}">${days}</option>`)}
+            </select>
+          </div>
+        </div>
+
       <div class="templates-list">
-        ${this.templates.length === 0 ? html`<p class="no-data">No templates saved yet. Create your first one!</p>` : ''}
-        ${this.templates.map(template => html`
+        ${filteredTemplates.length === 0 ? html`<p class="no-data">No templates match your criteria.</p>` : ''}
+        ${filteredTemplates.map(template => html`
           <div class="card link-card template-card">
             <div class="template-info" @click=${() => this._loadTemplate(template)}>
               <h3>${template.name}</h3>
