@@ -52,7 +52,7 @@ class WorkoutTemplates extends LitElement {
   }
 
   _addExerciseToTemplate() {
-    this.newTemplateExercises = [...this.newTemplateExercises, { name: "", sets: 3, reps: 10, rpe: 7 }];
+    this.newTemplateExercises = [...this.newTemplateExercises, { name: "", sets: 3, reps: 10, rir: 2 }];
   }
 
   _handleExerciseInput(index, field, value) {
@@ -75,7 +75,7 @@ class WorkoutTemplates extends LitElement {
                 name: ex.name,
                 sets: Array(Number(ex.sets) || 3).fill({}),
                 targetReps: Number(ex.reps) || 10,
-                targetRpe: Number(ex.rpe) || 7,
+                targetRir: Number(ex.rir) || 2,
             }))
         };
         const updatedTemplates = [...this.templates, newTemplate];
@@ -215,7 +215,7 @@ class WorkoutTemplates extends LitElement {
               <div class="exercise-details">
                 <label>Sets: <input type="number" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(index, 'sets', e.target.value)}></label>
                 <label>Reps: <input type="number" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(index, 'reps', e.target.value)}></label>
-                <label>RPE: <input type="number" .value=${exercise.rpe} @input=${(e) => this._handleExerciseInput(index, 'rpe', e.target.value)}></label>
+                <label>RIR: <input type="number" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(index, 'rir', e.target.value)}></label>
               </div>
             </div>
           `)}
