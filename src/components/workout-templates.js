@@ -32,6 +32,11 @@ class WorkoutTemplates extends LitElement {
     this.isSaving = false;
     this.selectedFocus = "all";
     this.selectedFrequency = "all";
+    this.broadMuscleGroups = {
+        'Upper Body': ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms'],
+        'Lower Body': ['quads', 'hamstrings', 'glutes', 'calves'],
+        'Full Body': Object.keys(exerciseDatabase)
+    };
   }
 
   connectedCallback() {
@@ -191,7 +196,23 @@ class WorkoutTemplates extends LitElement {
     `;
   }
   
+  _getExercisesForGroup(groupName) {
+    if (this.broadMuscleGroups[groupName]) {
+      // It's a broad category
+      return this.broadMuscleGroups[groupName].flatMap(muscle => exerciseDatabase[muscle] || []);
+    } else if (exerciseDatabase[groupName]) {
+      // It's a specific muscle
+      return exerciseDatabase[groupName];
+    }
+    return [];
+  }
+
   _renderNewTemplateForm() {
+    const muscleGroups = [
+        ...Object.keys(this.broadMuscleGroups), 
+        ...Object.keys(exerciseDatabase)
+    ];
+
     return html`
       <div class="new-template-form card">
         <h3>Create New Template</h3>
@@ -207,19 +228,21 @@ class WorkoutTemplates extends LitElement {
         </div>
         
         <div class="exercise-list">
-          ${this.newTemplateExercises.map((exercise, index) => html`
+          ${this.newTemplateExercises.map((exercise, index) => {
+            const availableExercises = this._getExercisesForGroup(exercise.muscleGroup);
+            return html`
             <div class="exercise-editor card">
               <div class="exercise-editor-header">
                 <div class="exercise-selectors">
                   <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(index, e.target.value)}>
-                    <option value="">Select Muscle</option>
-                    ${Object.keys(exerciseDatabase).map(muscle => html`<option value="${muscle}">${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
+                    <option value="">Select Muscle Group</option>
+                    ${muscleGroups.map(muscle => html`<option value="${muscle}">${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
                   </select>
 
                   ${exercise.muscleGroup ? html`
                     <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(index, 'name', e.target.value)}>
                       <option value="">Select Exercise</option>
-                      ${exerciseDatabase[exercise.muscleGroup].map(ex => html`<option value="${ex.name}">${ex.name}</option>`)}
+                      ${availableExercises.map(ex => html`<option value="${ex.name}">${ex.name}</option>`)}
                     </select>
                   ` : ''}
                 </div>
@@ -233,7 +256,7 @@ class WorkoutTemplates extends LitElement {
                 <label>RIR: <input type="number" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(index, 'rir', e.target.value)}></label>
               </div>
             </div>
-          `)}
+          `})}
         </div>
         
         <div class="form-actions">
@@ -254,3 +277,4 @@ class WorkoutTemplates extends LitElement {
 }
 
 customElements.define("workout-templates", WorkoutTemplates);
+
