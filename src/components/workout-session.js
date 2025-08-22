@@ -1,136 +1,46 @@
 import { LitElement, html } from "lit";
 import { saveDataLocally } from "../services/local-storage.js";
-import "./workout-feedback-modal.js";
 import "./motivational-elements.js";
 
 class WorkoutSession extends LitElement {
   static properties = {
     workout: { type: Object },
     isSaving: { type: Boolean },
-    isResting: { type: Boolean },
-    restTotalTime: { type: Number },
-    restTimeRemaining: { type: Number },
     units: { type: String },
     workoutStartTime: { type: Number },
     stopwatchInterval: { type: Object },
-    restInterval: { type: Object },
     stopwatchDisplay: { type: String },
-    currentExerciseIndex: { type: Number },
-    motivationalMessage: { type: String },
-    showMotivation: { type: Boolean },
-    workoutProgress: { type: Number },
+    expandedGroups: { type: Object },
   };
 
   constructor() {
     super();
     this.workout = null;
     this.isSaving = false;
-    this.isResting = false;
-    this.restTotalTime = 90;
-    this.restTimeRemaining = 90;
-    this.units = 'lbs';
+    this.units = localStorage.getItem('units') || 'lbs';
     this.workoutStartTime = Date.now();
     this.stopwatchInterval = null;
-    this.restInterval = null;
     this.stopwatchDisplay = "00:00";
-    this.currentExerciseIndex = 0;
-    this.touchStartX = 0;
-    this.touchStartY = 0;
-    this.motivationalMessage = '';
-    this.showMotivation = false;
-    this.workoutProgress = 0;
+    this.expandedGroups = {};
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.startStopwatch();
-    this.addEventListener('touchstart', this._handleTouchStart, false);
-    this.addEventListener('touchmove', this._handleTouchMove, false);
-    this.addEventListener('touchend', this._handleTouchEnd, false);
-    this._calculateProgress();
-    this._showRandomMotivation();
+    // Pre-expand all muscle groups by default
+    if (this.workout && this.workout.exercises) {
+      const allGroups = this._getGroupedExercises();
+      Object.keys(allGroups).forEach(group => {
+        this.expandedGroups[group] = true;
+      });
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.stopStopwatch();
-    this.stopRestTimer();
-    this.removeEventListener('touchstart', this._handleTouchStart, false);
-    this.removeEventListener('touchmove', this._handleTouchMove, false);
-    this.removeEventListener('touchend', this._handleTouchEnd, false);
   }
 
-  _calculateProgress() {
-    if (!this.workout || !this.workout.exercises) return;
-    
-    const totalSets = this.workout.exercises.reduce((acc, ex) => acc + (ex.sets?.length || 0), 0);
-    const completedSets = this.workout.exercises.reduce((acc, ex) => {
-      // Correctly access the sets and check if they're completed
-      const setsForExercise = ex.sets || [];
-      return acc + setsForExercise.filter(set => set.completed).length;
-    }, 0);
-    
-    this.workoutProgress = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
-  }
-
-  _showRandomMotivation() {
-    // Show motivational message every 5 minutes
-    setInterval(() => {
-      this.showMotivation = true;
-      setTimeout(() => {
-        this.showMotivation = false;
-      }, 3000);
-    }, 300000); // 5 minutes
-  }
-
-  // --- Gesture Navigation Logic ---
-  _handleTouchStart(e) {
-    this.touchStartX = e.touches[0].clientX;
-    this.touchStartY = e.touches[0].clientY;
-  }
-
-  _handleTouchMove(e) {
-    if (!this.touchStartX || !this.touchStartY) {
-      return;
-    }
-    e.preventDefault();
-  }
-
-  _handleTouchEnd(e) {
-    if (!this.touchStartX || !this.touchStartY) {
-      return;
-    }
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const dx = touchEndX - this.touchStartX;
-    const dy = touchEndY - this.touchStartY;
-
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
-      if (dx > 0) {
-        this._previousExercise();
-      } else {
-        this._nextExercise();
-      }
-    }
-    this.touchStartX = 0;
-    this.touchStartY = 0;
-  }
-  
-  _nextExercise() {
-      if (this.currentExerciseIndex < this.workout.exercises.length - 1) {
-          this.currentExerciseIndex++;
-          this.requestUpdate();
-      }
-  }
-  
-  _previousExercise() {
-      if (this.currentExerciseIndex > 0) {
-          this.currentExerciseIndex--;
-          this.requestUpdate();
-      }
-  }
-
-  // --- Timer Logic ---
   startStopwatch() {
     this.workoutStartTime = Date.now();
     this.stopwatchInterval = setInterval(() => {
@@ -144,62 +54,15 @@ class WorkoutSession extends LitElement {
   stopStopwatch() {
     clearInterval(this.stopwatchInterval);
   }
-  
-  startRestTimer() {
-      this.isResting = true;
-      this.restTimeRemaining = this.restTotalTime;
-      this.restInterval = setInterval(() => {
-          this.restTimeRemaining -= 1;
-          if (this.restTimeRemaining <= 0) {
-              this.stopRestTimer();
-              // Show motivational message when rest is complete
-              this.showMotivation = true;
-              setTimeout(() => this.showMotivation = false, 2000);
-          }
-      }, 1000);
-  }
 
-  stopRestTimer() {
-      this.isResting = false;
-      clearInterval(this.restInterval);
-      this.restTimeRemaining = this.restTotalTime;
-  }
-
-  _addRestTime(seconds) {
-    this.restTotalTime += seconds;
-    this.restTimeRemaining += seconds;
-  }
-
-  // --- Data Handling ---
-  _handleSetInput(e, setIndex, field) {
-    e.stopPropagation();
-    const value = e.target.value;
-    const currentExercise = this.workout.exercises[this.currentExerciseIndex];
-    if (!currentExercise.sets[setIndex]) {
-        currentExercise.sets[setIndex] = {};
-    }
-    currentExercise.sets[setIndex][field] = value;
+  _handleSetInput(exerciseIndex, setIndex, field, value) {
+    this.workout.exercises[exerciseIndex].sets[setIndex][field] = value;
     this.requestUpdate();
   }
 
-  _toggleSetComplete(setIndex) {
-    const currentExercise = this.workout.exercises[this.currentExerciseIndex];
-    if (!currentExercise.sets[setIndex]) {
-        currentExercise.sets[setIndex] = {};
-    }
-    const isComplete = currentExercise.sets[setIndex].completed;
-    currentExercise.sets[setIndex].completed = !isComplete;
-    
-    if (!isComplete) {
-        this.startRestTimer();
-        // Show encouragement after completing a set
-        this.showMotivation = true;
-        setTimeout(() => this.showMotivation = false, 2000);
-    } else {
-        this.stopRestTimer();
-    }
-    
-    this._calculateProgress();
+  _toggleSetComplete(exerciseIndex, setIndex) {
+    const set = this.workout.exercises[exerciseIndex].sets[setIndex];
+    set.completed = !set.completed;
     this.requestUpdate();
   }
 
@@ -210,7 +73,6 @@ class WorkoutSession extends LitElement {
         const durationInSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
         const totalVolume = this.workout.exercises.reduce((total, exercise) => {
             const exerciseVolume = (exercise.sets || []).reduce((sum, set) => {
-                // Ensure weight and reps are valid numbers
                 const weight = parseInt(set.weight, 10);
                 const reps = parseInt(set.reps, 10);
                 if (set.completed && !isNaN(weight) && !isNaN(reps)) {
@@ -223,7 +85,7 @@ class WorkoutSession extends LitElement {
 
         const workoutToSave = {
             date: new Date().toISOString(),
-            name: this.workout.name,
+            name: this.workout.name || 'Workout Session',
             durationInSeconds,
             totalVolume,
             exercises: this.workout.exercises.map(ex => ({
@@ -232,7 +94,6 @@ class WorkoutSession extends LitElement {
                 category: ex.category || 'strength',
                 muscleGroup: ex.muscleGroup || 'unknown'
             })),
-            newPRs: [], 
         };
 
         const response = saveDataLocally({ workouts: [workoutToSave] });
@@ -252,114 +113,97 @@ class WorkoutSession extends LitElement {
         this.isSaving = false;
     }
   }
-  
-  formatTime(seconds) {
-      const m = Math.floor(seconds / 60);
-      const s = seconds % 60;
-      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+  _getGroupedExercises() {
+    if (!this.workout || !this.workout.exercises) {
+      return {};
+    }
+    return this.workout.exercises.reduce((acc, exercise, index) => {
+      const group = exercise.muscleGroup.toUpperCase() || 'GENERAL';
+      if (!acc[group]) {
+        acc[group] = [];
+      }
+      acc[group].push({ ...exercise, originalIndex: index });
+      return acc;
+    }, {});
+  }
+
+  _toggleGroup(groupName) {
+    this.expandedGroups = {
+      ...this.expandedGroups,
+      [groupName]: !this.expandedGroups[groupName]
+    };
   }
 
   render() {
     if (!this.workout || !this.workout.exercises) {
       return html`<div class="container"><div class="skeleton skeleton-text">Loading workout...</div></div>`;
     }
-    
-    const restProgress = ((this.restTotalTime - this.restTimeRemaining) / this.restTotalTime) * 100;
-    const currentExercise = this.workout.exercises[this.currentExerciseIndex];
+
+    const groupedExercises = this._getGroupedExercises();
+    const workoutDate = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
     return html`
-      <div id="daily-workout-view" class="container">
+      <div id="workout-session-view" class="container">
         <header class="app-header">
-          <button class="btn btn-icon" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))} aria-label="End Workout">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          <div>
+             <h1 class="workout-session-title">WEEK 4 DAY 5</h1>
+             <p class="workout-session-subtitle">${workoutDate}</p>
+          </div>
+          <button class="btn btn-icon" aria-label="Calendar View">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           </button>
-          <h1>Workout Session</h1>
-          <div style="width: 48px;"></div> </header>
-
-        <div class="workout-header">
-            <h1 class="workout-title">${currentExercise.name}</h1>
-            <p class="workout-subtitle">Exercise ${this.currentExerciseIndex + 1} of ${this.workout.exercises.length}</p>
-        </div>
-
-        <div class="progress-bar-container">
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: ${this.workoutProgress}%"></div>
-          </div>
-          <div class="progress-text">${Math.round(this.workoutProgress)}% Complete</div>
-        </div>
-
-        <div class="timer-section card">
-            <div class="timer-display">${this.stopwatchDisplay}</div>
-            <div class="timer-label">Workout Time</div>
-        </div>
-
-        ${this.isResting ? html`
-          <div class="rest-timer card">
-            <progress-ring 
-              .radius=${60} 
-              .progress=${restProgress}
-              .showValue=${true}
-              .value=${this.formatTime(this.restTimeRemaining)}>
-            </progress-ring>
-            <div class="rest-controls">
-              <button class="btn btn-secondary" @click=${() => this._addRestTime(30)}>+30s</button>
-              <button class="btn btn-primary" @click=${this.stopRestTimer}>Skip Rest</button>
-            </div>
-          </div>
-        ` : ''}
-
-        ${this.showMotivation ? html`
-          <motivational-message type="encouragement"></motivational-message>
-        ` : ''}
-
-        <div class="exercise-navigation">
-            <button class="btn btn-icon" @click=${this._previousExercise} ?disabled=${this.currentExerciseIndex === 0} aria-label="Previous Exercise">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-            </button>
-            <span class="exercise-indicator">${this.currentExerciseIndex + 1} / ${this.workout.exercises.length}</span>
-            <button class="btn btn-icon" @click=${this._nextExercise} ?disabled=${this.currentExerciseIndex === this.workout.exercises.length - 1} aria-label="Next Exercise">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </button>
-        </div>
-
-        <div class="exercise-card card card-elevated">
-            <div class="exercise-header">
-                <h3 class="exercise-name">${currentExercise.name}</h3>
-                <span class="target-reps">Target: ${currentExercise.targetReps || '8-12'} reps</span>
-            </div>
-            
-            <div class="sets-container">
-                ${(currentExercise.sets || []).map((set, setIndex) => html`
-                    <div class="set-row ${set.completed ? 'completed' : ''}">
-                        <span class="set-number">${setIndex + 1}</span>
-                        <input 
-                          type="number" 
-                          class="set-input" 
-                          placeholder="Weight (${this.units})" 
-                          .value=${set.weight || ''} 
-                          @input=${e => this._handleSetInput(e, setIndex, 'weight')}
-                          ?disabled=${set.completed}
-                        >
-                        <input 
-                          type="number" 
-                          class="set-input" 
-                          placeholder="Reps" 
-                          .value=${set.reps || ''} 
-                          @input=${e => this._handleSetInput(e, setIndex, 'reps')}
-                          ?disabled=${set.completed}
-                        >
-                        <button 
-                          class="set-complete-btn ${set.completed ? 'completed' : ''}" 
-                          @click=${() => this._toggleSetComplete(setIndex)} 
-                          aria-label="Mark set ${setIndex + 1} as complete"
-                        >
-                            ${set.completed ? '✓' : ''}
+        </header>
+        
+        <div class="workout-log-container">
+          ${Object.entries(groupedExercises).map(([groupName, exercises]) => html`
+            <div class="muscle-group-container">
+              <button class="muscle-group-header" @click=${() => this._toggleGroup(groupName)}>
+                <h2 class="muscle-group-title">${groupName}</h2>
+                <span class="chevron ${this.expandedGroups[groupName] ? 'expanded' : ''}">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </button>
+              
+              <div class="exercise-list-container ${this.expandedGroups[groupName] ? 'expanded' : ''}">
+                ${exercises.map(exercise => html`
+                  <div class="card exercise-log-card">
+                    <div class="exercise-log-header">
+                      <div class="exercise-log-name">
+                        <h3>${exercise.name}</h3>
+                        <p>${exercise.type}</p>
+                      </div>
+                      <div class="exercise-log-actions">
+                        <button class="btn-icon-sm" aria-label="Exercise Info">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                         </button>
+                        <button class="btn-icon-sm" aria-label="More Options">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                        </button>
+                      </div>
                     </div>
+                    <div class="log-table-header">
+                      <span>SET</span>
+                      <span>WEIGHT</span>
+                      <span>REPS</span>
+                      <span>LOG</span>
+                    </div>
+                    ${(exercise.sets || []).map((set, setIndex) => html`
+                      <div class="set-row-log ${set.completed ? 'completed' : ''}">
+                        <span class="set-log-number">${setIndex + 1}</span>
+                        <input type="number" class="set-input-log" placeholder="-" .value=${set.weight || ''} @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'weight', e.target.value)}>
+                        <input type="number" class="set-input-log" placeholder="-" .value=${set.reps || ''} @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'reps', e.target.value)}>
+                        <button class="set-log-checkbox" @click=${() => this._toggleSetComplete(exercise.originalIndex, setIndex)} aria-label="Log Set ${setIndex + 1}">
+                          ${set.completed ? html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+                        </button>
+                      </div>
+                    `)}
+                  </div>
                 `)}
+              </div>
             </div>
+          `)}
         </div>
-
         <div class="workout-actions">
             <button class="btn btn-secondary" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))}>
                 End Workout
