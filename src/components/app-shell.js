@@ -259,7 +259,7 @@ class AppShell extends LitElement {
   _renderHeader(title) {
     return html`
       <header class="app-header">
-        <button class.btn.btn-icon" @click=${() => this._goBack()} aria-label="Back">
+        <button class="btn btn-icon" @click=${() => this._goBack()} aria-label="Back">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
         </button>
         <h1>${title}</h1>
@@ -294,67 +294,35 @@ class AppShell extends LitElement {
   }
   
   renderHomeScreen() {
-    // This is a simplified workout structure for demonstration.
-    // In a real app, this would come from the workout engine based on the user's plan.
-    const todayWorkout = {
-        title: "WEEK 4 DAY 5",
-        exercises: [
-            { name: "Cable Triceps Pushdown (Bar)", type: "TRICEPS", sets: [{ weight: 62.5, reps: 20 }, { weight: 62.5, reps: 20 }] },
-            { name: "Cable Overhead Triceps Extension (Rope)", type: "TRICEPS", sets: [{ weight: 47.5, reps: 9 }, { weight: 47.5, reps: 9 }] },
-            { name: "Cable Kick Backs", type: "TRICEPS", sets: [{ weight: 10, reps: 13 }, { weight: 10, reps: 13 }] },
-            { name: "Cable Flys - Low", type: "CHEST", sets: [{ weight: 13.2, reps: 21 }, { weight: 17.5, reps: 13 }] },
-            { name: "Cable Flye (High)", type: "CHEST", sets: [{ weight: 32.5, reps: 15 }, { weight: 32.5, reps: 15 }] },
-            { name: "Single Leg Extension", type: "QUADS", sets: [{ weight: 72.5, reps: 10 }, { weight: 60, reps: 13 }] },
-            { name: "Leg Press Calves", type: "CALVES", sets: [{ weight: 160, reps: 15 }, { weight: 160, reps: 15 }] },
-        ]
-    };
-
     return html`
       <div id="home-screen" class="container">
-        <header class="app-header">
-          <h1>${todayWorkout.title}</h1>
-          <button class="btn btn-icon" aria-label="Calendar">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <div class="home-header">
+          <h1 class="main-title">Good ${this._getTimeOfDay()}!</h1>
+        </div>
+        <nav class="home-nav-buttons">
+          <button class="hub-option card-interactive" @click=${() => this.showReadinessModal = true}>
+            <div class="hub-option-icon">🏋️</div>
+            <div class="hub-option-text"><h3>Start Workout</h3><p>Begin your training session</p></div>
           </button>
-        </header>
-
-        <div class="workout-log">
-          ${todayWorkout.exercises.map(exercise => html`
-            <div class="exercise-group">
-              <h2 class="exercise-type">${exercise.type}</h2>
-              <div class="card exercise-card-log">
-                <div class="exercise-header">
-                  <h3>${exercise.name}</h3>
-                  <div class="info-and-menu">
-                    <button class="btn btn-icon" aria-label="More Info">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                    </button>
-                    <button class="btn btn-icon" aria-label="Options">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                    </button>
-                  </div>
-                </div>
-                <div class="log-header">
-                  <span></span>
-                  <span>WEIGHT</span>
-                  <span>REPS</span>
-                  <span>LOG</span>
-                </div>
-                <div class="sets-container">
-                  ${exercise.sets.map((set, index) => html`
-                    <div class="set-row-log">
-                      <button class="btn btn-icon btn-options-log" aria-label="Set Options">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                      </button>
-                      <input type="number" class="set-input" .value=${set.weight}>
-                      <input type="number" class="set-input" .value=${set.reps}>
-                      <button class="set-complete-btn-log" aria-label="Log Set"></button>
-                    </div>
-                  `)}
-                </div>
-              </div>
-            </div>
-          `)}
+          <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
+            <div class="hub-option-icon">📋</div>
+            <div class="hub-option-text"><h3>Templates</h3><p>Custom workout routines</p></div>
+          </button>
+          <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
+            <div class="hub-option-icon">📊</div>
+            <div class="hub-option-text"><h3>Progress</h3><p>Track your journey</p></div>
+          </button>
+          <button class="hub-option card-interactive" @click=${() => this._setView('achievements')}>
+            <div class="hub-option-icon">🏆</div>
+            <div class="hub-option-text"><h3>Achievements</h3><p>Unlock rewards</p></div>
+          </button>
+        </nav>
+        <level-progress .currentLevel=${this.userLevel} .currentXP=${this.userXP} .xpToNext=${1000}></level-progress>
+        ${this.currentStreak > 0 ? html`<workout-streak .streak=${this.currentStreak}></workout-streak>` : ''}
+        <div class="home-footer-actions">
+            <button class="btn btn-icon" @click=${() => this._setView('settings')} aria-label="Settings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </button>
         </div>
       </div>
     `;
