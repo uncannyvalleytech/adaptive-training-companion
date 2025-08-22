@@ -57,25 +57,19 @@ class WorkoutSession extends LitElement {
   }
 
   _handleSetInput(exerciseIndex, setIndex, field, value) {
-    // Find the original exercise in the workout object to modify it
-    const originalExercise = this.workout.exercises.find(ex => ex.originalIndex === exerciseIndex);
-    if(originalExercise) {
-        if (!originalExercise.sets[setIndex]) {
-            originalExercise.sets[setIndex] = {};
-        }
-        originalExercise.sets[setIndex][field] = value;
-        this.requestUpdate();
+    const exercise = this.workout.exercises[exerciseIndex];
+    if (exercise && exercise.sets[setIndex]) {
+      exercise.sets[setIndex][field] = value;
+      this.requestUpdate();
     }
   }
 
   _toggleSetComplete(exerciseIndex, setIndex) {
-    const originalExercise = this.workout.exercises.find(ex => ex.originalIndex === exerciseIndex);
-     if(originalExercise) {
-        const set = originalExercise.sets[setIndex];
-        if(set){
-            set.completed = !set.completed;
-            this.requestUpdate();
-        }
+    const exercise = this.workout.exercises[exerciseIndex];
+    if (exercise && exercise.sets[setIndex]) {
+      const set = exercise.sets[setIndex];
+      set.completed = !set.completed;
+      this.requestUpdate();
     }
   }
 
@@ -136,6 +130,7 @@ class WorkoutSession extends LitElement {
       if (!acc[group]) {
         acc[group] = [];
       }
+      // Add originalIndex for stable updates
       acc[group].push({ ...exercise, originalIndex: index });
       return acc;
     }, {});
@@ -180,11 +175,11 @@ class WorkoutSession extends LitElement {
               
               <div class="exercise-list-container ${this.expandedGroups[groupName] ? 'expanded' : ''}">
                 ${exercises.map(exercise => html`
-                  <div class="card exercise-log-card">
+                  <div class="exercise-log-card">
                     <div class="exercise-log-header">
                       <div class="exercise-log-name">
                         <h3>${exercise.name}</h3>
-                        <p>${exercise.type}</p>
+                        <p>${exercise.type}</p> 
                       </div>
                       <div class="exercise-log-actions">
                         <button class="btn-icon-sm" aria-label="Exercise Info">
@@ -203,11 +198,13 @@ class WorkoutSession extends LitElement {
                     </div>
                     ${(exercise.sets || []).map((set, setIndex) => html`
                       <div class="set-row-log ${set.completed ? 'completed' : ''}">
-                        <span class="set-log-number">${setIndex + 1}</span>
+                        <button class="btn-icon-sm set-options-btn" aria-label="Set Options">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                        </button>
                         <input type="number" class="set-input-log" placeholder="-" .value=${set.weight || ''} @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'weight', e.target.value)}>
-                        <input type="number" class="set-input-log" placeholder="-" .value=${set.reps || ''} @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'reps', e.target.value)}>
+                        <input type="number" class="set-input-log" placeholder="${exercise.targetReps || '-'}" .value=${set.reps || ''} @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'reps', e.target.value)}>
                         <button class="set-log-checkbox" @click=${() => this._toggleSetComplete(exercise.originalIndex, setIndex)} aria-label="Log Set ${setIndex + 1}">
-                          ${set.completed ? html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+                          ${set.completed ? html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
                         </button>
                       </div>
                     `)}
@@ -233,5 +230,4 @@ class WorkoutSession extends LitElement {
     return this;
   }
 }
-
 customElements.define("workout-session", WorkoutSession);
