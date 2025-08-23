@@ -436,7 +436,7 @@ class HistoryView extends LitElement {
                 </h4>
                 <ul class="set-list">
                   ${exercise.completedSets.map((set, setIndex) => html`
-                    <li class="set-item">Set ${setIndex + 1}: ${this._convertWeight(set.weight)} ${weightUnit} x ${set.reps} reps</li>
+                    <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</li>
                   `)}
                 </ul>
               </div>
@@ -504,13 +504,7 @@ class HistoryView extends LitElement {
     if (this.workouts.length === 0) {
       return html`
         <div class="container empty-state-container">
-          <header class="app-header">
-            <button class="btn btn-icon" @click=${() => this.dispatchEvent(new CustomEvent('setView', { detail: { view: 'home' }, bubbles: true, composed: true }))} aria-label="Back">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-            </button>
-            <h1>Workout History</h1>
-            <div style="width: 48px;"></div>
-          </header>
+          <h1>Workout History</h1>
           <div class="card">
             <h3>No Workouts Logged Yet</h3>
             <p>Once you complete a workout, your history and progress charts will appear here.</p>
@@ -526,9 +520,6 @@ class HistoryView extends LitElement {
     return html`
       <div class="container">
         <header class="app-header">
-          <button class="btn btn-icon" @click=${() => this.dispatchEvent(new CustomEvent('setView', { detail: { view: 'home' }, bubbles: true, composed: true }))} aria-label="Back">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-          </button>
           <h1>Workout History</h1>
           <div class="header-actions">
             <button class="icon-btn" @click=${this._exportData} aria-label="Export to CSV">
@@ -602,13 +593,7 @@ class HistoryView extends LitElement {
   renderSkeleton() {
     return html`
       <div class="container">
-        <header class="app-header">
-          <button class="btn btn-icon" @click=${() => this.dispatchEvent(new CustomEvent('setView', { detail: { view: 'home' }, bubbles: true, composed: true }))} aria-label="Back">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-          </button>
-          <h1>Workout History</h1>
-          <div style="width: 48px;"></div>
-        </header>
+        <h1>Workout History</h1>
         <div class="card">
           <div class="skeleton skeleton-title"></div>
           <div class="skeleton skeleton-text"></div>
