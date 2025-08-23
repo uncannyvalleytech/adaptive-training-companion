@@ -166,7 +166,7 @@ class AppShell extends LitElement {
     if (sortedWorkouts.length > 0) {
         let lastWorkoutDate = new Date(sortedWorkouts[0].date);
         lastWorkoutDate.setHours(0,0,0,0);
-        let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 60 * 24);
+        let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 24);
         if (diffDays <= 1) {
             streak = 1;
             for (let i = 0; i < sortedWorkouts.length - 1; i++) {
@@ -174,7 +174,7 @@ class AppShell extends LitElement {
                 current.setHours(0,0,0,0);
                 let previous = new Date(sortedWorkouts[i+1].date);
                 previous.setHours(0,0,0,0);
-                if ((current - previous) / (1000 * 60 * 60 * 60 * 24) === 1) {
+                if ((current - previous) / (1000 * 60 * 60 * 24) === 1) {
                     streak++;
                 } else {
                     break;
@@ -278,7 +278,7 @@ class AppShell extends LitElement {
 
     switch (this.currentView) {
       case "home": return this.renderHomeScreen();
-      case "templates": return html`<div class="container">${this._renderHeader("Templates")}<workout-templates></workout-templates></div>`;
+      case "templates": return html`<div class="container">${this._renderHeader("Routine")}<workout-templates></workout-templates></div>`;
       case "history": return html`<div class="container">${this._renderHeader("Progress")}<history-view></history-view></div>`;
       case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view .theme=${this.theme} .units=${this.units}></settings-view></div>`;
       case "achievements": return html`<div class="container">${this._renderHeader("Achievements")}<achievements-view></achievements-view></div>`;
@@ -388,22 +388,24 @@ class AppShell extends LitElement {
   }
 
   _getPlannedWorkout() {
-      if (!this.userData?.mesocycle?.weeks) {
-          this._showToast("No mesocycle found. Please complete onboarding.", "error");
-          return null;
-      }
-      
-      const engine = new WorkoutEngine(this.userData);
-      
-      const workoutsPerWeek = Number(this.userData.daysPerWeek) || 4;
-      const workoutsCompleted = this.userData.workouts.filter(w => new Date(w.date).getFullYear() === new Date().getFullYear()).length;
-      const workoutIndex = workoutsCompleted % workoutsPerWeek;
-      
-      const muscleGroupsForDay = engine.getWorkoutSplit(workoutsPerWeek)[workoutIndex];
-      const currentWeekData = this.userData.mesocycle.weeks.find(w => w.week === this.userData.currentWeek) || 
-                              this.userData.mesocycle.weeks[0];
-      
-      return engine.generateDailyWorkout(muscleGroupsForDay, currentWeekData);
+    if (!this.userData?.mesocycle?.weeks) {
+        this._showToast("No mesocycle found. Please complete onboarding.", "error");
+        return null;
+    }
+
+    const engine = new WorkoutEngine(this.userData);
+
+    // Get the plan for the first week (week 1)
+    const currentWeekPlan = this.userData.mesocycle.weeks[0]; 
+
+    // Find the workout for the first day of the week
+    const workoutForDay = currentWeekPlan.days[0];
+
+    // Get the muscle groups for that day
+    const muscleGroupsForDay = workoutForDay.muscleGroups;
+
+    // Generate the workout based on the planned muscle groups and weekly plan
+    return engine.generateDailyWorkout(muscleGroupsForDay, currentWeekPlan);
   }
 
   createRenderRoot() {
