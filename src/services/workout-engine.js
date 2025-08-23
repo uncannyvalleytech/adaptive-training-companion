@@ -4,7 +4,6 @@
  * It's responsible for all calculations related to user profiling, volume landmarks,
  * progression, intensity, and autoregulation.
  */
-import { exerciseDatabase } from './exercise-database.js';
 
 export class WorkoutEngine {
   constructor(userProfile) {
@@ -15,8 +14,8 @@ export class WorkoutEngine {
       shoulders: 8,
       arms: 6,
       legs: 14,
-      glutes: 10, // Added for specific glute focus
-      "neck & traps": 6, // Added for specific focus
+      glutes: 10,
+      "neck & traps": 6,
     };
     this.muscleSizeFactor = {
       arms: 0.0,
@@ -27,6 +26,69 @@ export class WorkoutEngine {
       legs: 0.4,
       glutes: 0.3,
       "neck & traps": 0.1,
+    };
+    
+    this.exerciseDatabase = {
+      chest: [
+        { name: 'Barbell Bench Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Dumbbell Bench Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Incline Dumbbell Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Machine Chest Press', type: 'compound', recoveryCost: 'low' },
+        { name: 'Cable Crossover', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Push-ups', type: 'compound', recoveryCost: 'low' },
+        { name: 'Incline Barbell Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Decline Bench Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Chest Dip', type: 'compound', recoveryCost: 'medium' }
+      ],
+      back: [
+        { name: 'Deadlift', type: 'compound', recoveryCost: 'high' },
+        { name: 'Pull-ups', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Barbell Row', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Lat Pulldown', type: 'compound', recoveryCost: 'low' },
+        { name: 'Seated Cable Row', type: 'compound', recoveryCost: 'low' },
+        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' },
+        { name: 'T-Bar Row', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Dumbbell Row', type: 'compound', recoveryCost: 'medium' }
+      ],
+      biceps: [
+        { name: 'Barbell Curl', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Dumbbell Hammer Curl', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Preacher Curl', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Incline Dumbbell Curl', type: 'isolation', recoveryCost: 'low' }
+      ],
+      triceps: [
+        { name: 'Tricep Pushdown', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Skull Crushers', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Overhead Tricep Extension', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Close Grip Bench Press', type: 'compound', recoveryCost: 'medium' }
+      ],
+      quads: [
+        { name: 'Barbell Squat', type: 'compound', recoveryCost: 'high' },
+        { name: 'Leg Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Leg Extensions', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Hack Squat', type: 'compound', recoveryCost: 'high' }
+      ],
+      hamstrings: [
+        { name: 'Romanian Deadlift', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Hamstring Curls', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Good Mornings', type: 'compound', recoveryCost: 'medium' }
+      ],
+      glutes: [
+        { name: 'Hip Thrust', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Glute Kickback', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Bulgarian Split Squat', type: 'compound', recoveryCost: 'high' }
+      ],
+      calves: [
+        { name: 'Calf Raises', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Seated Calf Raises', type: 'isolation', recoveryCost: 'low' }
+      ],
+      shoulders: [
+        { name: 'Overhead Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Dumbbell Shoulder Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Lateral Raises', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Front Raises', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' }
+      ]
     };
   }
 
@@ -85,17 +147,17 @@ export class WorkoutEngine {
     
   // --- 4. Intensity Prescription ---
   calculateTargetRIR(exerciseType, currentVolume, mrv) {
-    const baseRIR = exerciseType === 'compound' ? 2 : 1; // Start with a base RIR of 2 for compounds, 1 for isolation
+    const baseRIR = exerciseType === 'compound' ? 2 : 1;
     let fatigueAdjustment = 0;
-    if (currentVolume / mrv > 0.8) fatigueAdjustment = -1; // Closer to MRV, push closer to failure (lower RIR)
-    if (currentVolume / mrv < 0.4) fatigueAdjustment = 1; // Far from MRV, can leave more in the tank (higher RIR)
+    if (currentVolume / mrv > 0.8) fatigueAdjustment = -1;
+    if (currentVolume / mrv < 0.4) fatigueAdjustment = 1;
     
     return baseRIR + fatigueAdjustment;
   }
 
   suggestLoadProgression(previousLoad, lastSessionRIR, targetRIR) {
-    if (lastSessionRIR > targetRIR + 1) return previousLoad * 1.025; // Too easy, more reps in reserve than targeted
-    if (lastSessionRIR < targetRIR -1) return previousLoad * 0.975; // Too hard, less reps in reserve
+    if (lastSessionRIR > targetRIR + 1) return previousLoad * 1.025;
+    if (lastSessionRIR < targetRIR - 1) return previousLoad * 0.975;
     return previousLoad;
   }
 
@@ -111,7 +173,6 @@ export class WorkoutEngine {
       };
     }
     
-    // Calculate average RIR from the last session
     const totalRir = completedSets.reduce((sum, set) => sum + (set.rir || 0), 0);
     const avgRir = totalRir / completedSets.length;
     
@@ -122,29 +183,23 @@ export class WorkoutEngine {
     
     const rirDifference = avgRir - targetRir;
     
-    if (rirDifference > 1) { // Workout was too easy
-      // Progression: increase weight by a small amount (e.g., 5lbs)
+    if (rirDifference > 1) {
       newTargetLoad = lastLoad + 5;
       newTargetReps = targetReps;
       note = `Excellent performance! Increasing weight to ${newTargetLoad}lbs for the next session.`;
-    } else if (rirDifference < -1) { // Workout was too hard
-      // Regress: keep the same weight, or potentially decrease it slightly.
-      // We will keep the weight and suggest focusing on form and hitting rep targets.
+    } else if (rirDifference < -1) {
       newTargetLoad = lastLoad;
       newTargetReps = targetReps;
       note = `Last session was challenging. Maintain ${newTargetLoad}lbs and focus on hitting your rep targets.`;
-    } else { // Workout was just right, progressive overload needed
-      // Check if we hit the top end of a rep range
+    } else {
       const lastSetReps = completedSets[completedSets.length - 1].reps;
-      const targetRepsUpper = targetReps + 2; // Assuming a small rep range, e.g., 8-10.
+      const targetRepsUpper = targetReps + 2;
       
       if (lastSetReps >= targetRepsUpper) {
-        // Double progression: add weight and reset reps
         newTargetLoad = lastLoad + 5;
         newTargetReps = targetReps;
         note = `All sets hit the rep target. Increasing weight to ${newTargetLoad}lbs for the next session.`;
       } else {
-        // Continue adding reps at the same weight
         newTargetLoad = lastLoad;
         newTargetReps = targetReps + 1;
         note = `Solid performance! Aim for one more rep per set in your next session with the same weight.`;
@@ -175,7 +230,7 @@ export class WorkoutEngine {
     if (readinessScore < 6) {
       adjustmentNote = "Readiness is low. Volume reduced by 20% and intensity reduced.";
       adjustedWorkout.exercises.forEach(ex => {
-        if (ex.sets.length > 3) ex.sets.pop();
+        if (ex.sets && ex.sets.length > 3) ex.sets.pop();
         ex.targetReps = Math.max(5, ex.targetReps - 2);
       });
     } else if (readinessScore > 8) {
@@ -203,7 +258,7 @@ export class WorkoutEngine {
     
     let genderModifier = 1.0;
     if (gender === 'female' && (exercise.muscleGroup === 'glutes' || exercise.muscleGroup === 'hamstrings')) {
-      genderModifier = 1.2; // Prioritize glute and hamstring exercises for females
+      genderModifier = 1.2;
     }
 
     const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier * genderModifier;
@@ -211,7 +266,7 @@ export class WorkoutEngine {
   }
 
   selectExercisesForMuscle(muscleGroup, count = 2, context = {}) {
-    const availableExercises = exerciseDatabase[muscleGroup];
+    const availableExercises = this.exerciseDatabase[muscleGroup];
     if (!availableExercises) return [];
     const scoredExercises = availableExercises.map(ex => ({
       ...ex,
@@ -225,17 +280,16 @@ export class WorkoutEngine {
   // --- Workout Split Logic ---
   getWorkoutSplit(daysPerWeek) {
     const splits = {
-      3: [['chest', 'back'], ['legs', 'shoulders'], ['arms', 'chest']],
-      4: [['chest', 'shoulders', 'triceps'], ['back', 'biceps'], ['legs'], ['full body']],
-      5: [['chest'], ['back'], ['legs'], ['shoulders', 'arms'], ['full body']],
-      6: [['chest'], ['back'], ['legs'], ['shoulders'], ['arms'], ['full body']]
+      3: [['chest', 'triceps'], ['back', 'biceps'], ['legs', 'shoulders']],
+      4: [['chest', 'triceps'], ['back', 'biceps'], ['shoulders'], ['legs']],
+      5: [['chest'], ['back'], ['legs'], ['shoulders'], ['biceps', 'triceps']],
+      6: [['chest'], ['back'], ['legs'], ['shoulders'], ['biceps'], ['triceps']]
     };
-    const splitForDays = splits[daysPerWeek] || splits[4];
-    return splitForDays.map(muscleGroups => muscleGroups.map(group => group.toLowerCase()));
+    return splits[daysPerWeek] || splits[4];
   }
 
   // --- 9. Periodization Model ---
-  generateMesocycle(daysPerWeek, mesocycleLength = 5) {
+  generateMesocycle(daysPerWeek, mesocycleLength = 4) {
     const mesocycle = { weeks: [] };
     const workoutSplit = this.getWorkoutSplit(daysPerWeek);
     const userGender = this.userProfile.sex;
@@ -243,7 +297,8 @@ export class WorkoutEngine {
     for (let week = 1; week <= mesocycleLength; week++) {
       const weeklyPlan = { week: week, days: [] };
       
-      for (const dayMuscleGroups of workoutSplit) {
+      for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
+        const dayMuscleGroups = workoutSplit[dayIndex % workoutSplit.length];
         const dayPlan = { muscleGroups: dayMuscleGroups, exercises: [] };
         
         for (const muscle of dayMuscleGroups) {
@@ -260,10 +315,11 @@ export class WorkoutEngine {
               setsRemaining -= setsForThisEx;
               return {
                   name: ex.name,
-                  sets: Array(setsForThisEx).fill({}),
-                  targetReps: ex.type === 'compound' ? (userGender === 'male' ? 8 : 10) : 12,
+                  sets: Array(Math.max(1, setsForThisEx)).fill({}),
+                  targetReps: ex.type === 'compound' ? (userGender === 'male' ? "6-8" : "8-10") : "10-12",
                   muscleGroup: muscle,
-                  category: 'strength',
+                  category: ex.type || 'strength',
+                  type: ex.type
               };
           });
           dayPlan.exercises.push(...exercisesWithSets);
@@ -275,22 +331,25 @@ export class WorkoutEngine {
     
     // Add a deload week
     const deloadWeek = { week: mesocycleLength + 1, isDeload: true, days: [] };
-    for (const dayMuscleGroups of workoutSplit) {
-        const deloadDayPlan = { muscleGroups: dayMuscleGroups, exercises: [] };
-        for (const muscle of dayMuscleGroups) {
-            const landmarks = this.getVolumeLandmarks(muscle);
-            const numExercises = Math.round((landmarks.mev * 0.6) > 12 ? 3 : 2);
-            const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
-            const exercisesWithSets = selectedExercises.map(ex => ({
-                name: ex.name,
-                sets: Array(Math.max(1, Math.round((landmarks.mev * 0.6) / numExercises))).fill({}),
-                targetReps: ex.type === 'compound' ? 8 : 12,
-                muscleGroup: muscle,
-                category: 'strength',
-            }));
-            deloadDayPlan.exercises.push(...exercisesWithSets);
-        }
-        deloadWeek.days.push(deloadDayPlan);
+    for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
+      const dayMuscleGroups = workoutSplit[dayIndex % workoutSplit.length];
+      const deloadDayPlan = { muscleGroups: dayMuscleGroups, exercises: [] };
+      for (const muscle of dayMuscleGroups) {
+          const landmarks = this.getVolumeLandmarks(muscle);
+          const deloadVolume = Math.round(landmarks.mev * 0.6);
+          const numExercises = deloadVolume > 8 ? 2 : 1;
+          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+          const exercisesWithSets = selectedExercises.map(ex => ({
+              name: ex.name,
+              sets: Array(Math.max(1, Math.round(deloadVolume / numExercises))).fill({}),
+              targetReps: ex.type === 'compound' ? "6-8" : "10-12",
+              muscleGroup: muscle,
+              category: ex.type || 'strength',
+              type: ex.type
+          }));
+          deloadDayPlan.exercises.push(...exercisesWithSets);
+      }
+      deloadWeek.days.push(deloadDayPlan);
     }
     mesocycle.weeks.push(deloadWeek);
     
@@ -329,17 +388,16 @@ export class WorkoutEngine {
             const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
             setsRemaining -= setsForThisEx;
             
-            // Adjust reps based on gender
             const targetReps = ex.type === 'compound' 
-                ? (userGender === 'male' ? "6-8" : "8-10") // Men often use lower reps for strength compounds
+                ? (userGender === 'male' ? "6-8" : "8-10")
                 : "10-15";
             
             return {
                 ...ex,
-                sets: Array(setsForThisEx).fill({}),
+                sets: Array(Math.max(1, setsForThisEx)).fill({}),
                 targetReps: targetReps,
                 muscleGroup: muscle,
-                category: 'strength',
+                category: ex.type || 'strength',
             };
         });
         exercises.push(...exercisesWithSets);
