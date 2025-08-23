@@ -6,7 +6,6 @@
 
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
-import { exerciseDatabase } from "../services/exercise-database.js";
 
 class WorkoutTemplates extends LitElement {
   static properties = {
@@ -41,10 +40,231 @@ class WorkoutTemplates extends LitElement {
     this.currentRoutineView = "menu";
     this.selectedMesocycle = null;
 
-    this.broadMuscleGroups = {
-        'Upper Body': ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms'],
-        'Lower Body': ['quads', 'hamstrings', 'glutes', 'calves'],
-        'Full Body': Object.keys(exerciseDatabase)
+    this.exerciseDatabase = {
+        'chest': [
+            { name: 'Barbell Bench Press' },
+            { name: 'Dumbbell Bench Press' },
+            { name: 'Incline Dumbbell Press' },
+            { name: 'Machine Chest Press' },
+            { name: 'Cable Crossover' },
+            { name: 'Push-ups' },
+            { name: 'Incline Barbell Press' },
+            { name: 'Decline Bench Press' },
+            { name: 'Chest Dip' },
+            { name: 'Larsen Press' },
+            { name: 'Standing Dumbbell Arnold Press' },
+            { name: 'Press-Around' },
+            { name: 'Low Incline DB Press' },
+            { name: 'Machine Shoulder Press' },
+            { name: 'Cable Crossover Ladder' },
+            { name: 'High-Incline Smith Machine Press' },
+            { name: 'Incline Push-ups' },
+            { name: 'Seated Cable Fly' },
+            { name: 'Standing Cable Fly' },
+            { name: 'Dumbbell Flyes' }
+        ],
+        'back': [
+            { name: 'Barbell Deadlift' },
+            { name: 'Pull-Up' },
+            { name: 'Barbell Row' },
+            { name: 'Lat Pulldown' },
+            { name: 'Seated Cable Row' },
+            { name: 'Face Pulls' },
+            { name: 'T-Bar Row' },
+            { name: 'Dumbbell Row' },
+            { name: 'Kroc Row' },
+            { name: 'Cable Shrug' },
+            { name: 'Reverse Pec Deck' },
+            { name: 'Neutral-Grip Lat Pulldown' },
+            { name: 'Close-Grip Seated Cable Row' },
+            { name: 'Machine Shrug' },
+            { name: 'Pendlay Row' },
+            { name: 'Machine Pulldown' },
+            { name: 'Rope Facepull' },
+            { name: 'Weighted Pull-Up' },
+            { name: 'Bent-Over Barbell Row' },
+            { name: 'Chest-Supported T-Bar Row' },
+            { name: 'Cable Pullover' },
+            { name: 'Weighted Chin-Up' },
+            { name: 'Meadows Row' },
+            { name: 'Machine Reverse Fly' }
+        ],
+        'shoulders': [
+            { name: 'Overhead Press' },
+            { name: 'Dumbbell Shoulder Press' },
+            { name: 'Lateral Raises' },
+            { name: 'Front Raises' },
+            { name: 'Face Pulls' },
+            { name: 'Egyptian Cable Lateral Raise' },
+            { name: 'Lean-In Constant Tension DB Lateral Raise' },
+            { name: 'Cable Lateral Raise' },
+            { name: 'Seated Dumbbell Press' },
+            { name: 'One-Arm Cable Lateral Raise' },
+            { name: 'Barbell Front Raise' },
+            { name: 'Dumbbell Shrugs' },
+            { name: 'Seated Dumbbell Shoulder Press' },
+            { name: 'Seated Barbell Press' },
+            { name: 'Seated Arnold Press' },
+            { name: 'Dumbbell Lateral Raise' },
+            { name: 'Upright Row' },
+            { name: 'Barbell Shrug' }
+        ],
+        'biceps': [
+            { name: 'Barbell Curl' },
+            { name: 'Dumbbell Hammer Curl' },
+            { name: 'Preacher Curl' },
+            { name: 'Incline Dumbbell Curl' },
+            { name: 'N1-Style Cross-Body Cable Bicep Curl' },
+            { name: 'Alternating DB Curl' },
+            { name: '1-Arm DB Preacher Curl' },
+            { name: 'Bayesian Cable Curl' },
+            { name: 'Dumbbell Bicep Curls' },
+            { name: 'Cable Bicep Curl' },
+            { name: 'Concentration Curl' },
+            { name: 'EZ Bar Preacher Curl' },
+            { name: 'Hammer Curl' },
+            { name: 'Incline Dumbbell Curl & Incline Skullcrusher' },
+            { name: 'Cable Curl & Cable Pressdown' }
+        ],
+        'triceps': [
+            { name: 'Tricep Pushdown' },
+            { name: 'Skull Crushers' },
+            { name: 'Overhead Tricep Extension' },
+            { name: 'Close Grip Bench Press' },
+            { name: 'Overhead Cable Triceps Extension' },
+            { name: 'Cable Triceps Kickback' },
+            { name: 'Triceps Rope Pushdown' },
+            { name: 'Triceps Pushdown' },
+            { name: 'Dumbbell Skullcrushers' },
+            { name: 'EZ Bar Skullcrusher' },
+            { name: 'Cable Tricep Extension' },
+            { name: 'Tricep Overhead Extension' },
+            { name: 'Tricep Kickback' },
+            { name: 'Close-Grip Barbell Bench Press' }
+        ],
+        'quads': [
+            { name: 'Barbell Squat' },
+            { name: 'Leg Press' },
+            { name: 'Leg Extensions' },
+            { name: 'Hack Squat' },
+            { name: 'Pause Squat (Back off)' },
+            { name: 'Front Squats' },
+            { name: 'Goblet Squat' },
+            { name: 'Smith Machine Squat' },
+            { name: 'Leg Extension' },
+            { name: 'Squats' }
+        ],
+        'hamstrings': [
+            { name: 'Romanian Deadlift' },
+            { name: 'Hamstring Curls' },
+            { name: 'Good Mornings' },
+            { name: 'Barbell RDL' },
+            { name: 'Seated Leg Curl' },
+            { name: 'Lying Leg Curl' },
+            { name: 'Stiff-Leg Deadlift' },
+            { name: 'Leg Curl' },
+            { name: 'Lying Leg Curl' },
+            { name: 'Dumbbell Romanian Deadlift' }
+        ],
+        'glutes': [
+            { name: 'Hip Thrust' },
+            { name: 'Glute Kickback' },
+            { name: 'Bulgarian Split Squat' },
+            { name: 'Walking Lunge' },
+            { name: 'Glute Medius Kickback' },
+            { name: 'Cable Pull Through' },
+            { name: 'Barbell Hip Thrust' },
+            { name: 'Dumbbell Walking Lunge' },
+            { name: 'Reverse Lunges' },
+            { name: 'Glute Cable Kickback' },
+            { name: 'Smith Machine Sumo Squats' },
+            { name: 'Hyperextensions (Glute Focused)' },
+            { name: 'Abduction Machine' },
+            { name: 'Glute Bridge' }
+        ],
+        'calves': [
+            { name: 'Calf Raises' },
+            { name: 'Seated Calf Raises' },
+            { name: 'Standing Calf Raise' },
+            { name: 'Seated Calf Raise' }
+        ],
+        'arms': [
+            { name: 'Barbell Curl' },
+            { name: 'Tricep Pushdown' },
+            { name: 'Hammer Curl' },
+            { name: 'Close Grip Bench Press' },
+            { name: 'Preacher Curl' },
+            { name: 'Overhead Tricep Extension' },
+            { name: 'Diamond Pushup' }
+        ],
+        'legs': [
+            { name: 'Barbell Squat' },
+            { name: 'Romanian Deadlift' },
+            { name: 'Leg Press' },
+            { name: 'Leg Extensions' },
+            { name: 'Hamstring Curls' },
+            { name: 'Walking Lunge' },
+            { name: 'Bulgarian Split Squat' },
+            { name: 'Hip Thrust' },
+            { name: 'Calf Raises' },
+            { name: 'Barbell Back Squat' },
+            { name: 'Conventional Deadlift' }
+        ],
+        'upper body': [
+            { name: 'Bench Press' },
+            { name: 'Pull-ups' },
+            { name: 'Overhead Press' },
+            { name: 'Barbell Row' },
+            { name: 'Lat Pulldown' },
+            { name: 'Dumbbell Shoulder Press' },
+            { name: 'Incline Dumbbell Press' }
+        ],
+        'lower body': [
+            { name: 'Squat' },
+            { name: 'Deadlift' },
+            { name: 'Romanian Deadlift' },
+            { name: 'Leg Press' },
+            { name: 'Walking Lunge' },
+            { name: 'Hip Thrust' },
+            { name: 'Leg Extensions' },
+            { name: 'Hamstring Curls' }
+        ],
+        'full body': [
+            { name: 'Deadlift' },
+            { name: 'Squat' },
+            { name: 'Bench Press' },
+            { name: 'Pull-ups' },
+            { name: 'Overhead Press' },
+            { name: 'Barbell Row' },
+            { name: 'Push-ups' },
+            { name: 'Burpee' }
+        ],
+        'push': [
+            { name: 'Bench Press' },
+            { name: 'Overhead Press' },
+            { name: 'Incline Dumbbell Press' },
+            { name: 'Lateral Raises' },
+            { name: 'Tricep Pushdown' },
+            { name: 'Close Grip Bench Press' },
+            { name: 'Dumbbell Shoulder Press' }
+        ],
+        'pull': [
+            { name: 'Pull-ups' },
+            { name: 'Barbell Row' },
+            { name: 'Lat Pulldown' },
+            { name: 'Seated Cable Row' },
+            { name: 'Face Pulls' },
+            { name: 'Barbell Curl' },
+            { name: 'Hammer Curl' }
+        ],
+        'neck & traps': [
+            { name: '45-Degree Neck Extension' },
+            { name: 'Side Neck Raise' },
+            { name: 'Dumbbell Shrug' },
+            { name: 'Neck Flexion (with plate)' },
+            { name: 'Head Harness Neck Extension' },
+            { name: 'Machine Shrug' }
+        ]
     };
     
     this.premadeMesocycles = [
@@ -110,205 +330,6 @@ class WorkoutTemplates extends LitElement {
               { name: "PPL 5x - Phase 3 Push", exercises: [{ name: "Low Incline DB Press", sets: [{}, {}, {}], targetReps: 20 }, { name: "Machine Shoulder Press", sets: [{}, {}, {}], targetReps: 15 }, { name: "Cable Crossover Ladder", sets: [{}, {}, {}], targetReps: 20 }, { name: "Lean-In Constant Tension DB Lateral Raise", sets: [{}, {}, {}], targetReps: 15 }] },
               { name: "PPL 5x - Phase 3 Pull", exercises: [{ name: "Pendlay Row", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Machine Pulldown", sets: [{}, {}, {}], targetReps: "10-12" }, { name: "T-Bar Row", sets: [{}, {}, {}], targetReps: "12-15" }, { name: "Bayesian Cable Curl", sets: [{}, {}], targetReps: 15 }] },
               { name: "PPL 5x - Phase 3 Legs", exercises: [{ name: "Deadlift", sets: [{}], targetReps: 8 }, { name: "Leg Press", sets: [{}], targetReps: 12 }, { name: "Leg Extension", sets: [{}, {}], targetReps: 15 }, { name: "Lying Leg Curl", sets: [{}, {}], targetReps: 15 }, { name: "Seated Calf Raise", sets: [{}], targetReps: 20 }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Ultimate PPL 4x",
-        primaryFocus: "Full Body",
-        daysPerWeek: 4,
-        genderFocus: "male",
-        equipment: ["barbell", "dumbbell", "machine", "bodyweight", "cable"],
-        phases: [
-          {
-            name: "Phase 1 - Base Hypertrophy",
-            workouts: [
-              { name: "PPL 4x - Phase 1 Full Body", exercises: [{ name: "Deadlift", sets: [{}], targetReps: 4 }, { name: "Stiff-Leg Deadlift", sets: [{}, {}], targetReps: 8 }, { name: "Close-Grip Barbell Incline Press", sets: [{}, {}], targetReps: "8, 5" }, { name: "Chin-Up", sets: [{}, {}], targetReps: "8-10" }, { name: "Leg Press", sets: [{}, {}], targetReps: "10-12" }, { name: "Kroc Row", sets: [{}, {}], targetReps: "10-12" }] },
-            ]
-          },
-          {
-            name: "Phase 2 - Maximum Effort",
-            workouts: [
-              { name: "PPL 4x - Phase 2 Full Body", exercises: [{ name: "Deadlift", sets: [{}, {}], targetReps: "4-6" }, { name: "Seated DB Shoulder Press", sets: [{}, {}], targetReps: "6-8" }, { name: "Close-Grip Seated Cable Row", sets: [{}, {}], targetReps: "4-6" }, { name: "Weighted Dip", sets: [{}, {}], targetReps: "4-6" }, { name: "Alternating DB Curl", sets: [{}], targetReps: "4-6" }] },
-            ]
-          },
-          {
-            name: "Phase 3 - Supercompensation",
-            workouts: [
-              { name: "PPL 4x - Phase 3 Full Body", exercises: [{ name: "Deadlift", sets: [{}], targetReps: 8 }, { name: "Bench Press", sets: [{}], targetReps: "2-4" }, { name: "Pull-Up", sets: [{}, {}, {}, {}], targetReps: 3 }, { name: "Leg Press", sets: [{}], targetReps: 12 }, { name: "Seated Leg Curl", sets: [{}, {}], targetReps: 15 }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Glute Hypertrophy",
-        primaryFocus: "Glutes",
-        daysPerWeek: 3,
-        genderFocus: "female",
-        equipment: ["barbell", "dumbbell", "cable", "machine"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "Glute Hypertrophy - Workout A", exercises: [{ name: "Barbell Hip Thrust", sets: [{}, {}, {}, {}], targetReps: "6-10" }, { name: "Barbell Squat", sets: [{}, {}, {}], targetReps: "6-10" }, { name: "Lying Leg Curl", sets: [{}, {}, {}], targetReps: "10-15" }, { name: "Glute Medius Kickback", sets: [{}, {}, {}], targetReps: "15-20" }] },
-              { name: "Glute Hypertrophy - Workout B", exercises: [{ name: "Romanian Deadlift", sets: [{}, {}, {}], targetReps: "8-12" }, { name: "Walking Lunge", sets: [{}, {}, {}], targetReps: "10-15 per leg" }, { name: "Leg Extension", sets: [{}, {}, {}], targetReps: "12-15" }, { name: "Cable Pull Through", sets: [{}, {}, {}], targetReps: "15-20" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Women's Foundation",
-        primaryFocus: "Glutes",
-        daysPerWeek: 4,
-        genderFocus: "female",
-        equipment: ["barbell", "dumbbell", "machine", "bodyweight"],
-        phases: [
-          {
-            name: "Block 1",
-            workouts: [
-              { name: "Women's Foundation - Block 1", exercises: [{ name: "Barbell Squat", sets: [{},{},{}], targetReps: "6-8" }, { name: "Glute Ham Raise", sets: [{},{},{}], targetReps: "8-10" }, { name: "Dumbbell Bench Press", sets: [{},{},{}], targetReps: "8-10" }, { name: "Lat Pulldown", sets: [{},{},{}], targetReps: "10-12" }] },
-            ]
-          },
-          {
-            name: "Block 2",
-            workouts: [
-              { name: "Women's Foundation - Block 2", exercises: [{ name: "Barbell Deadlift", sets: [{},{},{}], targetReps: "4-6" }, { name: "Barbell Hip Thrust", sets: [{},{},{}], targetReps: "6-8" }, { name: "Overhead Press", sets: [{},{},{}], targetReps: "6-8" }, { name: "Bent Over Row", sets: [{},{},{}], targetReps: "8-10" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Back Hypertrophy",
-        primaryFocus: "Back",
-        daysPerWeek: 3,
-        genderFocus: "male",
-        equipment: ["barbell", "cable", "machine", "dumbbell"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "Back Hypertrophy - Workout A", exercises: [{ name: "Weighted Pull-Up", sets: [{},{},{},{}], targetReps: "6-8" }, { name: "Pendlay Row", sets: [{},{},{},{}], targetReps: "8-10" }, { name: "Chest-Supported T-Bar Row", sets: [{},{},{},{}], targetReps: "10-12" }, { name: "Cable Pullover", sets: [{},{},{}], targetReps: "12-15" }] },
-              { name: "Back Hypertrophy - Workout B", exercises: [{ name: "Weighted Chin-Up", sets: [{},{},{},{}], targetReps: "6-8" }, { name: "Meadows Row", sets: [{},{},{},{}], targetReps: "8-10 per arm" }, { name: "Seated Cable Row", sets: [{},{},{},{}], targetReps: "10-12" }, { name: "Reverse Pec Deck", sets: [{},{},{}], targetReps: "12-15" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Chest Hypertrophy",
-        primaryFocus: "Chest",
-        daysPerWeek: 3,
-        genderFocus: "male",
-        equipment: ["barbell", "dumbbell", "cable", "machine", "bodyweight"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "Chest Hypertrophy - Workout A", exercises: [{ name: "Bench Press", sets: [{},{},{}], targetReps: "6-8" }, { name: "Incline Dumbbell Press", sets: [{},{},{},{}], targetReps: "8-10" }, { name: "Weighted Dip", sets: [{},{},{}], targetReps: "8-10" }, { name: "Cable Crossover", sets: [{},{},{},{}], targetReps: "12-15" }] },
-              { name: "Chest Hypertrophy - Workout B", exercises: [{ name: "Incline Barbell Press", sets: [{},{},{}], targetReps: "6-8" }, { name: "Machine Chest Press", sets: [{},{},{},{}], targetReps: "10-12" }, { name: "Standing Cable Fly", sets: [{},{},{}], targetReps: "10-12" }, { name: "Push-ups", sets: [{},{},{},{}], targetReps: "AMRAP" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Arm Hypertrophy",
-        primaryFocus: "Arms",
-        daysPerWeek: 3,
-        genderFocus: "male",
-        equipment: ["barbell", "dumbbell", "cable"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "Arm Hypertrophy - Workout A", exercises: [{ name: "Close-Grip Barbell Bench Press", sets: [{},{},{},{}], targetReps: "6-8" }, { name: "Barbell Curl", sets: [{},{},{},{}], targetReps: "8-10" }, { name: "Overhead Tricep Extension", sets: [{},{},{}], targetReps: "10-12" }, { name: "Incline Dumbbell Curl", sets: [{},{},{}], targetReps: "10-12" }] },
-              { name: "Arm Hypertrophy - Workout B", exercises: [{ name: "EZ-Bar Skullcrusher", sets: [{},{},{},{}], targetReps: "6-8" }, { name: "Preacher Curl", sets: [{},{},{},{}], targetReps: "8-10" }, { name: "Cable Pushdown", sets: [{},{},{}], targetReps: "10-12" }, { name: "Hammer Curl", sets: [{},{},{}], targetReps: "10-12" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Neck & Trap",
-        primaryFocus: "Neck & Traps",
-        daysPerWeek: 2,
-        genderFocus: "male",
-        equipment: ["machine", "dumbbell", "bodyweight", "plate"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "Neck & Trap - Workout A", exercises: [{ name: "45-Degree Neck Extension", sets: [{},{},{},{},{},{}], targetReps: "15-20" }, { name: "Side Neck Raise", sets: [{},{},{},{},{},{}], targetReps: "15-20 per side" }, { name: "Dumbbell Shrug", sets: [{},{},{},{},{}], targetReps: "10-15" }] },
-              { name: "Neck & Trap - Workout B", exercises: [{ name: "Neck Flexion (with plate)", sets: [{},{},{},{},{},{}], targetReps: "15-20" }, { name: "Head Harness Neck Extension", sets: [{},{},{},{},{},{}], targetReps: "15-20" }, { name: "Machine Shrug", sets: [{},{},{},{},{}], targetReps: "10-15" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Powerbuilding 2.0 4x",
-        primaryFocus: "Strength",
-        daysPerWeek: 4,
-        genderFocus: "male",
-        equipment: ["barbell", "dumbbell", "cable", "machine"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "Powerbuilding 2.0 4x - Bench", exercises: [{ name: "Bench Press", sets: [{},{},{},{}], targetReps: "4-6" }, { name: "Barbell Row", sets: [{},{},{},{}], targetReps: "6-8" }, { name: "Seated Dumbbell Shoulder Press", sets: [{},{},{}], targetReps: "8-10" }, { name: "Lat Pulldown", sets: [{},{},{}], targetReps: "8-10" }] },
-              { name: "Powerbuilding 2.0 4x - Squat", exercises: [{ name: "Barbell Squat", sets: [{},{},{},{}], targetReps: "4-6" }, { name: "Deadlift", sets: [{},{},{}], targetReps: "4-6" }, { name: "Leg Press", sets: [{},{},{}], targetReps: "8-10" }, { name: "Leg Curl", sets: [{},{},{}], targetReps: "10-12" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Powerbuilding 2.0 5-6x",
-        primaryFocus: "Strength & Hypertrophy",
-        daysPerWeek: 5,
-        genderFocus: "male",
-        equipment: ["barbell", "dumbbell", "cable", "machine"],
-        phases: [
-          {
-            name: "Power Phase",
-            workouts: [
-              { name: "Powerbuilding 2.0 5-6x - Upper Power", exercises: [{ name: "Bench Press", sets: [{},{},{}], targetReps: "4-6" }, { name: "Barbell Row", sets: [{},{},{}], targetReps: "6-8" }, { name: "Overhead Press", sets: [{},{},{}], targetReps: "6-8" }, { name: "Pull-Up", sets: [{},{},{}], targetReps: "8-10" }] },
-              { name: "Powerbuilding 2.0 5-6x - Lower Power", exercises: [{ name: "Barbell Squat", sets: [{},{},{}], targetReps: "4-6" }, { name: "Deadlift", sets: [{},{},{}], targetReps: "4-6" }, { name: "Leg Press", sets: [{},{},{}], targetReps: "8-10" }, { name: "Leg Extension", sets: [{},{},{}], targetReps: "10-12" }] },
-            ]
-          },
-          {
-            name: "Hypertrophy Phase",
-            workouts: [
-              { name: "Powerbuilding 2.0 5-6x - Upper Hypertrophy", exercises: [{ name: "Incline Dumbbell Press", sets: [{},{},{},{}], targetReps: "10-12" }, { name: "Lat Pulldown", sets: [{},{},{},{}], targetReps: "10-12" }, { name: "Seated Cable Row", sets: [{},{},{}], targetReps: "12-15" }, { name: "Dumbbell Lateral Raise", sets: [{},{},{},{}], targetReps: "15-20" }] },
-              { name: "Powerbuilding 2.0 5-6x - Lower Hypertrophy", exercises: [{ name: "Romanian Deadlift", sets: [{},{},{},{}], targetReps: "10-12" }, { name: "Leg Press", sets: [{},{},{},{}], targetReps: "12-15" }, { name: "Lying Leg Curl", sets: [{},{},{}], targetReps: "12-15" }, { name: "Calf Raises", sets: [{},{},{},{}], targetReps: "15-20" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "Essentials 4x",
-        primaryFocus: "Full Body",
-        daysPerWeek: 4,
-        genderFocus: "male",
-        equipment: ["barbell", "dumbbell", "cable", "machine", "bodyweight"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "Essentials 4x - Upper Body", exercises: [{ name: "Bench Press", sets: [{},{}], targetReps: "5-8" }, { name: "Barbell Row", sets: [{},{}], targetReps: "5-8" }, { name: "Seated Dumbbell Shoulder Press", sets: [{},{}], targetReps: "8-12" }, { name: "Lat Pulldown", sets: [{},{}], targetReps: "8-12" }] },
-              { name: "Essentials 4x - Lower Body", exercises: [{ name: "Barbell Squat", sets: [{},{}], targetReps: "5-8" }, { name: "Romanian Deadlift", sets: [{},{}], targetReps: "8-12" }, { name: "Leg Press", sets: [{},{}], targetReps: "12-15" }, { name: "Hamstring Curls", sets: [{},{}], targetReps: "12-15" }] },
-            ]
-          }
-        ]
-      },
-      {
-        name: "At-Home Beginner",
-        primaryFocus: "Full Body",
-        daysPerWeek: 3,
-        genderFocus: "female",
-        equipment: ["bodyweight", "dumbbell", "band"],
-        phases: [
-          {
-            name: "Mesocycle",
-            workouts: [
-              { name: "At-Home Beginner - Full Body A", exercises: [{ name: "Push-ups", sets: [{},{},{}], targetReps: "AMRAP" }, { name: "Dumbbell Row", sets: [{},{},{}], targetReps: "10-15 per side" }, { name: "Dumbbell Goblet Squat", sets: [{},{},{},{}], targetReps: "10-15" }, { name: "Dumbbell Romanian Deadlift", sets: [{},{},{}], targetReps: "10-15" }] },
-              { name: "At-Home Beginner - Full Body B", exercises: [{ name: "Dumbbell Overhead Press", sets: [{},{},{}], targetReps: "10-12" }, { name: "Dumbbell Lunges", sets: [{},{},{}], targetReps: "10-12 per leg" }, { name: "Glute Bridge", sets: [{},{},{},{}], targetReps: "15-20" }, { name: "Dumbbell Floor Press", sets: [{},{},{}], targetReps: "10-15" }] },
             ]
           }
         ]
@@ -576,21 +597,12 @@ class WorkoutTemplates extends LitElement {
   }
 
   _getExercisesForGroup(groupName) {
-    if (this.broadMuscleGroups[groupName]) {
-      // It's a broad category
-      return this.broadMuscleGroups[groupName].flatMap(muscle => exerciseDatabase[muscle] || []);
-    } else if (exerciseDatabase[groupName]) {
-      // It's a specific muscle
-      return exerciseDatabase[groupName];
-    }
-    return [];
+    const normalizedGroup = groupName.toLowerCase();
+    return this.exerciseDatabase[normalizedGroup] || [];
   }
 
   _renderNewTemplateForm() {
-    const muscleGroups = [
-        ...Object.keys(this.broadMuscleGroups), 
-        ...Object.keys(exerciseDatabase)
-    ];
+    const muscleGroups = Object.keys(this.exerciseDatabase);
 
     return html`
       <div class="new-template-form card">
@@ -615,13 +627,13 @@ class WorkoutTemplates extends LitElement {
                 <div class="exercise-selectors">
                   <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(index, e.target.value)}>
                     <option value="">Select Muscle Group</option>
-                    ${muscleGroups.map(muscle => html`<option value="${muscle}">${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
+                    ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
                   </select>
 
                   ${exercise.muscleGroup ? html`
                     <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(index, 'name', e.target.value)}>
                       <option value="">Select Exercise</option>
-                      ${availableExercises.map(ex => html`<option value="${ex.name}">${ex.name}</option>`)}
+                      ${availableExercises.map(ex => html`<option value="${ex.name}" ?selected=${exercise.name === ex.name}>${ex.name}</option>`)}
                     </select>
                   ` : ''}
                 </div>
