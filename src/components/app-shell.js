@@ -166,7 +166,7 @@ class AppShell extends LitElement {
     if (sortedWorkouts.length > 0) {
         let lastWorkoutDate = new Date(sortedWorkouts[0].date);
         lastWorkoutDate.setHours(0,0,0,0);
-        let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 24);
+        let diffDays = Math.floor((today - lastWorkoutDate) / (1000 * 60 * 60 * 24));
         if (diffDays <= 1) {
             streak = 1;
             for (let i = 0; i < sortedWorkouts.length - 1; i++) {
@@ -174,7 +174,7 @@ class AppShell extends LitElement {
                 current.setHours(0,0,0,0);
                 let previous = new Date(sortedWorkouts[i+1].date);
                 previous.setHours(0,0,0,0);
-                if ((current - previous) / (1000 * 60 * 60 * 24) === 1) {
+                if (Math.floor((current - previous) / (1000 * 60 * 60 * 24)) === 1) {
                     streak++;
                 } else {
                     break;
