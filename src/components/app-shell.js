@@ -11,6 +11,7 @@ import "./workout-templates.js";
 import "./achievements-view.js";
 import "./readiness-modal.js";
 import "./motivational-elements.js";
+import "./routine-selector.js";
 
 class AppShell extends LitElement {
   static properties = {
@@ -166,7 +167,7 @@ class AppShell extends LitElement {
     if (sortedWorkouts.length > 0) {
         let lastWorkoutDate = new Date(sortedWorkouts[0].date);
         lastWorkoutDate.setHours(0,0,0,0);
-        let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 24);
+        let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 60 * 24);
         if (diffDays <= 1) {
             streak = 1;
             for (let i = 0; i < sortedWorkouts.length - 1; i++) {
@@ -278,6 +279,7 @@ class AppShell extends LitElement {
 
     switch (this.currentView) {
       case "home": return this.renderHomeScreen();
+      case "routine-selector": return html`<div class="container">${this._renderHeader("New Routine")}<routine-selector></routine-selector></div>`;
       case "templates": return html`<div class="container">${this._renderHeader("Templates")}<workout-templates></workout-templates></div>`;
       case "history": return html`<div class="container">${this._renderHeader("Progress")}<history-view></history-view></div>`;
       case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view .theme=${this.theme} .units=${this.units}></settings-view></div>`;
@@ -304,9 +306,9 @@ class AppShell extends LitElement {
             <div class="hub-option-icon">🏋️</div>
             <div class="hub-option-text"><h3>Start Workout</h3><p>Begin your training session</p></div>
           </button>
-          <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
+          <button class="hub-option card-interactive" @click=${() => this._setView('routine-selector')}>
             <div class="hub-option-icon">📋</div>
-            <div class="hub-option-text"><h3>Templates</h3><p>Custom workout routines</p></div>
+            <div class="hub-option-text"><h3>Routine</h3><p>Custom workout routines</p></div>
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
             <div class="hub-option-icon">📊</div>
