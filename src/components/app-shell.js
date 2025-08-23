@@ -371,6 +371,7 @@ class AppShell extends LitElement {
   }
 
   _handleReadinessSubmit(readinessData) {
+      this.showReadinessModal = false;
       const engine = new WorkoutEngine(this.userData);
       const recoveryScore = engine.calculateRecoveryScore(readinessData);
       const readinessScore = engine.getDailyReadiness(recoveryScore);
@@ -384,28 +385,36 @@ class AppShell extends LitElement {
       } else {
           this._showToast("Could not generate a workout.", "error");
       }
-      this.showReadinessModal = false; // Always close the modal
   }
 
   _getPlannedWorkout() {
-    if (!this.userData?.mesocycle?.weeks) {
+    if (!this.userData?.mesocycle?.weeks || this.userData.mesocycle.weeks.length === 0) {
         this._showToast("No mesocycle found. Please complete onboarding.", "error");
         return null;
     }
+    
+    // Get the total number of workouts completed
+    const workoutsCompleted = this.userData.workouts.length;
+    // Get the number of workout days in the mesocycle
+    const workoutsPerWeek = this.userData.mesocycle.weeks[0].days.length;
+    const mesocycleLengthWeeks = this.userData.mesocycle.weeks.length;
 
-    const engine = new WorkoutEngine(this.userData);
+    // Calculate the current week and day indices
+    const currentWeekIndex = Math.floor(workoutsCompleted / workoutsPerWeek) % mesocycleLengthWeeks;
+    const currentDayIndex = workoutsCompleted % workoutsPerWeek;
 
-    // Get the plan for the first week (week 1)
-    const currentWeekPlan = this.userData.mesocycle.weeks[0]; 
-
-    // Find the workout for the first day of the week
-    const workoutForDay = currentWeekPlan.days[0];
-
+    // Retrieve the correct plan for the current week and day
+    const currentWeekPlan = this.userData.mesocycle.weeks[currentWeekIndex]; 
+    const workoutForDay = currentWeekPlan.days[currentDayIndex];
+    
     // Get the muscle groups for that day
     const muscleGroupsForDay = workoutForDay.muscleGroups;
 
-    // Generate the workout based on the planned muscle groups and weekly plan
-    return engine.generateDailyWorkout(muscleGroupsForDay, currentWeekPlan);
+    // Return the workout object for the workout session component
+    return {
+      name: `Week ${currentWeekPlan.week} Day ${currentDayIndex + 1}`,
+      exercises: workoutForDay.exercises,
+    };
   }
 
   createRenderRoot() {
