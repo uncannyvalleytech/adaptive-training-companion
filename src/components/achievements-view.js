@@ -12,10 +12,10 @@ class AchievementsView extends LitElement {
     this.unlockedAchievements = ['first_workout', 'five_workouts']; 
     this.currentStreak = 5;
     this.allAchievements = [
-      { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', icon: '🥇' },
-      { id: 'five_workouts', name: 'Workout Warrior', description: 'Complete 5 workouts.', icon: '💪' },
-      { id: 'ten_workouts', name: 'Dedicated Lifter', description: 'Complete 10 workouts.', icon: '🏋️' },
-      { id: 'seven_day_streak', name: '7-Day Streak', description: 'Log a workout for 7 consecutive days.', icon: '🔥' },
+      { id: 'first_workout', name: 'First Workout!', description: 'Complete your first workout.', icon: '･' },
+      { id: 'five_workouts', name: 'Workout Warrior', description: 'Complete 5 workouts.', icon: '潮' },
+      { id: 'ten_workouts', name: 'Dedicated Lifter', description: 'Complete 10 workouts.', icon: '暑ｸ' },
+      { id: 'seven_day_streak', name: '7-Day Streak', description: 'Log a workout for 7 consecutive days.', icon: '櫨' },
     ];
   }
 
@@ -25,10 +25,17 @@ class AchievementsView extends LitElement {
     );
 
     return html`
-      <div class="achievements-container">
+      <div class="achievements-container container">
+        <header class="app-header">
+          <button class="btn btn-icon" @click=${() => this.dispatchEvent(new CustomEvent('setView', { detail: { view: 'home' }, bubbles: true, composed: true }))} aria-label="Back">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          </button>
+          <h1>Achievements</h1>
+          <div style="width: 48px;"></div>
+        </header>
         <div class="card streak-card">
           <div class="streak-icon">
-            <span>🔥</span>
+            <span>櫨</span>
           </div>
           <div class="streak-text">
             <h3>Current Streak</h3>
@@ -62,7 +69,7 @@ class AchievementsView extends LitElement {
             : lockedAchievements.map(
                 (achievement) => html`
                   <div class="card achievement-card locked">
-                    <span class="achievement-icon">🔒</span>
+                    <span class="achievement-icon">白</span>
                     <div class="achievement-content">
                       <h4>${achievement.name}</h4>
                       <p>${achievement.description}</p>
