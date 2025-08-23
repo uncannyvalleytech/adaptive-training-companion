@@ -15,6 +15,8 @@ export class WorkoutEngine {
       shoulders: 8,
       arms: 6,
       legs: 14,
+      glutes: 10, // Added for specific glute focus
+      "neck & traps": 6, // Added for specific focus
     };
     this.muscleSizeFactor = {
       arms: 0.0,
@@ -23,6 +25,8 @@ export class WorkoutEngine {
       shoulders: 0.2,
       back: 0.4,
       legs: 0.4,
+      glutes: 0.3,
+      "neck & traps": 0.1,
     };
   }
 
@@ -186,7 +190,7 @@ export class WorkoutEngine {
 
   // --- 7. Exercise Selection Algorithm ---
   calculateEPS(exercise, context = {}) {
-    const { weakMuscles = [], recentExercises = [] } = context;
+    const { weakMuscles = [], recentExercises = [], gender } = context;
     const compoundBonus = exercise.type === 'compound' ? 3 : 1;
     const isWeakMuscle = weakMuscles.includes(exercise.muscleGroup);
     const weaknessMultiplier = isWeakMuscle ? 1.5 : 1.0;
@@ -196,7 +200,13 @@ export class WorkoutEngine {
     else if (lastUsedIndex > 4) noveltyFactor = 1;
     const recoveryCostMap = { high: -1, medium: 0, low: 1 };
     const recoveryCost = recoveryCostMap[exercise.recoveryCost] || 0;
-    const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier;
+    
+    let genderModifier = 1.0;
+    if (gender === 'female' && (exercise.muscleGroup === 'glutes' || exercise.muscleGroup === 'hamstrings')) {
+      genderModifier = 1.2; // Prioritize glute and hamstring exercises for females
+    }
+
+    const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier * genderModifier;
     return score;
   }
 
@@ -215,18 +225,12 @@ export class WorkoutEngine {
   // --- Workout Split Logic ---
   getWorkoutSplit(daysPerWeek) {
     const splits = {
-      3: [['chest', 'back'], ['legs', 'arms'], ['shoulders', 'chest']],
-      4: [['upper', 'core'], ['lower', 'calves'], ['upper', 'core'], ['lower', 'calves']],
-      5: [['push'], ['pull'], ['legs'], ['upper'], ['lower']],
-      6: [['push'], ['pull'], ['legs'], ['push'], ['pull'], ['legs']],
-    };
-    const simplifiedSplits = {
       3: [['chest', 'back'], ['legs', 'shoulders'], ['arms', 'chest']],
       4: [['chest', 'shoulders', 'triceps'], ['back', 'biceps'], ['legs'], ['full body']],
       5: [['chest'], ['back'], ['legs'], ['shoulders', 'arms'], ['full body']],
       6: [['chest'], ['back'], ['legs'], ['shoulders'], ['arms'], ['full body']]
     };
-    const splitForDays = simplifiedSplits[daysPerWeek] || simplifiedSplits[4];
+    const splitForDays = splits[daysPerWeek] || splits[4];
     return splitForDays.map(muscleGroups => muscleGroups.map(group => group.toLowerCase()));
   }
 
@@ -234,31 +238,62 @@ export class WorkoutEngine {
   generateMesocycle(daysPerWeek, mesocycleLength = 5) {
     const mesocycle = { weeks: [] };
     const workoutSplit = this.getWorkoutSplit(daysPerWeek);
+    const userGender = this.userProfile.sex;
+
     for (let week = 1; week <= mesocycleLength; week++) {
-      const weeklyPlan = { week: week, muscleData: {} };
-      const uniqueMuscles = [...new Set(workoutSplit.flat())];
-      for (const muscle of uniqueMuscles) {
-        const landmarks = this.getVolumeLandmarks(muscle, daysPerWeek);
-        const startingVolume = landmarks.mev * 1.1;
-        const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
-        weeklyPlan.muscleData[muscle] = {
-          targetVolume: targetVolume,
-          targetRIR_compound: this.calculateTargetRIR('compound', targetVolume, landmarks.mrv),
-          targetRIR_isolation: this.calculateTargetRIR('isolation', targetVolume, landmarks.mrv),
-        };
+      const weeklyPlan = { week: week, days: [] };
+      
+      for (const dayMuscleGroups of workoutSplit) {
+        const dayPlan = { muscleGroups: dayMuscleGroups, exercises: [] };
+        
+        for (const muscle of dayMuscleGroups) {
+          const landmarks = this.getVolumeLandmarks(muscle, daysPerWeek);
+          const startingVolume = landmarks.mev * 1.1;
+          const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
+          
+          const numExercises = targetVolume > 12 ? 3 : 2;
+          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+
+          let setsRemaining = targetVolume;
+          const exercisesWithSets = selectedExercises.map((ex, index) => {
+              const setsForThisEx = Math.round(setsRemaining / (selectedExercises.length - index));
+              setsRemaining -= setsForThisEx;
+              return {
+                  name: ex.name,
+                  sets: Array(setsForThisEx).fill({}),
+                  targetReps: ex.type === 'compound' ? (userGender === 'male' ? 8 : 10) : 12,
+                  muscleGroup: muscle,
+                  category: 'strength',
+              };
+          });
+          dayPlan.exercises.push(...exercisesWithSets);
+        }
+        weeklyPlan.days.push(dayPlan);
       }
       mesocycle.weeks.push(weeklyPlan);
     }
-    const deloadWeek = { week: mesocycleLength + 1, isDeload: true, muscleData: {} };
-    for (const muscle of [...new Set(workoutSplit.flat())]) {
-      const landmarks = this.getVolumeLandmarks(muscle);
-      deloadWeek.muscleData[muscle] = {
-        targetVolume: Math.round(landmarks.mev * 0.6),
-        targetRIR_compound: 4, 
-        targetRIR_isolation: 4,
-      };
+    
+    // Add a deload week
+    const deloadWeek = { week: mesocycleLength + 1, isDeload: true, days: [] };
+    for (const dayMuscleGroups of workoutSplit) {
+        const deloadDayPlan = { muscleGroups: dayMuscleGroups, exercises: [] };
+        for (const muscle of dayMuscleGroups) {
+            const landmarks = this.getVolumeLandmarks(muscle);
+            const numExercises = Math.round((landmarks.mev * 0.6) > 12 ? 3 : 2);
+            const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+            const exercisesWithSets = selectedExercises.map(ex => ({
+                name: ex.name,
+                sets: Array(Math.max(1, Math.round((landmarks.mev * 0.6) / numExercises))).fill({}),
+                targetReps: ex.type === 'compound' ? 8 : 12,
+                muscleGroup: muscle,
+                category: 'strength',
+            }));
+            deloadDayPlan.exercises.push(...exercisesWithSets);
+        }
+        deloadWeek.days.push(deloadDayPlan);
     }
     mesocycle.weeks.push(deloadWeek);
+    
     return mesocycle;
   }
 
@@ -282,19 +317,29 @@ export class WorkoutEngine {
   // --- Integrated Workout Generation ---
   generateDailyWorkout(muscleGroupsForDay, weeklyPlan) {
     let exercises = [];
-    const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [] }; 
+    const userGender = this.userProfile.sex;
+    const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [], gender: userGender }; 
     for (const muscle of muscleGroupsForDay) {
-        const musclePlan = weeklyPlan.muscleData[muscle];
-        const numExercises = musclePlan?.targetVolume ? (musclePlan.targetVolume > 12 ? 3 : 2) : 2;
+        const landmarks = this.getVolumeLandmarks(muscle);
+        const targetVolume = weeklyPlan.muscleData?.[muscle]?.targetVolume || landmarks.mev;
+        const numExercises = targetVolume > 12 ? 3 : 2;
         const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
-        let setsRemaining = musclePlan?.targetVolume ? musclePlan.targetVolume : 10;
+        let setsRemaining = targetVolume;
         const exercisesWithSets = selected.map((ex, index) => {
             const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
             setsRemaining -= setsForThisEx;
+            
+            // Adjust reps based on gender
+            const targetReps = ex.type === 'compound' 
+                ? (userGender === 'male' ? "6-8" : "8-10") // Men often use lower reps for strength compounds
+                : "10-15";
+            
             return {
                 ...ex,
                 sets: Array(setsForThisEx).fill({}),
-                targetReps: ex.type === 'compound' ? 8 : 12,
+                targetReps: targetReps,
+                muscleGroup: muscle,
+                category: 'strength',
             };
         });
         exercises.push(...exercisesWithSets);
