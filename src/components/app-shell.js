@@ -12,7 +12,6 @@ import "./workout-templates.js";
 import "./achievements-view.js";
 import "./readiness-modal.js";
 import "./motivational-elements.js";
-import "./routine-selection.js";
 
 class AppShell extends LitElement {
   static properties = {
@@ -280,7 +279,6 @@ class AppShell extends LitElement {
 
     switch (this.currentView) {
       case "home": return this.renderHomeScreen();
-      case "routine": return html`<div class="container">${this._renderHeader("Routine")}<routine-selection></routine-selection></div>`;
       case "templates": return html`<div class="container">${this._renderHeader("Templates")}<workout-templates></workout-templates></div>`;
       case "history": return html`<div class="container">${this._renderHeader("Progress")}<history-view></history-view></div>`;
       case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view .theme=${this.theme} .units=${this.units}></settings-view></div>`;
@@ -309,7 +307,7 @@ class AppShell extends LitElement {
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
             <div class="hub-option-icon">📋</div>
-            <div class="hub-option-text"><h3>Routines</h3><p>Custom workout routines</p></div>
+            <div class="hub-option-text"><h3>Templates</h3><p>Custom workout routines</p></div>
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
             <div class="hub-option-icon">📊</div>
