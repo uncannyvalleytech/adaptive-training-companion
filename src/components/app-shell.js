@@ -307,7 +307,7 @@ class AppShell extends LitElement {
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
             <div class="hub-option-icon">📋</div>
-            <div class="hub-option-text"><h3>Templates</h3><p>Custom workout routines</p></div>
+            <div class="hub-option-text"><h3>Routines</h3><p>Custom workout routines</p></div>
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
             <div class="hub-option-icon">📊</div>
