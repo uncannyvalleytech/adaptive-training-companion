@@ -80,9 +80,9 @@ class WorkoutSession extends LitElement {
         const durationInSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
         const totalVolume = this.workout.exercises.reduce((total, exercise) => {
             const exerciseVolume = (exercise.sets || []).reduce((sum, set) => {
-                const weight = parseInt(set.weight, 10);
-                const reps = parseInt(set.reps, 10);
-                if (set.completed && !isNaN(weight) && !isNaN(reps)) {
+                const weight = parseFloat(set.weight) || 0;
+                const reps = parseInt(set.reps, 10) || 0;
+                if (set.completed && weight > 0 && reps > 0) {
                     return sum + (weight * reps);
                 }
                 return sum;
@@ -97,10 +97,14 @@ class WorkoutSession extends LitElement {
             totalVolume,
             exercises: this.workout.exercises.map(ex => ({
                 name: ex.name,
-                completedSets: (ex.sets || []).filter(s => s.completed),
-                category: ex.category || 'strength',
-                muscleGroup: ex.muscleGroup || 'unknown'
-            })),
+                completedSets: (ex.sets || []).filter(s => s.completed).map(set => ({
+                  weight: parseFloat(set.weight) || 0,
+                  reps: parseInt(set.reps, 10) || 0,
+                  rir: parseInt(set.rir, 10) || 0
+                })),
+                category: this._getExerciseCategory(ex.name),
+                muscleGroup: this._getExerciseMuscleGroup(ex.name)
+            })).filter(ex => ex.completedSets.length > 0),
         };
 
         const response = saveDataLocally({ workouts: [workoutToSave] });
@@ -121,12 +125,39 @@ class WorkoutSession extends LitElement {
     }
   }
 
+  _getExerciseCategory(exerciseName) {
+    const compoundExercises = [
+      'squat', 'deadlift', 'bench press', 'pull-up', 'chin-up', 'row', 'press', 'lunge',
+      'dip', 'clean', 'snatch', 'thruster', 'burpee', 'hip thrust'
+    ];
+    
+    const name = exerciseName.toLowerCase();
+    const isCompound = compoundExercises.some(compound => name.includes(compound));
+    return isCompound ? 'compound' : 'isolation';
+  }
+
+  _getExerciseMuscleGroup(exerciseName) {
+    const name = exerciseName.toLowerCase();
+    
+    if (name.includes('bench') || name.includes('chest') || name.includes('fly') || name.includes('press-around')) return 'chest';
+    if (name.includes('squat') || name.includes('quad') || name.includes('leg extension')) return 'quads';
+    if (name.includes('deadlift') || name.includes('row') || name.includes('pull') || name.includes('lat') || name.includes('shrug')) return 'back';
+    if (name.includes('curl') && !name.includes('leg curl')) return 'biceps';
+    if (name.includes('tricep') || name.includes('pushdown') || name.includes('skullcrusher') || name.includes('dip')) return 'triceps';
+    if (name.includes('shoulder') || name.includes('lateral') || name.includes('arnold') || name.includes('press') && !name.includes('bench') && !name.includes('leg')) return 'shoulders';
+    if (name.includes('leg curl') || name.includes('hamstring') || name.includes('rdl') || name.includes('romanian')) return 'hamstrings';
+    if (name.includes('hip thrust') || name.includes('glute') || name.includes('lunge')) return 'glutes';
+    if (name.includes('calf')) return 'calves';
+    
+    return 'general';
+  }
+
   _getGroupedExercises() {
     if (!this.workout || !this.workout.exercises) {
       return {};
     }
     return this.workout.exercises.reduce((acc, exercise, index) => {
-      const group = (exercise.muscleGroup || 'GENERAL').toUpperCase();
+      const group = this._getExerciseMuscleGroup(exercise.name).toUpperCase();
       if (!acc[group]) {
         acc[group] = [];
       }
@@ -155,12 +186,10 @@ class WorkoutSession extends LitElement {
       <div id="workout-session-view" class="container">
         <header class="app-header">
           <div>
-             <h1 class="workout-session-title">WEEK 4 DAY 5</h1>
+             <h1 class="workout-session-title">${this.workout.name}</h1>
              <p class="workout-session-subtitle">${workoutDate}</p>
           </div>
-          <button class="btn btn-icon" aria-label="Calendar View">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-          </button>
+          <div class="timer-display">${this.stopwatchDisplay}</div>
         </header>
         
         <div class="workout-log-container">
@@ -179,14 +208,11 @@ class WorkoutSession extends LitElement {
                     <div class="exercise-log-header">
                       <div class="exercise-log-name">
                         <h3>${exercise.name}</h3>
-                        <p>${exercise.type}</p> 
+                        <p>${exercise.targetReps} reps</p> 
                       </div>
                       <div class="exercise-log-actions">
                         <button class="btn-icon-sm" aria-label="Exercise Info">
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        </button>
-                        <button class="btn-icon-sm" aria-label="More Options">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                         </button>
                       </div>
                     </div>
@@ -198,9 +224,7 @@ class WorkoutSession extends LitElement {
                     </div>
                     ${(exercise.sets || []).map((set, setIndex) => html`
                       <div class="set-row-log ${set.completed ? 'completed' : ''}">
-                        <button class="btn-icon-sm set-options-btn" aria-label="Set Options">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                        </button>
+                        <span class="set-number">${setIndex + 1}</span>
                         <input type="number" class="set-input-log" placeholder="-" .value=${set.weight || ''} @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'weight', e.target.value)}>
                         <input type="number" class="set-input-log" placeholder="${exercise.targetReps || '-'}" .value=${set.reps || ''} @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'reps', e.target.value)}>
                         <button class="set-log-checkbox" @click=${() => this._toggleSetComplete(exercise.originalIndex, setIndex)} aria-label="Log Set ${setIndex + 1}">
