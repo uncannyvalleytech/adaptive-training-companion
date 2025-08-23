@@ -384,7 +384,7 @@ class AppShell extends LitElement {
       } else {
           this._showToast("Could not generate a workout.", "error");
       }
-      this.showReadinessModal = false;
+      this.showReadinessModal = false; // Always close the modal
   }
 
   _getPlannedWorkout() {
