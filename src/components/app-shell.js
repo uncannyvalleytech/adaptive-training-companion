@@ -12,6 +12,7 @@ import "./workout-templates.js";
 import "./achievements-view.js";
 import "./readiness-modal.js";
 import "./motivational-elements.js";
+import "./routine-selection.js";
 
 class AppShell extends LitElement {
   static properties = {
