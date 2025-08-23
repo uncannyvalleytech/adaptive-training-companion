@@ -1,4 +1,3 @@
-
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally, deleteDataLocally } from "../services/local-storage.js";
 import { WorkoutEngine } from "../services/workout-engine.js";
@@ -167,7 +166,7 @@ class AppShell extends LitElement {
     if (sortedWorkouts.length > 0) {
         let lastWorkoutDate = new Date(sortedWorkouts[0].date);
         lastWorkoutDate.setHours(0,0,0,0);
-        let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 24);
+        let diffDays = (today - lastWorkoutDate) / (1000 * 60 * 60 * 60 * 24);
         if (diffDays <= 1) {
             streak = 1;
             for (let i = 0; i < sortedWorkouts.length - 1; i++) {
@@ -175,7 +174,7 @@ class AppShell extends LitElement {
                 current.setHours(0,0,0,0);
                 let previous = new Date(sortedWorkouts[i+1].date);
                 previous.setHours(0,0,0,0);
-                if ((current - previous) / (1000 * 60 * 60 * 24) === 1) {
+                if ((current - previous) / (1000 * 60 * 60 * 60 * 24) === 1) {
                     streak++;
                 } else {
                     break;
@@ -307,7 +306,7 @@ class AppShell extends LitElement {
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
             <div class="hub-option-icon">📋</div>
-            <div class="hub-option-text"><h3>Templates</h3><p>Custom workout routines</p></div>
+            <div class="hub-option-text"><h3>Routine</h3><p>Custom workout routines</p></div>
           </button>
           <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
             <div class="hub-option-icon">📊</div>
