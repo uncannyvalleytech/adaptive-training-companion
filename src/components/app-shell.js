@@ -279,6 +279,7 @@ class AppShell extends LitElement {
 
     switch (this.currentView) {
       case "home": return this.renderHomeScreen();
+      case "routine": return html`<div class="container">${this._renderHeader("Routine")}<routine-selection></routine-selection></div>`;
       case "templates": return html`<div class="container">${this._renderHeader("Templates")}<workout-templates></workout-templates></div>`;
       case "history": return html`<div class="container">${this._renderHeader("Progress")}<history-view></history-view></div>`;
       case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view .theme=${this.theme} .units=${this.units}></settings-view></div>`;
