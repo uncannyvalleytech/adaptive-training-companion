@@ -19,6 +19,7 @@ class WorkoutTemplates extends LitElement {
     isSaving: { type: Boolean },
     selectedFocus: { type: String },
     selectedFrequency: { type: String },
+    currentRoutineView: { type: String }, // 'menu', 'premade', 'create'
   };
 
   constructor() {
@@ -32,6 +33,7 @@ class WorkoutTemplates extends LitElement {
     this.isSaving = false;
     this.selectedFocus = "all";
     this.selectedFrequency = "all";
+    this.currentRoutineView = "menu";
     this.broadMuscleGroups = {
         'Upper Body': ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'forearms'],
         'Lower Body': ['quads', 'hamstrings', 'glutes', 'calves'],
@@ -96,7 +98,7 @@ class WorkoutTemplates extends LitElement {
 
         if (response.success) {
             this.templates = updatedTemplates;
-            this.showNewTemplateForm = false;
+            this.currentRoutineView = "menu";
             this.newTemplateName = "";
             this.newTemplateExercises = [];
             this.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Template saved successfully!', type: 'success' }, bubbles: true, composed: true }));
@@ -142,14 +144,44 @@ class WorkoutTemplates extends LitElement {
       return html`<p class="error-message">${this.errorMessage}</p>`;
     }
 
+    let viewContent;
+    switch(this.currentRoutineView) {
+        case 'menu':
+            viewContent = this._renderRoutineMenu();
+            break;
+        case 'premade':
+            viewContent = this._renderTemplateList();
+            break;
+        case 'create':
+            viewContent = this._renderNewTemplateForm();
+            break;
+        default:
+            viewContent = this._renderRoutineMenu();
+    }
+    
     return html`
       <div class="container">
         <header class="app-header">
-          <h1>Workout Templates</h1>
+          <h1>Routine</h1>
         </header>
-        ${this.showNewTemplateForm ? this._renderNewTemplateForm() : this._renderTemplateList()}
+        ${viewContent}
       </div>
     `;
+  }
+
+  _renderRoutineMenu() {
+      return html`
+        <nav class="home-nav-buttons">
+          <button class="hub-option card-interactive" @click=${() => this.currentRoutineView = 'premade'}>
+            <div class="hub-option-icon">📋</div>
+            <div class="hub-option-text"><h3>Pre Made Mesocycles</h3><p>Choose from our library</p></div>
+          </button>
+          <button class="hub-option card-interactive" @click=${() => this.currentRoutineView = 'create'}>
+            <div class="hub-option-icon">✍️</div>
+            <div class="hub-option-text"><h3>Create Your Own</h3><p>Build a routine from scratch</p></div>
+          </button>
+        </nav>
+      `;
   }
 
   _renderTemplateList() {
@@ -158,10 +190,6 @@ class WorkoutTemplates extends LitElement {
     const frequencyOptions = [...new Set(this.templates.map(t => t.daysPerWeek))].sort((a,b) => a-b);
 
     return html`
-      <button class="cta-button" @click=${() => this.showNewTemplateForm = true}>
-        Create New Template
-      </button>
-
       <div class="filter-controls card">
           <div class="input-group">
             <label for="focus-select">Primary Focus:</label>
@@ -269,6 +297,17 @@ class WorkoutTemplates extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  _getExercisesForGroup(groupName) {
+    if (this.broadMuscleGroups[groupName]) {
+      // It's a broad category
+      return this.broadMuscleGroups[groupName].flatMap(muscle => exerciseDatabase[muscle] || []);
+    } else if (exerciseDatabase[groupName]) {
+      // It's a specific muscle
+      return exerciseDatabase[groupName];
+    }
+    return [];
   }
 
   createRenderRoot() {
