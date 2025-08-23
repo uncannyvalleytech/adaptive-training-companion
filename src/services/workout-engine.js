@@ -95,6 +95,65 @@ export class WorkoutEngine {
     return previousLoad;
   }
 
+  // --- 5. Progression Algorithm based on past results ---
+  calculateProgression(previousWorkoutExercise) {
+    const { completedSets = [], targetRir = 2, targetReps = 10 } = previousWorkoutExercise;
+    
+    if (completedSets.length === 0) {
+      return { 
+        targetLoad: null, 
+        targetReps: targetReps, 
+        note: "No past data, starting fresh." 
+      };
+    }
+    
+    // Calculate average RIR from the last session
+    const totalRir = completedSets.reduce((sum, set) => sum + (set.rir || 0), 0);
+    const avgRir = totalRir / completedSets.length;
+    
+    const lastLoad = completedSets[0].weight;
+    let newTargetLoad = lastLoad;
+    let newTargetReps = targetReps;
+    let note = "Maintaining current plan.";
+    
+    const rirDifference = avgRir - targetRir;
+    
+    if (rirDifference > 1) { // Workout was too easy
+      // Progression: increase weight by a small amount (e.g., 5lbs)
+      newTargetLoad = lastLoad + 5;
+      newTargetReps = targetReps;
+      note = `Excellent performance! Increasing weight to ${newTargetLoad}lbs for the next session.`;
+    } else if (rirDifference < -1) { // Workout was too hard
+      // Regress: keep the same weight, or potentially decrease it slightly.
+      // We will keep the weight and suggest focusing on form and hitting rep targets.
+      newTargetLoad = lastLoad;
+      newTargetReps = targetReps;
+      note = `Last session was challenging. Maintain ${newTargetLoad}lbs and focus on hitting your rep targets.`;
+    } else { // Workout was just right, progressive overload needed
+      // Check if we hit the top end of a rep range
+      const lastSetReps = completedSets[completedSets.length - 1].reps;
+      const targetRepsUpper = targetReps + 2; // Assuming a small rep range, e.g., 8-10.
+      
+      if (lastSetReps >= targetRepsUpper) {
+        // Double progression: add weight and reset reps
+        newTargetLoad = lastLoad + 5;
+        newTargetReps = targetReps;
+        note = `All sets hit the rep target. Increasing weight to ${newTargetLoad}lbs for the next session.`;
+      } else {
+        // Continue adding reps at the same weight
+        newTargetLoad = lastLoad;
+        newTargetReps = targetReps + 1;
+        note = `Solid performance! Aim for one more rep per set in your next session with the same weight.`;
+      }
+    }
+    
+    return {
+      targetLoad: newTargetLoad,
+      targetReps: newTargetReps,
+      note: note
+    };
+  }
+
   // --- 6 & 8. Recovery Monitoring & Daily Autoregulation ---
   calculateRecoveryScore(readinessData) {
     const { sleep_quality, energy_level, motivation, muscle_soreness } = readinessData;
