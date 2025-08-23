@@ -74,7 +74,6 @@ class AppShell extends LitElement {
   _initLocalMode() {
     this.loadingMessage = "Loading your data...";
     
-    // Always start in local mode
     const localData = getDataLocally();
     if (localData) {
       this.userData = localData;
@@ -130,7 +129,7 @@ class AppShell extends LitElement {
     this.currentView = 'home';
     this._viewHistory = ['home'];
     this._showToast("You have been signed out.", "info");
-    this._initLocalMode(); // Restart in local mode
+    this._initLocalMode();
   }
   
   _setView(view) {
@@ -201,9 +200,8 @@ class AppShell extends LitElement {
       this.showOnboarding = false;
       this._showToast("Profile created! Your new workout plan is ready.", "success");
       
-      // Save locally
       saveDataLocally(this.userData);
-      this.fetchUserData = () => Promise.resolve(); // No-op since data is already loaded
+      this.fetchUserData = () => Promise.resolve();
   }
   
   _exitWorkout() {
@@ -222,11 +220,10 @@ class AppShell extends LitElement {
       }
       this.userLevel = Math.floor(this.userXP / 1000) + 1;
       
-      this.userData.workouts.push(this.lastCompletedWorkout);
+      this.userData.workouts = [...(this.userData.workouts || []), this.lastCompletedWorkout];
       this.userData.totalXP = this.userXP;
       this.currentStreak = this._calculateStreak(this.userData.workouts);
       
-      // Save locally instead of to API
       saveDataLocally(this.userData);
       this.currentView = "summary";
   }
@@ -288,7 +285,6 @@ class AppShell extends LitElement {
   }
 
   renderLoginScreen() {
-    // Auto-start local mode instead of showing login
     this._initLocalMode();
     return this.renderSkeletonScreen("Setting up your profile...");
   }
@@ -393,27 +389,41 @@ class AppShell extends LitElement {
         return null;
     }
     
-    // Get the total number of workouts completed
-    const workoutsCompleted = this.userData.workouts.length;
-    // Get the number of workout days in the mesocycle
-    const workoutsPerWeek = this.userData.mesocycle.weeks[0].days.length;
-    const mesocycleLengthWeeks = this.userData.mesocycle.weeks.length;
-
-    // Calculate the current week and day indices
-    const currentWeekIndex = Math.floor(workoutsCompleted / workoutsPerWeek) % mesocycleLengthWeeks;
-    const currentDayIndex = workoutsCompleted % workoutsPerWeek;
-
-    // Retrieve the correct plan for the current week and day
-    const currentWeekPlan = this.userData.mesocycle.weeks[currentWeekIndex]; 
-    const workoutForDay = currentWeekPlan.days[currentDayIndex];
+    const workoutsCompleted = (this.userData.workouts || []).length;
+    const mesocycle = this.userData.mesocycle;
+    const totalWorkoutDays = mesocycle.weeks.reduce((total, week) => total + week.days.length, 0);
     
-    // Get the muscle groups for that day
-    const muscleGroupsForDay = workoutForDay.muscleGroups;
-
-    // Return the workout object for the workout session component
+    if (workoutsCompleted >= totalWorkoutDays) {
+        // Generate new mesocycle if completed
+        const engine = new WorkoutEngine(this.userData);
+        this.userData.mesocycle = engine.generateMesocycle(Number(this.userData.daysPerWeek || 4));
+        saveDataLocally(this.userData);
+        this._showToast("New training cycle started!", "success");
+    }
+    
+    // Calculate current position in mesocycle
+    let currentWorkoutIndex = workoutsCompleted % totalWorkoutDays;
+    let workoutDayCount = 0;
+    
+    for (const week of mesocycle.weeks) {
+        for (const day of week.days) {
+            if (workoutDayCount === currentWorkoutIndex) {
+                return {
+                    name: `Week ${week.week} - ${day.muscleGroups.join(' & ')}`,
+                    exercises: day.exercises || []
+                };
+            }
+            workoutDayCount++;
+        }
+    }
+    
+    // Fallback to first workout if something goes wrong
+    const firstWeek = mesocycle.weeks[0];
+    const firstDay = firstWeek?.days[0];
+    
     return {
-      name: `Week ${currentWeekPlan.week} Day ${currentDayIndex + 1}`,
-      exercises: workoutForDay.exercises,
+        name: `Week ${firstWeek?.week || 1} - ${firstDay?.muscleGroups.join(' & ') || 'Workout'}`,
+        exercises: firstDay?.exercises || []
     };
   }
 
