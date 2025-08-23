@@ -83,7 +83,9 @@ class HistoryView extends LitElement {
   _getExerciseIcon(category) {
     // A simple mapping for now. Can be expanded later.
     const icons = {
-      'strength': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L6 2v6a4 4 0 0 0 4 4h4a4 4 0 0 0 4-4V2z"></path><path d="M14 2h6l-6 6a4 4 0 0 0-4-4V2z"></path><path d="M14 2h6L14 8a4 4 0 0 0-4-4V2z"></path></svg>`,
+      'compound': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>`,
+      'isolation': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`,
+      'strength': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>`,
       'cardio': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.5 12.58a9.5 9.5 0 1 1-10.5-9.5"></path><path d="M16 16l-3-3"></path><path d="M14.5 12.5l-3 3"></path></svg>`,
       'flexibility': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path><path d="M12 2v10l-4-4"></path></svg>`,
       'default': html`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>`
@@ -100,7 +102,8 @@ class HistoryView extends LitElement {
   
   updated(changedProperties) {
     if (changedProperties.has('workouts') || changedProperties.has('filteredWorkouts') || changedProperties.has('units')) {
-      this.createCharts();
+      // Use setTimeout to ensure DOM is updated
+      setTimeout(() => this.createCharts(), 100);
     }
   }
 
@@ -112,7 +115,7 @@ class HistoryView extends LitElement {
 
   _calculateVolume(exercises) {
     return exercises.reduce((total, exercise) => {
-      const exerciseVolume = exercise.completedSets.reduce((sum, set) => {
+      const exerciseVolume = (exercise.completedSets || []).reduce((sum, set) => {
         return sum + (set.reps * set.weight);
       }, 0);
       return total + exerciseVolume;
@@ -126,7 +129,7 @@ class HistoryView extends LitElement {
 
     this.workouts.forEach(workout => {
       const workoutDate = new Date(workout.date).toLocaleDateString();
-      workout.exercises.forEach(exercise => {
+      (workout.exercises || []).forEach(exercise => {
         if (!exerciseData[exercise.name]) {
           exerciseData[exercise.name] = {
             labels: [],
@@ -137,7 +140,7 @@ class HistoryView extends LitElement {
         
         let dailyMax1RM = 0;
         let dailyVolume = 0;
-        exercise.completedSets.forEach(set => {
+        (exercise.completedSets || []).forEach(set => {
           const estimated1RM = this._calculate1RM(set.weight, set.reps);
           if (estimated1RM > dailyMax1RM) {
             dailyMax1RM = estimated1RM;
@@ -341,7 +344,7 @@ class HistoryView extends LitElement {
     if (this.searchTerm) {
       tempWorkouts = tempWorkouts.map(workout => ({
         ...workout,
-        exercises: workout.exercises.filter(exercise =>
+        exercises: (workout.exercises || []).filter(exercise =>
           exercise.name.toLowerCase().includes(this.searchTerm)
         )
       })).filter(workout => workout.exercises.length > 0);
@@ -350,7 +353,7 @@ class HistoryView extends LitElement {
     if (this.filterTerm !== "all") {
       tempWorkouts = tempWorkouts.map(workout => ({
         ...workout,
-        exercises: workout.exercises.filter(exercise =>
+        exercises: (workout.exercises || []).filter(exercise =>
           exercise.category === this.filterTerm
         )
       })).filter(workout => workout.exercises.length > 0);
@@ -386,7 +389,7 @@ class HistoryView extends LitElement {
               <p>Total Volume: ${this._convertWeight(this._calculateVolume(workout.exercises))} ${weightUnit}</p>
               <p>Duration: ${this._formatDuration(workout.durationInSeconds)}</p>
             </div>
-            ${workout.exercises.map(exercise => html`
+            ${(workout.exercises || []).map(exercise => html`
               <div class="exercise-item">
                 <div class="exercise-header">
                   <div class="exercise-title-group">
@@ -395,7 +398,7 @@ class HistoryView extends LitElement {
                   </div>
                 </div>
                 <ul class="set-list">
-                  ${exercise.completedSets.map((set, setIndex) => html`
+                  ${(exercise.completedSets || []).map((set, setIndex) => html`
                     <li class="set-item">Set ${setIndex + 1}: ${set.reps} reps @ ${this._convertWeight(set.weight)} ${weightUnit}</li>
                   `)}
                 </ul>
@@ -408,13 +411,14 @@ class HistoryView extends LitElement {
       // Group exercises by muscle group
       const exercisesByMuscleGroup = {};
       this.filteredWorkouts.forEach(workout => {
-        workout.exercises.forEach(exercise => {
-          if (!exercisesByMuscleGroup[exercise.muscleGroup]) {
-            exercisesByMuscleGroup[exercise.muscleGroup] = [];
+        (workout.exercises || []).forEach(exercise => {
+          const group = exercise.muscleGroup || 'general';
+          if (!exercisesByMuscleGroup[group]) {
+            exercisesByMuscleGroup[group] = [];
           }
-          exercisesByMuscleGroup[exercise.muscleGroup].push({
+          exercisesByMuscleGroup[group].push({
             date: new Date(workout.date).toLocaleDateString(),
-            completedSets: exercise.completedSets,
+            completedSets: exercise.completedSets || [],
             category: exercise.category,
             name: exercise.name,
           });
@@ -424,7 +428,7 @@ class HistoryView extends LitElement {
       return Object.keys(exercisesByMuscleGroup).map(muscleGroup => html`
         <div class="card workout-card" @click=${() => this._toggleExpand(muscleGroup)}>
           <div class="workout-summary">
-            <h3 class="workout-name">${muscleGroup}</h3>
+            <h3 class="workout-name">${muscleGroup.charAt(0).toUpperCase() + muscleGroup.slice(1)}</h3>
             <span class="workout-count">(${exercisesByMuscleGroup[muscleGroup].length} exercises)</span>
           </div>
           <div class="workout-details ${this.expandedWorkouts[muscleGroup] ? 'expanded' : 'collapsed'}">
@@ -455,8 +459,8 @@ class HistoryView extends LitElement {
 
     this.workouts.forEach(workout => {
       const workoutDate = new Date(workout.date).toLocaleDateString();
-      workout.exercises.forEach(exercise => {
-        exercise.completedSets.forEach((set, setIndex) => {
+      (workout.exercises || []).forEach(exercise => {
+        (exercise.completedSets || []).forEach((set, setIndex) => {
           const row = [
             `"${workoutDate}"`,
             `"${workout.name}"`,
@@ -467,7 +471,7 @@ class HistoryView extends LitElement {
             set.reps,
             set.weight,
             (set.weight * 0.453592).toFixed(1),
-            set.rir
+            set.rir || 0
           ];
           csvContent += row.join(",") + "\n";
         });
@@ -514,8 +518,8 @@ class HistoryView extends LitElement {
     }
 
     const { exerciseData, personalRecords } = this._processDataForCharts();
-    const uniqueCategories = [...new Set(this.workouts.flatMap(w => w.exercises.map(e => e.category)))];
-    const uniqueMuscleGroups = [...new Set(this.workouts.flatMap(w => w.exercises.map(e => e.muscleGroup)))];
+    const uniqueCategories = [...new Set(this.workouts.flatMap(w => (w.exercises || []).map(e => e.category)).filter(Boolean))];
+    const uniqueMuscleGroups = [...new Set(this.workouts.flatMap(w => (w.exercises || []).map(e => e.muscleGroup)).filter(Boolean))];
 
     return html`
       <div class="container">
@@ -564,28 +568,30 @@ class HistoryView extends LitElement {
           ${this._groupAndRenderWorkouts()}
         </div>
 
-        <h2 class="section-title">Strength Progress</h2>
-        ${Object.keys(exerciseData).map(exerciseName => html`
-        <div class="card progress-card">
-          <div class="exercise-header">
-            <div class="exercise-title-group">
-              <span class="exercise-icon">${this._getExerciseIcon(this.workouts[0].exercises.find(e => e.name === exerciseName)?.category || 'default')}</span>
-              <h2>${exerciseName}</h2>
+        ${Object.keys(exerciseData).length > 0 ? html`
+          <h2 class="section-title">Strength Progress</h2>
+          ${Object.keys(exerciseData).map(exerciseName => html`
+          <div class="card progress-card">
+            <div class="exercise-header">
+              <div class="exercise-title-group">
+                <span class="exercise-icon">${this._getExerciseIcon('strength')}</span>
+                <h2>${exerciseName}</h2>
+              </div>
+            </div>
+            <div class="personal-record">
+              <strong>Personal Record:</strong> 
+              ${personalRecords[exerciseName] 
+                ? `${personalRecords[exerciseName].weight} ${this.units} x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} ${this.units}) on ${personalRecords[exerciseName].date}`
+                : 'No records yet.'
+              }
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-1rm-${exerciseName.replace(/\s+/g, '-')}"></canvas>
+              <canvas id="chart-volume-${exerciseName.replace(/\s+/g, '-')}"></canvas>
             </div>
           </div>
-          <div class="personal-record">
-            <strong>Personal Record:</strong> 
-            ${personalRecords[exerciseName] 
-              ? `${personalRecords[exerciseName].weight} ${this.units} x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} ${this.units}) on ${personalRecords[exerciseName].date}`
-              : 'No records yet.'
-            }
-          </div>
-          <div class="chart-container">
-            <canvas id="chart-1rm-${exerciseName.replace(/\s+/g, '-')}"></canvas>
-            <canvas id="chart-volume-${exerciseName.replace(/\s+/g, '-')}"></canvas>
-          </div>
-        </div>
-      `)}
+        `)}
+        ` : ''}
       </div>
     `;
   }
