@@ -1,12 +1,16 @@
-/**
- * @file workout-templates.js
- * This component allows users to create, save, and manage workout templates.
- * It's a key part of the new workflow that enables quick workout starts.
- */
-
+/*
+===============================================
+SECTION 1: COMPONENT AND SERVICE IMPORTS
+===============================================
+*/
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
 
+/*
+===============================================
+SECTION 2: WORKOUT-TEMPLATES COMPONENT DEFINITION
+===============================================
+*/
 class WorkoutTemplates extends LitElement {
   static properties = {
     templates: { type: Array },
@@ -267,7 +271,7 @@ class WorkoutTemplates extends LitElement {
         ]
     };
     
-    this.premadeMesocycles = [
+    this.premadeMesocycles = this._groupWorkouts([
     {
         name: "Beginner Full Body A/B - Workout A",
         primaryFocus: "Full Body",
@@ -366,7 +370,7 @@ class WorkoutTemplates extends LitElement {
             { name: "Pull-Ups (or Lat Pulldowns)", sets: [{}, {}, {}], targetReps: "8-10" },
             { name: "Incline Dumbbell Press", sets: [{}, {}, {}], targetReps: "8-10" },
             { name: "Leg Curls", sets: [{}, {}], targetReps: "10-12" },
-            { name: "Triceps Pushdowns", sets: [{}, {}], targetReps: "10-15" }
+            { name: "Triceps Pushdowns", sets: [{}, {}, {}], targetReps: "10-15" }
         ]
     },
     {
@@ -834,8 +838,14 @@ class WorkoutTemplates extends LitElement {
             { name: "Cable Curl & Cable Pressdown", sets: [{}, {}, {}], targetReps: "15 each" }
         ]
     }
-  ];
+  ]);
   }
+
+/*
+===============================================
+SECTION 3: LIFECYCLE AND DATA FETCHING
+===============================================
+*/
 
   connectedCallback() {
     super.connectedCallback();
@@ -855,6 +865,34 @@ class WorkoutTemplates extends LitElement {
     }
   }
 
+/*
+===============================================
+SECTION 4: WORKOUT GROUPING
+===============================================
+*/
+  _groupWorkouts(workouts) {
+    const grouped = workouts.reduce((acc, workout) => {
+        // Extract the base name of the program (e.g., "Beginner Full Body A/B")
+        const baseName = workout.name.split(' - ')[0];
+        if (!acc[baseName]) {
+            acc[baseName] = {
+                ...workout, // Use the first workout as the base
+                name: baseName,
+                workouts: []
+            };
+        }
+        // Add the workout to the program's list of workouts
+        acc[baseName].workouts.push(workout);
+        return acc;
+    }, {});
+    return Object.values(grouped);
+  }
+
+/*
+===============================================
+SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
+===============================================
+*/
   _addExerciseToTemplate() {
     this.newTemplateExercises = [...this.newTemplateExercises, { muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }];
   }
@@ -993,6 +1031,12 @@ class WorkoutTemplates extends LitElement {
     });
   }
 
+/*
+===============================================
+SECTION 6: RENDERING LOGIC
+===============================================
+*/
+
   render() {
     if (this.isLoading) {
       return html`<p>Loading templates...</p>`;
@@ -1079,27 +1123,22 @@ class WorkoutTemplates extends LitElement {
     const genderOptions = [...new Set(this.premadeMesocycles.flatMap(t => t.genderFocus))].filter(g => g !== 'all');
     const equipmentOptions = [...new Set(this.premadeMesocycles.flatMap(t => t.equipment))];
 
-    // Show templates from local storage if no premade mesocycles
-    const templatesToShow = filteredMesocycles.length > 0 
-      ? filteredMesocycles 
-      : this.premadeMesocycles.filter(t => t.primaryFocus !== "custom");
-
     return html`
-      ${filteredMesocycles.length === 0 && templatesToShow.length === 0 ? html`
+      ${filteredMesocycles.length === 0 ? html`
         <div class="card">
           <p class="no-data">No pre-made templates available. Try creating your own!</p>
         </div>
       ` : ''}
       
-      ${templatesToShow.length > 0 ? html`
+      ${filteredMesocycles.length > 0 ? html`
         <div class="templates-list">
-          ${templatesToShow.map(template => html`
-            <div class="card link-card template-card" @click=${() => this._loadTemplate(template)}>
+          ${filteredMesocycles.map(program => html`
+            <div class="card link-card template-card" @click=${() => this.selectedMesocycle = program}>
               <div class="template-info">
-                <h3>${template.name}</h3>
-                <p>${template.exercises?.length || 0} exercises</p>
+                <h3>${program.name}</h3>
+                <p>${program.workouts.length} workouts</p>
               </div>
-              <button class="btn-icon" aria-label="Load template">
+              <button class="btn-icon" aria-label="View program">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </button>
             </div>
@@ -1115,16 +1154,14 @@ class WorkoutTemplates extends LitElement {
       return html`
         <div class="mesocycle-phases-view">
           <h2>${this.selectedMesocycle.name}</h2>
-          <p>Choose a phase and a workout to start.</p>
+          <p>Choose a workout to start.</p>
           
-          ${this.selectedMesocycle.phases.map(phase => html`
             <div class="card" style="margin-bottom: var(--space-6);">
-              <h3>${phase.name}</h3>
               <div class="templates-list" style="margin-top: var(--space-4);">
-                ${phase.workouts.map(workout => html`
+                ${this.selectedMesocycle.workouts.map(workout => html`
                   <div class="card link-card template-card">
                     <div class="template-info" @click=${() => this._loadTemplate(workout)}>
-                      <h3>${workout.name}</h3>
+                      <h3>${workout.name.split(' - ')[1]}</h3>
                       <p>${workout.exercises.length} exercises</p>
                     </div>
                     <button class="btn-icon" @click=${() => this._loadTemplate(workout)} aria-label="Load workout">
@@ -1134,7 +1171,6 @@ class WorkoutTemplates extends LitElement {
                 `)}
               </div>
             </div>
-          `)}
         </div>
       `;
   }
@@ -1205,6 +1241,11 @@ class WorkoutTemplates extends LitElement {
     `;
   }
 
+/*
+===============================================
+SECTION 7: STYLES AND ELEMENT DEFINITION
+===============================================
+*/
   createRenderRoot() {
       return this;
   }
