@@ -1,4 +1,16 @@
+/*
+===============================================
+SECTION 1: COMPONENT AND SERVICE IMPORTS
+===============================================
+*/
+
 import { LitElement, html, css } from "lit";
+
+/*
+===============================================
+SECTION 2: ONBOARDING-FLOW COMPONENT DEFINITION
+===============================================
+*/
 
 class OnboardingFlow extends LitElement {
   static properties = {
@@ -80,6 +92,12 @@ class OnboardingFlow extends LitElement {
     ];
   }
 
+/*
+===============================================
+SECTION 3: EVENT HANDLERS AND LOGIC
+===============================================
+*/
+
   _handleInputChange(field, value) {
     this.userData = { ...this.userData, [field]: value };
     this.error = "";
@@ -134,6 +152,12 @@ class OnboardingFlow extends LitElement {
     }
   }
 
+/*
+===============================================
+SECTION 4: RENDERING LOGIC
+===============================================
+*/
+
   render() {
     const currentStepData = this.steps[this.step];
     const progress = (this.step / (this.steps.length - 2)) * 100;
@@ -173,7 +197,7 @@ class OnboardingFlow extends LitElement {
             return html`<button class="btn btn-primary cta-button" @click=${this._nextStep}>Get Started</button>`;
         case 'form':
             return html`
-                <div class="form-inputs card">
+                <div class="form-inputs">
                     ${this._renderForm(stepData.fields)}
                 </div>
             `;
@@ -256,6 +280,12 @@ class OnboardingFlow extends LitElement {
       })}
     `;
   }
+
+/*
+===============================================
+SECTION 5: STYLES AND ELEMENT DEFINITION
+===============================================
+*/
 
   createRenderRoot() {
     return this;
