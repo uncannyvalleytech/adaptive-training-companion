@@ -1,3 +1,9 @@
+/*
+===============================================
+SECTION 1: APP INITIALIZATION
+===============================================
+*/
+
 /**
  * @file main.js
  * Enhanced entry point with better error handling and initialization
@@ -18,12 +24,82 @@ async function initializeApp() {
       console.warn("Failed to load motivational elements:", error);
       // Non-critical, continue without this component
     });
+    
+    // Import services with error handling
+    const { syncData, getQueuedWorkoutsCount, initializeApi } = await import("./services/api.js").catch(error => {
+      console.error("Failed to load API service:", error);
+      // Return mock functions to prevent app crash
+      return {
+        syncData: () => Promise.resolve({ success: false, error: "API service unavailable" }),
+        getQueuedWorkoutsCount: () => 0,
+        initializeApi: () => Promise.resolve(false)
+      };
+    });
+
+    const { initializeGapi } = await import("./services/google-auth.js").catch(error => {
+      console.error("Failed to load Google auth service:", error);
+      // Return mock function
+      return { initializeGapi: () => console.warn("Google auth unavailable") };
+    });
 
     console.log("Adaptive Training Companion initialized!");
+
+    // Make initializeGapi available globally for the HTML script
+    window.initializeGapi = initializeGapi;
+
+/*
+===============================================
+SECTION 2: API AND OFFLINE DATA HANDLING
+===============================================
+*/
+
+    // Initialize API connection
+    try {
+      const apiConnected = await initializeApi();
+      if (!apiConnected) {
+        console.warn("API connection failed - running in offline mode");
+        // Dispatch event to notify app components
+        window.dispatchEvent(new CustomEvent('app-offline-mode'));
+      }
+    } catch (error) {
+      console.error("API initialization error:", error);
+    }
+
+    // Handle offline data sync
+    try {
+      const syncResult = await syncData();
+      if (syncResult.success && syncResult.syncedCount > 0) {
+        console.log(`Synced ${syncResult.syncedCount} offline items`);
+        window.dispatchEvent(new CustomEvent('offline-data-synced', {
+          detail: { count: syncResult.syncedCount }
+        }));
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+    }
+
+    // Check for offline data on load
+    try {
+      const queuedCount = getQueuedWorkoutsCount();
+      if (queuedCount > 0) {
+        console.log(`Found ${queuedCount} items queued for sync`);
+        window.dispatchEvent(new CustomEvent('offline-data-queued', {
+          detail: { count: queuedCount }
+        }));
+      }
+    } catch (error) {
+      console.error("Error checking offline queue:", error);
+    }
 
     // Notify that app is ready
     window.dispatchEvent(new CustomEvent('app-ready'));
     console.log("App initialization complete");
+
+/*
+===============================================
+SECTION 3: CRITICAL ERROR FALLBACK
+===============================================
+*/
 
   } catch (error) {
     console.error("Critical app initialization error:", error);
@@ -67,6 +143,12 @@ async function initializeApp() {
   }
 }
 
+/*
+===============================================
+SECTION 4: GLOBAL EVENT LISTENERS
+===============================================
+*/
+
 // Enhanced global error handling
 window.addEventListener('unhandledrejection', event => {
   console.error('Unhandled promise rejection:', event.reason);
@@ -99,12 +181,31 @@ window.addEventListener('error', event => {
 window.addEventListener('online', () => {
   console.log('App is back online');
   window.dispatchEvent(new CustomEvent('app-online'));
+  
+  // Try to sync any pending offline data
+  import("./services/api.js").then(({ syncData }) => {
+    syncData().then(result => {
+      if (result.success && result.syncedCount > 0) {
+        console.log(`Auto-synced ${result.syncedCount} items after coming online`);
+      }
+    }).catch(error => {
+      console.error("Auto-sync error:", error);
+    });
+  }).catch(error => {
+    console.error("Failed to import API service for auto-sync:", error);
+  });
 });
 
 window.addEventListener('offline', () => {
   console.log('App is offline');
   window.dispatchEvent(new CustomEvent('app-offline'));
 });
+
+/*
+===============================================
+SECTION 5: DOM READY INITIALIZATION
+===============================================
+*/
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
