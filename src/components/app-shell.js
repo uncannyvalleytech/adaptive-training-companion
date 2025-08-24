@@ -1,450 +1,328 @@
-/**
- * @file workout-engine.js
- * This service implements the comprehensive "Mathematical Personal Training Algorithm".
- * It's responsible for all calculations related to user profiling, volume landmarks,
- * progression, intensity, and autoregulation.
- */
+/*
+===============================================
+SECTION 1: COMPONENT AND SERVICE IMPORTS
+===============================================
+*/
 
-export class WorkoutEngine {
-  constructor(userProfile) {
-    this.userProfile = userProfile;
-    this.baseMEV = {
-      chest: 8,
-      back: 10,
-      shoulders: 8,
-      arms: 6,
-      legs: 14,
-      glutes: 10,
-      biceps: 6,
-      triceps: 6,
-      quads: 10,
-      hamstrings: 8,
-      calves: 6,
-      "neck & traps": 6,
-    };
-    this.muscleSizeFactor = {
-      arms: 0.0,
-      calves: 0.0,
-      chest: 0.2,
-      shoulders: 0.2,
-      back: 0.4,
-      legs: 0.4,
-      glutes: 0.3,
-      biceps: 0.1,
-      triceps: 0.1,
-      quads: 0.3,
-      hamstrings: 0.2,
-      "neck & traps": 0.1,
-    };
-    
-    this.exerciseDatabase = {
-      chest: [
-        { name: 'Barbell Bench Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Dumbbell Bench Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Incline Dumbbell Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Machine Chest Press', type: 'compound', recoveryCost: 'low' },
-        { name: 'Cable Crossover', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Push-ups', type: 'compound', recoveryCost: 'low' },
-        { name: 'Incline Barbell Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Decline Bench Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Chest Dip', type: 'compound', recoveryCost: 'medium' }
-      ],
-      back: [
-        { name: 'Deadlift', type: 'compound', recoveryCost: 'high' },
-        { name: 'Pull-ups', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Barbell Row', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Lat Pulldown', type: 'compound', recoveryCost: 'low' },
-        { name: 'Seated Cable Row', type: 'compound', recoveryCost: 'low' },
-        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' },
-        { name: 'T-Bar Row', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Dumbbell Row', type: 'compound', recoveryCost: 'medium' }
-      ],
-      biceps: [
-        { name: 'Barbell Curl', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Dumbbell Hammer Curl', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Preacher Curl', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Incline Dumbbell Curl', type: 'isolation', recoveryCost: 'low' }
-      ],
-      triceps: [
-        { name: 'Tricep Pushdown', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Skull Crushers', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Overhead Tricep Extension', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Close Grip Bench Press', type: 'compound', recoveryCost: 'medium' }
-      ],
-      quads: [
-        { name: 'Barbell Squat', type: 'compound', recoveryCost: 'high' },
-        { name: 'Leg Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Leg Extensions', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Hack Squat', type: 'compound', recoveryCost: 'high' }
-      ],
-      hamstrings: [
-        { name: 'Romanian Deadlift', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Hamstring Curls', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Good Mornings', type: 'compound', recoveryCost: 'medium' }
-      ],
-      glutes: [
-        { name: 'Hip Thrust', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Glute Kickback', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Bulgarian Split Squat', type: 'compound', recoveryCost: 'high' }
-      ],
-      calves: [
-        { name: 'Calf Raises', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Seated Calf Raises', type: 'isolation', recoveryCost: 'low' }
-      ],
-      shoulders: [
-        { name: 'Overhead Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Dumbbell Shoulder Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Lateral Raises', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Front Raises', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' }
-      ]
-    };
+import { LitElement, html } from "lit";
+import { WorkoutEngine } from "../services/workout-engine.js";
+import { saveDataLocally, getDataLocally, deleteDataLocally } from "../services/local-storage.js";
+
+// Import all view components
+import "./onboarding-flow.js";
+import "./workout-session.js";
+import "./history-view.js";
+import "./settings-view.js";
+import "./workout-templates.js";
+import "./analytics-dashboard.js";
+import "./achievements-view.js";
+import "./readiness-modal.js";
+
+/*
+===============================================
+SECTION 2: APP-SHELL COMPONENT DEFINITION
+===============================================
+*/
+
+class AppShell extends LitElement {
+  static properties = {
+    currentView: { type: String },
+    userData: { type: Object },
+    isLoading: { type: Boolean },
+    currentWorkout: { type: Object },
+    showReadinessModal: { type: Boolean },
+    toast: { type: Object },
+  };
+
+  constructor() {
+    super();
+    this.isLoading = true;
+    this.userData = null;
+    this.currentView = 'loading';
+    this.currentWorkout = null;
+    this.showReadinessModal = false;
+    this.toast = { show: false, message: '', type: '' };
+    this.workoutEngine = null;
   }
 
-  // --- 1. User Profile Initialization ---
-  calculateTAF() {
-    const { training_months } = this.userProfile;
-    const taf = 1 + (training_months / 12) * 0.1;
-    return Math.min(taf, 3.0);
+/*
+===============================================
+SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
+===============================================
+*/
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.loadUserData();
+    this.addEventListener('onboarding-complete', this._handleOnboardingComplete);
+    this.addEventListener('start-workout-with-template', this._handleStartWorkoutWithTemplate);
+    this.addEventListener('workout-completed', this._handleWorkoutCompleted);
+    this.addEventListener('workout-cancelled', this._handleWorkoutCancelled);
+    this.addEventListener('show-toast', this._showToast);
+    this.addEventListener('theme-change', this._handleThemeChange);
+    this.addEventListener('units-change', this._handleUnitsChange);
+    this.addEventListener('sign-out', this._handleSignOut);
+    this.addEventListener('delete-data', this._handleDeleteData);
   }
 
-  calculateRCS() {
-    const { sex, age, sleep_hours, stress_level } = this.userProfile;
-    const baseRecovery = 1.0;
-    const sexModifier = sex === 'female' ? 1.15 : 1.0;
-    const ageModifier = Math.max(0.7, 1.2 - (age - 18) * 0.005);
-    const sleepModifier = Math.min(1.2, sleep_hours / 8);
-    const stressModifier = (10 - stress_level) / 10;
-    return baseRecovery * sexModifier * ageModifier * sleepModifier * stressModifier;
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    // Clean up event listeners
+    this.removeEventListener('onboarding-complete', this._handleOnboardingComplete);
+    this.removeEventListener('start-workout-with-template', this._handleStartWorkoutWithTemplate);
+    this.removeEventListener('workout-completed', this._handleWorkoutCompleted);
+    this.removeEventListener('workout-cancelled', this._handleWorkoutCancelled);
+    this.removeEventListener('show-toast', this._showToast);
+    this.removeEventListener('theme-change', this._handleThemeChange);
+    this.removeEventListener('units-change', this._handleUnitsChange);
+    this.removeEventListener('sign-out', this._handleSignOut);
+    this.removeEventListener('delete-data', this._handleDeleteData);
   }
 
-  // --- 2. Volume Landmark Calculations ---
-  getVolumeLandmarks(muscleGroup, trainingFrequency = 2) {
-    const taf = this.calculateTAF();
-    const rcs = this.calculateRCS();
-    const base_mev = this.userProfile.baseMEV?.[muscleGroup] || this.baseMEV[muscleGroup] || 8;
-    const muscle_size_factor = this.muscleSizeFactor[muscleGroup] || 0.2;
-    const mev = base_mev * (1 + muscle_size_factor) * Math.pow(taf, 0.3);
-    const freqFactorMap = { 1: 0.8, 2: 1.0, 3: 1.2, 4: 1.2, 5: 1.3, 6: 1.4 };
-    const trainingFrequencyFactor = freqFactorMap[trainingFrequency] || 1.3;
-    const mrv = mev * (2.5 + rcs) * trainingFrequencyFactor;
-    const mav = mev + (mrv - mev) * 0.7;
-    const mv = mev * 0.6;
-    return {
-      mev: Math.round(mev),
-      mrv: Math.round(mrv),
-      mav: Math.round(mav),
-      mv: Math.round(mv),
-    };
-  }
-
-  // --- 3. Weekly Volume Progression ---
-  calculateWeeklyVolume(startingVolume, weekNumber, maxVolume) {
-    const taf = this.calculateTAF();
-    const progressionRate = taf < 1.5 ? 0.1 : 0.05;
-    let weekVolume = startingVolume * (1 + (weekNumber - 1) * progressionRate);
-    if (weekVolume >= maxVolume) {
-        weekVolume = maxVolume;
-    }
-    const deloadTriggered = weekVolume >= maxVolume * 0.95;
-    return { 
-        targetVolume: Math.round(weekVolume), 
-        deloadVolume: Math.round(startingVolume * 0.6),
-        deloadTriggered 
-    };
-  }
-    
-  // --- 4. Intensity Prescription ---
-  calculateTargetRIR(exerciseType, currentVolume, mrv) {
-    const baseRIR = exerciseType === 'compound' ? 2 : 1;
-    let fatigueAdjustment = 0;
-    if (currentVolume / mrv > 0.8) fatigueAdjustment = -1;
-    if (currentVolume / mrv < 0.4) fatigueAdjustment = 1;
-    
-    return baseRIR + fatigueAdjustment;
-  }
-
-  suggestLoadProgression(previousLoad, lastSessionRIR, targetRIR) {
-    if (lastSessionRIR > targetRIR + 1) return previousLoad * 1.025;
-    if (lastSessionRIR < targetRIR - 1) return previousLoad * 0.975;
-    return previousLoad;
-  }
-
-  // --- 5. Progression Algorithm based on past results ---
-  calculateProgression(previousWorkoutExercise) {
-    const { completedSets = [], targetRir = 2, targetReps = 10 } = previousWorkoutExercise;
-    
-    if (completedSets.length === 0) {
-      return { 
-        targetLoad: null, 
-        targetReps: targetReps, 
-        note: "No past data, starting fresh." 
-      };
-    }
-    
-    const totalRir = completedSets.reduce((sum, set) => sum + (set.rir || 0), 0);
-    const avgRir = totalRir / completedSets.length;
-    
-    const lastLoad = completedSets[0].weight;
-    let newTargetLoad = lastLoad;
-    let newTargetReps = targetReps;
-    let note = "Maintaining current plan.";
-    
-    const rirDifference = avgRir - targetRir;
-    
-    if (rirDifference > 1) {
-      newTargetLoad = lastLoad + 5;
-      newTargetReps = targetReps;
-      note = `Excellent performance! Increasing weight to ${newTargetLoad}lbs for the next session.`;
-    } else if (rirDifference < -1) {
-      newTargetLoad = lastLoad;
-      newTargetReps = targetReps;
-      note = `Last session was challenging. Maintain ${newTargetLoad}lbs and focus on hitting your rep targets.`;
-    } else {
-      const lastSetReps = completedSets[completedSets.length - 1].reps;
-      const targetRepsUpper = targetReps + 2;
+  loadUserData() {
+    this.isLoading = true;
+    try {
+      const data = getDataLocally();
+      this.userData = data;
+      this.workoutEngine = new WorkoutEngine(this.userData);
       
-      if (lastSetReps >= targetRepsUpper) {
-        newTargetLoad = lastLoad + 5;
-        newTargetReps = targetReps;
-        note = `All sets hit the rep target. Increasing weight to ${newTargetLoad}lbs for the next session.`;
+      if (!this.userData.onboardingComplete) {
+        this.currentView = 'onboarding';
       } else {
-        newTargetLoad = lastLoad;
-        newTargetReps = targetReps + 1;
-        note = `Solid performance! Aim for one more rep per set in your next session with the same weight.`;
+        this.currentView = 'home';
       }
+    } catch (error) {
+      console.error("Failed to load user data:", error);
+      this.currentView = 'error';
+    } finally {
+      this.isLoading = false;
+      this._applyTheme();
     }
-    
-    return {
-      targetLoad: newTargetLoad,
-      targetReps: newTargetReps,
-      note: note
-    };
   }
 
-  // --- 6 & 8. Recovery Monitoring & Daily Autoregulation ---
-  calculateRecoveryScore(readinessData) {
-    const { sleep_quality, energy_level, motivation, muscle_soreness } = readinessData;
-    const sorenessInverse = 11 - muscle_soreness;
-    return (sleep_quality + energy_level + motivation + sorenessInverse) / 4;
+/*
+===============================================
+SECTION 4: EVENT HANDLERS
+===============================================
+*/
+
+  _handleOnboardingComplete(e) {
+    const onboardingData = e.detail.userData;
+    this.userData = { ...this.userData, ...onboardingData, onboardingComplete: true };
+    saveDataLocally(this.userData);
+    this.workoutEngine = new WorkoutEngine(this.userData);
+    this.currentView = 'home';
+    this._showToast({ detail: { message: "Profile created! Welcome!", type: "success" }});
   }
 
-  getDailyReadiness(recoveryScore) {
-    return recoveryScore;
-  }
-
-  adjustWorkout(plannedWorkout, readinessScore) {
-    const adjustedWorkout = JSON.parse(JSON.stringify(plannedWorkout));
-    let adjustmentNote = "Workout is as planned.";
-    
-    if (readinessScore < 6) {
-      adjustmentNote = "Readiness is low. Volume reduced by 20% and intensity reduced.";
-      adjustedWorkout.exercises.forEach(ex => {
-        if (ex.sets && ex.sets.length > 3) ex.sets.pop();
-        ex.targetReps = Math.max(5, (parseInt(ex.targetReps) || 10) - 2);
-      });
-    } else if (readinessScore > 8) {
-      adjustmentNote = "Feeling great! Increasing intensity slightly.";
-      adjustedWorkout.exercises.forEach(ex => {
-        ex.targetReps = (parseInt(ex.targetReps) || 10) + 1;
-      });
-    }
-    adjustedWorkout.adjustmentNote = adjustmentNote;
-    return adjustedWorkout;
-  }
-
-  // --- 7. Exercise Selection Algorithm ---
-  calculateEPS(exercise, context = {}) {
-    const { weakMuscles = [], recentExercises = [], gender } = context;
-    const compoundBonus = exercise.type === 'compound' ? 3 : 1;
-    const isWeakMuscle = weakMuscles.includes(exercise.muscleGroup);
-    const weaknessMultiplier = isWeakMuscle ? 1.5 : 1.0;
-    let noveltyFactor = 0;
-    const lastUsedIndex = recentExercises.findIndex(e => e.id === exercise.id);
-    if (lastUsedIndex === -1) noveltyFactor = 2;
-    else if (lastUsedIndex > 4) noveltyFactor = 1;
-    const recoveryCostMap = { high: -1, medium: 0, low: 1 };
-    const recoveryCost = recoveryCostMap[exercise.recoveryCost] || 0;
-    
-    let genderModifier = 1.0;
-    if (gender === 'female' && (exercise.muscleGroup === 'glutes' || exercise.muscleGroup === 'hamstrings')) {
-      genderModifier = 1.2;
-    }
-
-    const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier * genderModifier;
-    return score;
-  }
-
-  selectExercisesForMuscle(muscleGroup, count = 2, context = {}) {
-    const availableExercises = this.exerciseDatabase[muscleGroup];
-    if (!availableExercises) return [];
-    const scoredExercises = availableExercises.map(ex => ({
-      ...ex,
-      muscleGroup: muscleGroup,
-      score: this.calculateEPS(ex, context),
-    }));
-    scoredExercises.sort((a, b) => b.score - a.score);
-    return scoredExercises.slice(0, count);
+  _handleStartWorkoutWithTemplate(e) {
+    this.currentWorkout = e.detail.template;
+    this.showReadinessModal = true;
   }
   
-  // --- Workout Split Logic ---
-  getWorkoutSplit(daysPerWeek) {
-    const splits = {
-      3: [
-        { name: 'Full Body A', groups: ['chest', 'back', 'legs'] },
-        { name: 'Full Body B', groups: ['shoulders', 'arms', 'legs'] },
-        { name: 'Full Body C', groups: ['chest', 'back', 'arms'] }
-      ],
-      4: [
-        { name: 'Upper A', groups: ['chest', 'back', 'shoulders'] },
-        { name: 'Lower A', groups: ['quads', 'hamstrings', 'glutes'] },
-        { name: 'Upper B', groups: ['chest', 'back', 'biceps', 'triceps'] },
-        { name: 'Lower B', groups: ['quads', 'hamstrings', 'calves'] }
-      ],
-      5: [
-        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
-        { name: 'Pull', groups: ['back', 'biceps'] },
-        { name: 'Legs', groups: ['quads', 'hamstrings', 'glutes'] },
-        { name: 'Upper', groups: ['chest', 'back', 'shoulders'] },
-        { name: 'Lower', groups: ['quads', 'hamstrings', 'calves'] }
-      ],
-      6: [
-        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
-        { name: 'Pull', groups: ['back', 'biceps'] },
-        { name: 'Legs', groups: ['quads', 'hamstrings', 'glutes'] },
-        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
-        { name: 'Pull', groups: ['back', 'biceps'] },
-        { name: 'Legs', groups: ['quads', 'hamstrings', 'calves'] }
-      ]
-    };
-    return splits[daysPerWeek] || splits[4];
+  _handleReadinessSubmit(readinessData) {
+    this.showReadinessModal = false;
+    const recoveryScore = this.workoutEngine.calculateRecoveryScore(readinessData);
+    const adjustedWorkout = this.workoutEngine.adjustWorkout(this.currentWorkout, recoveryScore);
+    this.currentWorkout = adjustedWorkout;
+    this.currentView = 'workout';
+    this._showToast({ detail: { message: adjustedWorkout.adjustmentNote || "Workout Started!", type: 'info' } });
   }
 
-  // --- 9. Periodization Model ---
-  generateMesocycle(daysPerWeek, mesocycleLength = 4) {
-    const mesocycle = { weeks: [] };
-    const workoutSplit = this.getWorkoutSplit(daysPerWeek);
-    const userGender = this.userProfile.sex;
+  _skipReadiness() {
+    this.showReadinessModal = false;
+    this.currentView = 'workout';
+  }
 
-    for (let week = 1; week <= mesocycleLength; week++) {
-      const weeklyPlan = { week: week, days: [] };
-      
-      for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
-        const splitDay = workoutSplit[dayIndex % workoutSplit.length];
-        const dayPlan = { 
-          name: splitDay.name,
-          muscleGroups: splitDay.groups, 
-          exercises: [] 
-        };
+  _handleWorkoutCompleted(e) {
+    // We already saved the workout in workout-session.js
+    // We just need to update the view and show a confirmation
+    this.currentView = 'home';
+    this.currentWorkout = null;
+    this.loadUserData(); // Reload data to reflect new workout
+    this._showToast({ detail: { message: 'Workout completed and saved!', type: 'success' } });
+  }
+
+  _handleWorkoutCancelled() {
+    this.currentView = 'home';
+    this.currentWorkout = null;
+  }
+  
+  _handleThemeChange(e) {
+    document.body.dataset.theme = e.detail.theme;
+  }
+  
+  _handleUnitsChange(e) {
+    // The units are saved in settings-view, this is just to acknowledge
+    console.log(`Units changed to ${e.detail.units}`);
+  }
+  
+  _handleSignOut() {
+    // For local storage, "signing out" is the same as deleting data
+    this._handleDeleteData();
+  }
+  
+  _handleDeleteData() {
+    deleteDataLocally();
+    window.location.reload();
+  }
+
+/*
+===============================================
+SECTION 5: UI METHODS (NAVIGATION, TOAST, THEME)
+===============================================
+*/
+
+  _navigateTo(view) {
+    this.currentView = view;
+  }
+
+  _showToast(e) {
+    const { message, type } = e.detail;
+    this.toast = { show: true, message, type };
+    setTimeout(() => {
+      this.toast = { show: false, message: '', type: '' };
+    }, 3000);
+  }
+
+  _applyTheme() {
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.body.dataset.theme = theme;
+  }
+  
+/*
+===============================================
+SECTION 6: VIEW RENDERING LOGIC
+===============================================
+*/
+
+  render() {
+    if (this.isLoading) {
+      return html`<div></div>`; // The main index.html has the loading spinner
+    }
+
+    return html`
+      <div class="app-container">
+        <main>
+          ${this._renderCurrentView()}
+        </main>
+        ${this.currentView !== 'onboarding' && this.currentView !== 'workout' ? this._renderNavBar() : ''}
+        ${this.showReadinessModal ? this._renderReadinessModal() : ''}
+        ${this.toast.show ? this._renderToast() : ''}
+      </div>
+    `;
+  }
+
+  _renderCurrentView() {
+    switch (this.currentView) {
+      case 'onboarding':
+        return html`<onboarding-flow></onboarding-flow>`;
+      case 'home':
+        return this._renderHomeView();
+      case 'templates':
+        return html`<workout-templates></workout-templates>`;
+      case 'history':
+        return html`<history-view></history-view>`;
+      case 'analytics':
+        return html`<analytics-dashboard></analytics-dashboard>`;
+      case 'settings':
+        return html`<settings-view></settings-view>`;
+      case 'workout':
+        return html`<workout-session .workout=${this.currentWorkout}></workout-session>`;
+      default:
+        return html`<h1>Error</h1><p>Unknown view: ${this.currentView}</p>`;
+    }
+  }
+
+  _renderHomeView() {
+    // Generate a suggested workout for the day
+    const dayOfWeek = new Date().getDay();
+    const split = this.workoutEngine.getWorkoutSplit(this.userData.daysPerWeek || 4);
+    const todaySplitDay = split[dayOfWeek % split.length];
+    
+    // The workout generation is complex, let's keep it simple for now
+    const suggestedWorkout = {
+      name: `Today's Suggested: ${todaySplitDay.name}`,
+      exercises: this.workoutEngine.generateDailyWorkout(todaySplitDay.groups, {}).exercises
+    };
+
+    return html`
+      <div id="home-screen" class="container">
+        <div class="home-header">
+          <h1 class="main-title">Progression</h1>
+          <p class="greeting">Welcome back!</p>
+        </div>
+
+        <level-progress 
+          .currentLevel=${this.userData.level || 1} 
+          .currentXP=${this.userData.totalXP || 0}
+          .xpToNext=${1000}
+        ></level-progress>
         
-        for (const muscle of splitDay.groups) {
-          const landmarks = this.getVolumeLandmarks(muscle, Math.ceil(daysPerWeek / workoutSplit.length));
-          const startingVolume = landmarks.mev * 1.1;
-          const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
-          
-          const numExercises = targetVolume > 12 ? 3 : 2;
-          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+        <div class="card">
+          <h3>Today's Suggested Workout</h3>
+          <p>${todaySplitDay.name}: ${todaySplitDay.groups.join(', ')}</p>
+          <button class="btn btn-primary cta-button" @click=${() => this._handleStartWorkoutWithTemplate({ detail: { template: suggestedWorkout }})}>
+            Start Dynamic Workout
+          </button>
+        </div>
 
-          let setsRemaining = targetVolume;
-          const exercisesWithSets = selectedExercises.map((ex, index) => {
-              const setsForThisEx = Math.round(setsRemaining / (selectedExercises.length - index));
-              setsRemaining -= setsForThisEx;
-              return {
-                  name: ex.name,
-                  sets: Array(Math.max(1, setsForThisEx)).fill({}),
-                  targetReps: ex.type === 'compound' ? (userGender === 'male' ? "6-8" : "8-10") : "10-12",
-                  muscleGroup: muscle,
-                  category: ex.type || 'strength',
-                  type: ex.type
-              };
-          });
-          dayPlan.exercises.push(...exercisesWithSets);
-        }
-        weeklyPlan.days.push(dayPlan);
-      }
-      mesocycle.weeks.push(weeklyPlan);
-    }
-    
-    // Add a deload week
-    const deloadWeek = { week: mesocycleLength + 1, isDeload: true, days: [] };
-    for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
-      const splitDay = workoutSplit[dayIndex % workoutSplit.length];
-      const deloadDayPlan = { 
-        name: `${splitDay.name} (Deload)`,
-        muscleGroups: splitDay.groups, 
-        exercises: [] 
-      };
-      for (const muscle of splitDay.groups) {
-          const landmarks = this.getVolumeLandmarks(muscle);
-          const deloadVolume = Math.round(landmarks.mev * 0.6);
-          const numExercises = deloadVolume > 8 ? 2 : 1;
-          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
-          const exercisesWithSets = selectedExercises.map(ex => ({
-              name: ex.name,
-              sets: Array(Math.max(1, Math.round(deloadVolume / numExercises))).fill({}),
-              targetReps: ex.type === 'compound' ? "6-8" : "10-12",
-              muscleGroup: muscle,
-              category: ex.type || 'strength',
-              type: ex.type
-          }));
-          deloadDayPlan.exercises.push(...exercisesWithSets);
-      }
-      deloadWeek.days.push(deloadDayPlan);
-    }
-    mesocycle.weeks.push(deloadWeek);
-    
-    return mesocycle;
+        <motivational-quote></motivational-quote>
+      </div>
+    `;
   }
 
-  // --- 10. Long-term Progression ---
-  adaptVolumeLandmarks() {
-    const taf = this.calculateTAF();
-    let adaptationRate = 0.01; 
-    if (taf < 1.5) adaptationRate = 0.05; 
-    else if (taf < 2.5) adaptationRate = 0.025; 
-
-    const currentBaseMEV = this.userProfile.baseMEV || this.baseMEV;
-    const newBaseMEV = {};
-
-    for (const muscle in currentBaseMEV) {
-      newBaseMEV[muscle] = Math.round(currentBaseMEV[muscle] * (1 + adaptationRate));
-    }
-    
-    return newBaseMEV;
+  _renderNavBar() {
+    const navItems = [
+      { view: 'home', label: 'Home', icon: '🏠' },
+      { view: 'templates', label: 'Routines', icon: '📋' },
+      { view: 'history', label: 'History', icon: '📜' },
+      { view: 'analytics', label: 'Analytics', icon: '📊' },
+      { view: 'settings', label: 'Settings', icon: '⚙️' },
+    ];
+    return html`
+      <nav class="bottom-nav">
+        ${navItems.map(item => html`
+          <button 
+            class="nav-item ${this.currentView === item.view ? 'active' : ''}" 
+            @click=${() => this._navigateTo(item.view)}
+            aria-label=${item.label}
+          >
+            <span class="nav-icon">${item.icon}</span>
+            <span class="nav-label">${item.label}</span>
+          </button>
+        `)}
+      </nav>
+    `;
+  }
+  
+  _renderReadinessModal() {
+    return html`
+      <readiness-modal
+        .onSubmit=${(data) => this._handleReadinessSubmit(data)}
+        .onClose=${() => this._skipReadiness()}
+      ></readiness-modal>
+    `;
   }
 
-  // --- Integrated Workout Generation ---
-  generateDailyWorkout(muscleGroupsForDay, weeklyPlan) {
-    let exercises = [];
-    const userGender = this.userProfile.sex;
-    const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [], gender: userGender }; 
-    for (const muscle of muscleGroupsForDay) {
-        const landmarks = this.getVolumeLandmarks(muscle);
-        const targetVolume = weeklyPlan.muscleData?.[muscle]?.targetVolume || landmarks.mev;
-        const numExercises = targetVolume > 12 ? 3 : 2;
-        const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
-        let setsRemaining = targetVolume;
-        const exercisesWithSets = selected.map((ex, index) => {
-            const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
-            setsRemaining -= setsForThisEx;
-            
-            const targetReps = ex.type === 'compound' 
-                ? (userGender === 'male' ? "6-8" : "8-10")
-                : "10-15";
-            
-            return {
-                ...ex,
-                sets: Array(Math.max(1, setsForThisEx)).fill({}),
-                targetReps: targetReps,
-                muscleGroup: muscle,
-                category: ex.type || 'strength',
-            };
-        });
-        exercises.push(...exercisesWithSets);
-    }
-    return {
-        name: `Dynamic Workout - ${muscleGroupsForDay.join(', ')}`,
-        exercises: exercises,
-    };
+  _renderToast() {
+    return html`
+      <div class="toast-notification ${this.toast.type}">
+        ${this.toast.message}
+      </div>
+    `;
+  }
+
+/*
+===============================================
+SECTION 7: STYLES AND ELEMENT DEFINITION
+===============================================
+*/
+
+  createRenderRoot() {
+    // This component will use the global stylesheet
+    return this;
   }
 }
+
+customElements.define("app-shell", AppShell);
