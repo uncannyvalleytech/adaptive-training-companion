@@ -1,7 +1,17 @@
+/*
+===============================================
+SECTION 1: COMPONENT AND SERVICE IMPORTS
+===============================================
+*/
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
 import "./motivational-elements.js";
 
+/*
+===============================================
+SECTION 2: WORKOUT-SESSION COMPONENT DEFINITION
+===============================================
+*/
 class WorkoutSession extends LitElement {
   static properties = {
     workout: { type: Object },
@@ -24,6 +34,11 @@ class WorkoutSession extends LitElement {
     this.expandedGroups = {};
   }
 
+/*
+===============================================
+SECTION 3: LIFECYCLE AND STOPWATCH METHODS
+===============================================
+*/
   connectedCallback() {
     super.connectedCallback();
     this.startStopwatch();
@@ -56,6 +71,11 @@ class WorkoutSession extends LitElement {
     clearInterval(this.stopwatchInterval);
   }
 
+/*
+===============================================
+SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
+===============================================
+*/
   _handleSetInput(exerciseIndex, setIndex, field, value) {
     const exercise = this.workout.exercises[exerciseIndex];
     if (exercise && exercise.sets[setIndex]) {
@@ -109,7 +129,7 @@ class WorkoutSession extends LitElement {
                         rir: parseInt(set.rir, 10) || 0
                     })),
                 category: this._getExerciseCategory(ex.name),
-                muscleGroup: this._getExerciseMuscleGroup(ex.name)
+                muscleGroup: ex.muscleGroup || this._getExerciseMuscleGroup(ex.name)
             }))
             .filter(ex => ex.completedSets.length > 0), // Only include exercises with completed sets
         };
@@ -118,24 +138,16 @@ class WorkoutSession extends LitElement {
         if (workoutToSave.exercises.length === 0) {
             throw new Error("Please complete at least one set before finishing your workout.");
         }
-
-        // Get existing data and append new workout
-        const existingData = getDataLocally();
-        const existingWorkouts = existingData?.workouts || [];
         
-        const response = saveDataLocally({ 
-            workouts: [workoutToSave] // This will be appended to existing workouts
+        saveDataLocally({ 
+            workouts: [workoutToSave]
         });
 
-        if (response.success) {
-            this.dispatchEvent(new CustomEvent('workout-completed', {
-                detail: { workoutData: workoutToSave },
-                bubbles: true,
-                composed: true
-            }));
-        } else {
-            throw new Error(response.error || "Failed to save workout");
-        }
+        this.dispatchEvent(new CustomEvent('workout-completed', {
+            detail: { workoutData: workoutToSave },
+            bubbles: true,
+            composed: true
+        }));
     } catch (error) {
         console.error("Save workout error:", error);
         this.dispatchEvent(new CustomEvent('show-toast', { 
@@ -148,6 +160,11 @@ class WorkoutSession extends LitElement {
     }
   }
 
+/*
+===============================================
+SECTION 5: HELPER METHODS
+===============================================
+*/
   _getExerciseCategory(exerciseName) {
     const compoundExercises = [
       'squat', 'deadlift', 'bench press', 'pull-up', 'chin-up', 'row', 'press', 'lunge',
@@ -162,7 +179,6 @@ class WorkoutSession extends LitElement {
   _getExerciseMuscleGroup(exerciseName) {
     const name = exerciseName.toLowerCase();
     
-    // More comprehensive muscle group mapping
     if (name.includes('bench') || name.includes('chest') || name.includes('fly') || name.includes('press-around')) return 'chest';
     if (name.includes('squat') || name.includes('quad') || name.includes('leg extension')) return 'quads';
     if (name.includes('deadlift') || name.includes('row') || name.includes('pull') || name.includes('lat') || name.includes('shrug')) return 'back';
@@ -181,11 +197,10 @@ class WorkoutSession extends LitElement {
       return {};
     }
     return this.workout.exercises.reduce((acc, exercise, index) => {
-      const group = this._getExerciseMuscleGroup(exercise.name).toUpperCase();
+      const group = (exercise.muscleGroup || this._getExerciseMuscleGroup(exercise.name)).toUpperCase();
       if (!acc[group]) {
         acc[group] = [];
       }
-      // Add originalIndex for stable updates
       acc[group].push({ ...exercise, originalIndex: index });
       return acc;
     }, {});
@@ -198,6 +213,11 @@ class WorkoutSession extends LitElement {
     };
   }
 
+/*
+===============================================
+SECTION 6: RENDERING
+===============================================
+*/
   render() {
     if (!this.workout || !this.workout.exercises) {
       return html`<div class="container"><div class="skeleton skeleton-text">Loading workout...</div></div>`;
@@ -208,8 +228,8 @@ class WorkoutSession extends LitElement {
 
     return html`
       <div id="workout-session-view" class="container">
-        <header class="app-header">
-          <div>
+        <header class="workout-header">
+          <div class="workout-header-content">
              <h1 class="workout-session-title">${this.workout.name}</h1>
              <p class="workout-session-subtitle">${workoutDate}</p>
           </div>
@@ -282,7 +302,7 @@ class WorkoutSession extends LitElement {
         </div>
         <div class="workout-actions">
             <button class="btn btn-secondary" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))}>
-                End Workout
+                Cancel Workout
             </button>
             <button class="btn btn-primary cta-button" @click=${this._completeWorkout} ?disabled=${this.isSaving}>
                 ${this.isSaving ? html`<div class="spinner"></div>` : 'Complete Workout'}
