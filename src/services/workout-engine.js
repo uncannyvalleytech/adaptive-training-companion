@@ -431,7 +431,43 @@ SECTION 7: WORKOUT SPLIT AND MESOCYCLE LOGIC
 
 /*
 ===============================================
-SECTION 8: LONG-TERM PROGRESSION AND WORKOUT GENERATION
+SECTION 8: PROGRAM PLAN GENERATION
+===============================================
+*/
+  generateProgramPlan(program, duration, startWorkoutIndex) {
+    const { workouts, daysPerWeek } = program;
+    let totalWorkouts;
+
+    if (duration.type === 'weeks') {
+        totalWorkouts = duration.value * daysPerWeek;
+    } else {
+        totalWorkouts = duration.value;
+    }
+
+    const rotatedWorkouts = [...workouts.slice(startWorkoutIndex), ...workouts.slice(0, startWorkoutIndex)];
+    
+    const plan = {
+        name: program.name,
+        duration: duration,
+        startDate: new Date().toISOString(),
+        workouts: [],
+    };
+
+    for (let i = 0; i < totalWorkouts; i++) {
+        const workoutTemplate = rotatedWorkouts[i % rotatedWorkouts.length];
+        plan.workouts.push({
+            day: i + 1,
+            ...workoutTemplate,
+            completed: false,
+        });
+    }
+    
+    return plan;
+  }
+
+/*
+===============================================
+SECTION 9: LONG-TERM PROGRESSION AND WORKOUT GENERATION
 ===============================================
 */
 
