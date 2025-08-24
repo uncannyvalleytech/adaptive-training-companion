@@ -269,7 +269,7 @@ class WorkoutTemplates extends LitElement {
     
     this.premadeMesocycles = [
       {
-        name: "Ultimate PPL 6x",
+        name: "Men's Ultimate Push Pull Legs System 6x",
         primaryFocus: "Hypertrophy",
         daysPerWeek: 6,
         genderFocus: "male",
@@ -278,31 +278,31 @@ class WorkoutTemplates extends LitElement {
           {
             name: "Phase 1 - Base Hypertrophy",
             workouts: [
-              { name: "PPL 6x - Phase 1 Push", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "Larsen Press", sets: [{}, {}], targetReps: 10 }, { name: "Standing Dumbbell Arnold Press", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Press-Around", sets: [{}, {}], targetReps: "12-15" }] },
-              { name: "PPL 6x - Phase 1 Pull", exercises: [{ name: "Barbell Deadlift", sets: [{}], targetReps: 4 }, { name: "Pull-Up", sets: [{}, {}], targetReps: "8-10" }, { name: "Kroc Row", sets: [{}, {}], targetReps: "10-12" }, { name: "Cable Shrug", sets: [{}, {}], targetReps: "10-12" }, { name: "Reverse Pec Deck", sets: [{}, {}], targetReps: "10-12" }, { name: "N1-Style Cross-Body Cable Bicep Curl", sets: [{}, {}], targetReps: "10-12" }] },
-              { name: "PPL 6x - Phase 1 Legs", exercises: [{ name: "Squat", sets: [{}], targetReps: "2-4" }, { name: "Pause Squat (Back off)", sets: [{}, {}], targetReps: 5 }, { name: "Barbell RDL", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Walking Lunge", sets: [{}, {}], targetReps: 10 }, { name: "Seated Leg Curl", sets: [{}, {}, {}], targetReps: "10-12" }] },
+              { name: "Push #1", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "Larsen Press", sets: [{}, {}], targetReps: 10 }, { name: "Standing Dumbbell Arnold Press", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Press-Around", sets: [{}, {}], targetReps: "12-15" }] },
+              { name: "Pull #1", exercises: [{ name: "Barbell Deadlift", sets: [{}], targetReps: 4 }, { name: "Pull-Up", sets: [{}, {}], targetReps: "8-10" }, { name: "Kroc Row", sets: [{}, {}], targetReps: "10-12" }, { name: "Cable Shrug", sets: [{}, {}], targetReps: "10-12" }, { name: "Reverse Pec Deck", sets: [{}, {}], targetReps: "10-12" }, { name: "N1-Style Cross-Body Cable Bicep Curl", sets: [{}, {}], targetReps: "10-12" }] },
+              { name: "Legs #1", exercises: [{ name: "Squat", sets: [{}], targetReps: "2-4" }, { name: "Pause Squat (Back off)", sets: [{}, {}], targetReps: 5 }, { name: "Barbell RDL", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Walking Lunge", sets: [{}, {}], targetReps: 10 }, { name: "Seated Leg Curl", sets: [{}, {}, {}], targetReps: "10-12" }] },
             ]
           },
           {
             name: "Phase 2 - Maximum Effort",
             workouts: [
-              { name: "PPL 6x - Phase 2 Push", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "High-Incline Smith Machine Press", sets: [{}, {}], targetReps: "4-6" }, { name: "Egyptian Cable Lateral Raise", sets: [{}, {}], targetReps: "6-8" }, { name: "Overhead Cable Triceps Extension", sets: [{}, {}], targetReps: "4-6" }, { name: "Cable Triceps Kickback", sets: [{}, {}], targetReps: "6-8" }] },
-              { name: "PPL 6x - Phase 2 Pull", exercises: [{ name: "Neutral-Grip Lat Pulldown", sets: [{}], targetReps: "4-6" }, { name: "Close-Grip Seated Cable Row", sets: [{}, {}], targetReps: "4-6" }, { name: "Machine Shrug", sets: [{}, {}], targetReps: "4-6" }, { name: "Alternating DB Curl", sets: [{}, {}], targetReps: "4-6" }, { name: "1-Arm DB Preacher Curl", sets: [{}], targetReps: "6-8" }] },
-              { name: "PPL 6x - Phase 2 Legs", exercises: [{ name: "Deadlift", sets: [{}], targetReps: "4-6" }, { name: "Dumbbell Walking Lunge", sets: [{}, {}], targetReps: "4-6 per leg" }, { name: "Seated Leg Curl", sets: [{}, {}], targetReps: "4-6" }, { name: "Leg Press", sets: [{}, {}, {}], targetReps: "6-8" }] },
+              { name: "Push #1", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "High-Incline Smith Machine Press", sets: [{}, {}], targetReps: "4-6" }, { name: "Egyptian Cable Lateral Raise", sets: [{}, {}], targetReps: "6-8" }, { name: "Overhead Cable Triceps Extension", sets: [{}, {}], targetReps: "4-6" }, { name: "Cable Triceps Kickback", sets: [{}, {}], targetReps: "6-8" }] },
+              { name: "Pull #1", exercises: [{ name: "Neutral-Grip Lat Pulldown", sets: [{}], targetReps: "4-6" }, { name: "Close-Grip Seated Cable Row", sets: [{}, {}], targetReps: "4-6" }, { name: "Machine Shrug", sets: [{}, {}], targetReps: "4-6" }, { name: "Alternating DB Curl", sets: [{}, {}], targetReps: "4-6" }, { name: "1-Arm DB Preacher Curl", sets: [{}], targetReps: "6-8" }] },
+              { name: "Legs #1", exercises: [{ name: "Deadlift", sets: [{}], targetReps: "4-6" }, { name: "Dumbbell Walking Lunge", sets: [{}, {}], targetReps: "4-6 per leg" }, { name: "Seated Leg Curl", sets: [{}, {}], targetReps: "4-6" }, { name: "Leg Press", sets: [{}, {}, {}], targetReps: "6-8" }] },
             ]
           },
           {
             name: "Phase 3 - Supercompensation",
             workouts: [
-              { name: "PPL 6x - Phase 3 Push", exercises: [{ name: "Low Incline DB Press", sets: [{}, {}, {}], targetReps: 20 }, { name: "Machine Shoulder Press", sets: [{}, {}, {}], targetReps: 15 }, { name: "Cable Crossover Ladder", sets: [{}, {}, {}], targetReps: 20 }, { name: "Lean-In Constant Tension DB Lateral Raise", sets: [{}, {}, {}], targetReps: 15 }] },
-              { name: "PPL 6x - Phase 3 Pull", exercises: [{ name: "Pendlay Row", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Machine Pulldown", sets: [{}, {}, {}], targetReps: "10-12" }, { name: "T-Bar Row", sets: [{}, {}, {}], targetReps: "12-15" }, { name: "Bayesian Cable Curl", sets: [{}, {}], targetReps: 12 }, { name: "Rope Facepull", sets: [{}, {}], targetReps: 15 }] },
-              { name: "PPL 6x - Phase 3 Legs", exercises: [{ name: "Deadlift", sets: [{}], targetReps: 8 }, { name: "Leg Press", sets: [{}], targetReps: 12 }, { name: "Leg Extension", sets: [{}, {}], targetReps: 15 }, { name: "Lying Leg Curl", sets: [{}, {}], targetReps: 15 }, { name: "Seated Calf Raise", sets: [{}], targetReps: 20 }] },
+              { name: "Push #1", exercises: [{ name: "Low Incline DB Press", sets: [{}, {}, {}], targetReps: 20 }, { name: "Machine Shoulder Press", sets: [{}, {}, {}], targetReps: 15 }, { name: "Cable Crossover Ladder", sets: [{}, {}, {}], targetReps: 20 }, { name: "Lean-In Constant Tension DB Lateral Raise", sets: [{}, {}, {}], targetReps: 15 }] },
+              { name: "Pull #1", exercises: [{ name: "Pendlay Row", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Machine Pulldown", sets: [{}, {}, {}], targetReps: "10-12" }, { name: "T-Bar Row", sets: [{}, {}, {}], targetReps: "12-15" }, { name: "Bayesian Cable Curl", sets: [{}, {}], targetReps: 12 }, { name: "Rope Facepull", sets: [{}, {}], targetReps: 15 }] },
+              { name: "Legs #1", exercises: [{ name: "Deadlift", sets: [{}], targetReps: 8 }, { name: "Leg Press", sets: [{}], targetReps: 12 }, { name: "Leg Extension", sets: [{}, {}], targetReps: 15 }, { name: "Lying Leg Curl", sets: [{}, {}], targetReps: 15 }, { name: "Seated Calf Raise", sets: [{}], targetReps: 20 }] },
             ]
           }
         ]
       },
       {
-        name: "Ultimate PPL 5x",
+        name: "Men's Ultimate Push Pull Legs System 5x",
         primaryFocus: "Hypertrophy",
         daysPerWeek: 5,
         genderFocus: "male",
@@ -311,25 +311,25 @@ class WorkoutTemplates extends LitElement {
           {
             name: "Phase 1 - Base Hypertrophy",
             workouts: [
-              { name: "PPL 5x - Phase 1 Push", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "Larsen Press", sets: [{}, {}], targetReps: 10 }, { name: "Standing Dumbbell Arnold Press", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Press-Around", sets: [{}, {}], targetReps: "12-15" }, { name: "Diamond Pushup", sets: [{}], targetReps: "AMRAP" }] },
-              { name: "PPL 5x - Phase 1 Pull", exercises: [{ name: "Barbell Deadlift", sets: [{}], targetReps: 4 }, { name: "Pull-Up", sets: [{}, {}], targetReps: "8-10" }, { name: "Kroc Row", sets: [{}, {}], targetReps: "10-12" }, { name: "Cable Shrug", sets: [{}, {}], targetReps: "10-12" }, { name: "N1-Style Cross-Body Cable Bicep Curl", sets: [{}, {}], targetReps: "10-12" }] },
-              { name: "PPL 5x - Phase 1 Legs", exercises: [{ name: "Squat", sets: [{}], targetReps: "2-4" }, { name: "Pause Squat (Back off)", sets: [{}, {}], targetReps: 5 }, { name: "Barbell RDL", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Walking Lunge", sets: [{}, {}], targetReps: 10 }, { name: "Seated Leg Curl", sets: [{}, {}, {}], targetReps: "10-12" }] },
+              { name: "Push #1", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "Larsen Press", sets: [{}, {}], targetReps: 10 }, { name: "Standing Dumbbell Arnold Press", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Press-Around", sets: [{}, {}], targetReps: "12-15" }, { name: "Diamond Pushup", sets: [{}], targetReps: "AMRAP" }] },
+              { name: "Pull #1", exercises: [{ name: "Barbell Deadlift", sets: [{}], targetReps: 4 }, { name: "Pull-Up", sets: [{}, {}], targetReps: "8-10" }, { name: "Kroc Row", sets: [{}, {}], targetReps: "10-12" }, { name: "Cable Shrug", sets: [{}, {}], targetReps: "10-12" }, { name: "N1-Style Cross-Body Cable Bicep Curl", sets: [{}, {}], targetReps: "10-12" }] },
+              { name: "Legs #1", exercises: [{ name: "Squat", sets: [{}], targetReps: "2-4" }, { name: "Pause Squat (Back off)", sets: [{}, {}], targetReps: 5 }, { name: "Barbell RDL", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Walking Lunge", sets: [{}, {}], targetReps: 10 }, { name: "Seated Leg Curl", sets: [{}, {}, {}], targetReps: "10-12" }] },
             ]
           },
           {
             name: "Phase 2 - Maximum Effort",
             workouts: [
-              { name: "PPL 5x - Phase 2 Push", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "High-Incline Smith Machine Press", sets: [{}, {}], targetReps: "4-6" }, { name: "Egyptian Cable Lateral Raise", sets: [{}, {}], targetReps: "6-8" }, { name: "Overhead Cable Triceps Extension", sets: [{}, {}], targetReps: "4-6" }] },
-              { name: "PPL 5x - Phase 2 Pull", exercises: [{ name: "Neutral-Grip Lat Pulldown", sets: [{}], targetReps: "4-6" }, { name: "Close-Grip Seated Cable Row", sets: [{}, {}], targetReps: "4-6" }, { name: "Weighted Dip", sets: [{}, {}], targetReps: "4-6" }, { name: "Alternating DB Curl", sets: [{}], targetReps: "4-6" }] },
-              { name: "PPL 5x - Phase 2 Legs", exercises: [{ name: "Deadlift", sets: [{}, {}], targetReps: "4-6" }, { name: "Dumbbell Walking Lunge", sets: [{}, {}], targetReps: "4-6 per leg" }, { name: "Seated Leg Curl", sets: [{}, {}], targetReps: "4-6" }, { name: "Leg Press", sets: [{}, {}, {}], targetReps: "6-8" }] },
+              { name: "Push #1", exercises: [{ name: "Bench Press", sets: [{}], targetReps: "3-5" }, { name: "High-Incline Smith Machine Press", sets: [{}, {}], targetReps: "4-6" }, { name: "Egyptian Cable Lateral Raise", sets: [{}, {}], targetReps: "6-8" }, { name: "Overhead Cable Triceps Extension", sets: [{}, {}], targetReps: "4-6" }] },
+              { name: "Pull #1", exercises: [{ name: "Neutral-Grip Lat Pulldown", sets: [{}], targetReps: "4-6" }, { name: "Close-Grip Seated Cable Row", sets: [{}, {}], targetReps: "4-6" }, { name: "Weighted Dip", sets: [{}, {}], targetReps: "4-6" }, { name: "Alternating DB Curl", sets: [{}], targetReps: "4-6" }] },
+              { name: "Legs #1", exercises: [{ name: "Deadlift", sets: [{}, {}], targetReps: "4-6" }, { name: "Dumbbell Walking Lunge", sets: [{}, {}], targetReps: "4-6 per leg" }, { name: "Seated Leg Curl", sets: [{}, {}], targetReps: "4-6" }, { name: "Leg Press", sets: [{}, {}, {}], targetReps: "6-8" }] },
             ]
           },
           {
             name: "Phase 3 - Supercompensation",
             workouts: [
-              { name: "PPL 5x - Phase 3 Push", exercises: [{ name: "Low Incline DB Press", sets: [{}, {}, {}], targetReps: 20 }, { name: "Machine Shoulder Press", sets: [{}, {}, {}], targetReps: 15 }, { name: "Cable Crossover Ladder", sets: [{}, {}, {}], targetReps: 20 }, { name: "Lean-In Constant Tension DB Lateral Raise", sets: [{}, {}, {}], targetReps: 15 }] },
-              { name: "PPL 5x - Phase 3 Pull", exercises: [{ name: "Pendlay Row", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Machine Pulldown", sets: [{}, {}, {}], targetReps: "10-12" }, { name: "T-Bar Row", sets: [{}, {}, {}], targetReps: "12-15" }, { name: "Bayesian Cable Curl", sets: [{}, {}], targetReps: 15 }] },
-              { name: "PPL 5x - Phase 3 Legs", exercises: [{ name: "Deadlift", sets: [{}], targetReps: 8 }, { name: "Leg Press", sets: [{}], targetReps: 12 }, { name: "Leg Extension", sets: [{}, {}], targetReps: 15 }, { name: "Lying Leg Curl", sets: [{}, {}], targetReps: 15 }, { name: "Seated Calf Raise", sets: [{}], targetReps: 20 }] },
+              { name: "Push #1", exercises: [{ name: "Low Incline DB Press", sets: [{}, {}, {}], targetReps: 20 }, { name: "Machine Shoulder Press", sets: [{}, {}, {}], targetReps: 15 }, { name: "Cable Crossover Ladder", sets: [{}, {}, {}], targetReps: 20 }, { name: "Lean-In Constant Tension DB Lateral Raise", sets: [{}, {}, {}], targetReps: 15 }] },
+              { name: "Pull #1", exercises: [{ name: "Pendlay Row", sets: [{}, {}, {}], targetReps: "8-10" }, { name: "Machine Pulldown", sets: [{}, {}, {}], targetReps: "10-12" }, { name: "T-Bar Row", sets: [{}, {}, {}], targetReps: "12-15" }, { name: "Bayesian Cable Curl", sets: [{}, {}], targetReps: 15 }] },
+              { name: "Legs #1", exercises: [{ name: "Deadlift", sets: [{}], targetReps: 8 }, { name: "Leg Press", sets: [{}], targetReps: 12 }, { name: "Leg Extension", sets: [{}, {}], targetReps: 15 }, { name: "Lying Leg Curl", sets: [{}, {}], targetReps: 15 }, { name: "Seated Calf Raise", sets: [{}], targetReps: 20 }] },
             ]
           }
         ]
