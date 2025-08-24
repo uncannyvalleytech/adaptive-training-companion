@@ -257,14 +257,50 @@ SECTION 6: VIEW RENDERING LOGIC
         return "Good evening!";
     };
 
-    const dayOfWeek = new Date().getDay();
-    const split = this.workoutEngine.getWorkoutSplit(this.userData.daysPerWeek || 4);
-    const todaySplitDay = split[dayOfWeek % split.length];
-    
-    const suggestedWorkout = {
-      name: `Today's Suggested: ${todaySplitDay.name}`,
-      exercises: this.workoutEngine.generateDailyWorkout(todaySplitDay.groups).exercises
-    };
+    let startWorkoutButton;
+    if (this.userData.activeProgram) {
+        const nextWorkout = this.userData.activeProgram.workouts.find(w => !w.completed);
+        if (nextWorkout) {
+            startWorkoutButton = html`
+                <button class="hub-option card-interactive" @click=${() => this._handleStartWorkoutWithTemplate({ detail: { template: nextWorkout }})}>
+                    <div class="hub-option-icon">🏋️</div>
+                    <div class="hub-option-text">
+                        <h3>Day ${nextWorkout.day}: ${nextWorkout.name.split(' - ')[1]}</h3>
+                        <p>Your next scheduled workout</p>
+                    </div>
+                </button>
+            `;
+        } else {
+            startWorkoutButton = html`
+                <button class="hub-option card-interactive" @click=${() => this._navigateTo('templates')}>
+                    <div class="hub-option-icon">🎉</div>
+                    <div class="hub-option-text">
+                        <h3>Program Complete!</h3>
+                        <p>Select a new program to continue</p>
+                    </div>
+                </button>
+            `;
+        }
+    } else {
+        const dayOfWeek = new Date().getDay();
+        const split = this.workoutEngine.getWorkoutSplit(this.userData.daysPerWeek || 4);
+        const todaySplitDay = split[dayOfWeek % split.length];
+        
+        const suggestedWorkout = {
+          name: `Today's Suggested: ${todaySplitDay.name}`,
+          exercises: this.workoutEngine.generateDailyWorkout(todaySplitDay.groups).exercises
+        };
+
+        startWorkoutButton = html`
+            <button class="hub-option card-interactive" @click=${() => this._handleStartWorkoutWithTemplate({ detail: { template: suggestedWorkout }})}>
+                <div class="hub-option-icon">🏋️</div>
+                <div class="hub-option-text">
+                    <h3>Start Workout</h3>
+                    <p>Begin your training session</p>
+                </div>
+            </button>
+        `;
+    }
 
     return html`
       <div id="home-screen" class="container">
@@ -273,13 +309,7 @@ SECTION 6: VIEW RENDERING LOGIC
         </div>
         
         <nav class="home-nav-buttons">
-            <button class="hub-option card-interactive" @click=${() => this._handleStartWorkoutWithTemplate({ detail: { template: suggestedWorkout }})}>
-                <div class="hub-option-icon">🏋️</div>
-                <div class="hub-option-text">
-                    <h3>Start Workout</h3>
-                    <p>Begin your training session</p>
-                </div>
-            </button>
+            ${startWorkoutButton}
             <button class="hub-option card-interactive" @click=${() => this._navigateTo('templates')}>
                 <div class="hub-option-icon">📋</div>
                 <div class="hub-option-text">
