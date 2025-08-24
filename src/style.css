@@ -1721,7 +1721,8 @@ body[data-theme="light"] .set-row.completed {
   display: block;
 }
 
-.input-group input[type="number"] {
+.input-group input[type="number"],
+.input-group select {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1729,9 +1730,13 @@ body[data-theme="light"] .set-row.completed {
   padding: var(--space-4);
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
-body[data-theme="light"] .input-group input[type="number"] {
+body[data-theme="light"] .input-group input[type="number"],
+body[data-theme="light"] .input-group select {
   background: rgba(0, 0, 0, 0.05);
   border-color: rgba(0, 0, 0, 0.1);
 }
@@ -2931,4 +2936,28 @@ body[data-theme="light"] .metric-card {
   font-weight: 800;
   color: var(--color-accent-gold);
   margin-bottom: var(--space-4);
+}
+
+/* =============================================== */
+/* 37. GOALS VIEW STYLES                          */
+/* =============================================== */
+
+.goals-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.goal-card h4 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-accent-primary);
+}
+
+.goal-card p {
+  margin: 0 0 var(--space-4) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
