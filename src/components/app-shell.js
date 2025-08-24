@@ -56,6 +56,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     this.loadUserData();
     this.addEventListener('onboarding-complete', this._handleOnboardingComplete);
     this.addEventListener('start-workout-with-template', this._handleStartWorkoutWithTemplate);
+    this.addEventListener('program-selected', this._handleProgramSelected);
     this.addEventListener('workout-completed', this._handleWorkoutCompleted);
     this.addEventListener('workout-cancelled', this._handleWorkoutCancelled);
     this.addEventListener('show-toast', this._showToast);
@@ -70,6 +71,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     // Clean up event listeners
     this.removeEventListener('onboarding-complete', this._handleOnboardingComplete);
     this.removeEventListener('start-workout-with-template', this._handleStartWorkoutWithTemplate);
+    this.removeEventListener('program-selected', this._handleProgramSelected);
     this.removeEventListener('workout-completed', this._handleWorkoutCompleted);
     this.removeEventListener('workout-cancelled', this._handleWorkoutCancelled);
     this.removeEventListener('show-toast', this._showToast);
@@ -120,6 +122,17 @@ SECTION 4: EVENT HANDLERS
     this.showReadinessModal = true;
   }
   
+  _handleProgramSelected(e) {
+    const { program, duration, startWorkoutIndex } = e.detail;
+    const newPlan = this.workoutEngine.generateProgramPlan(program, duration, startWorkoutIndex);
+    
+    this.userData.activeProgram = newPlan;
+    saveDataLocally({ activeProgram: newPlan });
+    
+    this._showToast({ detail: { message: "New program has been saved!", type: "success" }});
+    this.currentView = 'home';
+  }
+
   _handleReadinessSubmit(readinessData) {
     this.showReadinessModal = false;
     const recoveryScore = this.workoutEngine.calculateRecoveryScore(readinessData);
