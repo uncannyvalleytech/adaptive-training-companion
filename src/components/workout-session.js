@@ -144,7 +144,10 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
         });
 
         this.dispatchEvent(new CustomEvent('workout-completed', {
-            detail: { workoutData: workoutToSave },
+            detail: { 
+                workoutData: workoutToSave,
+                completedWorkoutDay: this.workout.day 
+            },
             bubbles: true,
             composed: true
         }));
@@ -256,7 +259,7 @@ SECTION 6: RENDERING
                       </div>
                       <div class="exercise-log-actions">
                         <button class="btn-icon-sm" aria-label="Exercise Info">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                         </button>
                       </div>
                     </div>
