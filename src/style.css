@@ -172,7 +172,7 @@ h4 { font-size: var(--font-size-xl); }
   text-align: center;
   font-size: var(--font-size-display-md);
   font-weight: 800;
-  color: var(--color-text-primary); /* CHANGED: Replaced gradient with solid color */
+  color: var(--color-text-primary);
 }
 
 /* =============================================== */
@@ -219,9 +219,8 @@ body[data-theme="light"] .bottom-nav {
 }
 
 .nav-icon {
-  font-size: 24px; /* ADDED: Explicit size for emoji icons */
+  font-size: 24px;
 }
-
 
 /* =============================================== */
 /* 4. MODERN CARD SYSTEM                          */
@@ -1736,6 +1735,70 @@ body[data-theme="light"] .set-row.completed {
 /* =============================================== */
 /* 21. ONBOARDING & READINESS STYLES              */
 /* =============================================== */
+
+.onboarding-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--space-4);
+  text-align: center;
+}
+
+.onboarding-wizard {
+  width: 100%;
+  max-width: 400px;
+}
+
+.onboarding-wizard .step.active h2 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-display-sm);
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.onboarding-wizard .step.active p {
+  color: var(--color-text-secondary);
+  max-width: 320px;
+  margin: 0 auto var(--space-8);
+}
+
+.form-inputs {
+  margin: var(--space-8) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  text-align: left;
+}
+
+.input-group {
+    margin-bottom: var(--space-4);
+}
+
+.input-group label {
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+  display: block;
+}
+
+.input-group input[type="number"] {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+body[data-theme="light"] .input-group input[type="number"] {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
 
 .input-group input[type="range"]::-webkit-slider-thumb:hover {
  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.5);
