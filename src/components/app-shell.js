@@ -227,6 +227,8 @@ SECTION 6: VIEW RENDERING LOGIC
         return html`<analytics-dashboard></analytics-dashboard>`;
       case 'settings':
         return html`<settings-view></settings-view>`;
+       case 'achievements':
+        return html`<achievements-view></achievements-view>`;
       case 'workout':
         return html`<workout-session .workout=${this.currentWorkout}></workout-session>`;
       default:
@@ -235,6 +237,13 @@ SECTION 6: VIEW RENDERING LOGIC
   }
 
   _renderHomeView() {
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return "Good morning!";
+        if (hour < 18) return "Good afternoon!";
+        return "Good evening!";
+    };
+
     const dayOfWeek = new Date().getDay();
     const split = this.workoutEngine.getWorkoutSplit(this.userData.daysPerWeek || 4);
     const todaySplitDay = split[dayOfWeek % split.length];
@@ -247,25 +256,39 @@ SECTION 6: VIEW RENDERING LOGIC
     return html`
       <div id="home-screen" class="container">
         <div class="home-header">
-          <h1 class="main-title">Progression</h1>
-          <p class="greeting">Welcome back!</p>
+          <h1 class="main-title">${getGreeting()}</h1>
         </div>
-
-        <level-progress 
-          .currentLevel=${this.userData.level || 1} 
-          .currentXP=${this.userData.totalXP || 0}
-          .xpToNext=${1000}
-        ></level-progress>
         
-        <div class="card">
-          <h3>Today's Suggested Workout</h3>
-          <p>${todaySplitDay.name}: ${todaySplitDay.groups.join(', ')}</p>
-          <button class="btn btn-primary cta-button" @click=${() => this._handleStartWorkoutWithTemplate({ detail: { template: suggestedWorkout }})}>
-            Start Dynamic Workout
-          </button>
-        </div>
-
-        <motivational-quote></motivational-quote>
+        <nav class="home-nav-buttons">
+            <button class="hub-option card-interactive" @click=${() => this._handleStartWorkoutWithTemplate({ detail: { template: suggestedWorkout }})}>
+                <div class="hub-option-icon">🏋️</div>
+                <div class="hub-option-text">
+                    <h3>Start Workout</h3>
+                    <p>Begin your training session</p>
+                </div>
+            </button>
+            <button class="hub-option card-interactive" @click=${() => this._navigateTo('templates')}>
+                <div class="hub-option-icon">📋</div>
+                <div class="hub-option-text">
+                    <h3>Routine</h3>
+                    <p>Custom workout routines</p>
+                </div>
+            </button>
+            <button class="hub-option card-interactive" @click=${() => this._navigateTo('history')}>
+                <div class="hub-option-icon">📊</div>
+                <div class="hub-option-text">
+                    <h3>Progress</h3>
+                    <p>Track your journey</p>
+                </div>
+            </button>
+            <button class="hub-option card-interactive" @click=${() => this._navigateTo('achievements')}>
+                <div class="hub-option-icon">🏆</div>
+                <div class="hub-option-text">
+                    <h3>Achievements</h3>
+                    <p>Unlock rewards</p>
+                </div>
+            </button>
+        </nav>
       </div>
     `;
   }
@@ -274,8 +297,8 @@ SECTION 6: VIEW RENDERING LOGIC
     const navItems = [
       { view: 'home', label: 'Home', icon: '🏠' },
       { view: 'templates', label: 'Routines', icon: '📋' },
-      { view: 'history', label: 'History', icon: '📜' },
-      { view: 'analytics', label: 'Analytics', icon: '📊' },
+      { view: 'history', label: 'History', icon: '📊' },
+      { view: 'analytics', label: 'Analytics', icon: '📈' },
       { view: 'settings', label: 'Settings', icon: '⚙️' },
     ];
     return html`
