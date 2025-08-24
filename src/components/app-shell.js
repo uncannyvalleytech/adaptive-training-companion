@@ -11,6 +11,7 @@ import { saveDataLocally, getDataLocally, deleteDataLocally } from "../services/
 // Import all view components
 import "./onboarding-flow.js";
 import "./workout-session.js";
+import "./workout-summary.js";
 import "./history-view.js";
 import "./settings-view.js";
 import "./workout-templates.js";
@@ -30,6 +31,7 @@ class AppShell extends LitElement {
     userData: { type: Object },
     isLoading: { type: Boolean },
     currentWorkout: { type: Object },
+    lastCompletedWorkout: { type: Object },
     showReadinessModal: { type: Boolean },
     toast: { type: Object },
   };
@@ -40,6 +42,7 @@ class AppShell extends LitElement {
     this.userData = null;
     this.currentView = 'loading';
     this.currentWorkout = null;
+    this.lastCompletedWorkout = null;
     this.showReadinessModal = false;
     this.toast = { show: false, message: '', type: '' };
     this.workoutEngine = null;
@@ -58,6 +61,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     this.addEventListener('start-workout-with-template', this._handleStartWorkoutWithTemplate);
     this.addEventListener('program-selected', this._handleProgramSelected);
     this.addEventListener('workout-completed', this._handleWorkoutCompleted);
+    this.addEventListener('summary-continue', this._handleSummaryContinue);
     this.addEventListener('workout-cancelled', this._handleWorkoutCancelled);
     this.addEventListener('show-toast', this._showToast);
     this.addEventListener('theme-change', this._handleThemeChange);
@@ -73,6 +77,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     this.removeEventListener('start-workout-with-template', this._handleStartWorkoutWithTemplate);
     this.removeEventListener('program-selected', this._handleProgramSelected);
     this.removeEventListener('workout-completed', this._handleWorkoutCompleted);
+    this.removeEventListener('summary-continue', this._handleSummaryContinue);
     this.removeEventListener('workout-cancelled', this._handleWorkoutCancelled);
     this.removeEventListener('show-toast', this._showToast);
     this.removeEventListener('theme-change', this._handleThemeChange);
@@ -148,7 +153,7 @@ SECTION 4: EVENT HANDLERS
   }
 
   _handleWorkoutCompleted(e) {
-    const { completedWorkoutDay } = e.detail;
+    const { workoutData, completedWorkoutDay } = e.detail;
     if (this.userData.activeProgram && completedWorkoutDay) {
         const program = this.userData.activeProgram;
         const workoutIndex = program.workouts.findIndex(w => w.day === completedWorkoutDay);
@@ -157,11 +162,20 @@ SECTION 4: EVENT HANDLERS
             saveDataLocally({ activeProgram: program });
         }
     }
+    
+    this.lastCompletedWorkout = workoutData;
+    this.currentView = 'summary';
+  }
 
-    this.currentView = 'home';
-    this.currentWorkout = null;
-    this.loadUserData(); // Reload data to reflect new workout
-    this._showToast({ detail: { message: 'Workout completed and saved!', type: 'success' } });
+  _handleSummaryContinue(e) {
+      const { xpGained } = e.detail;
+      this.userData.totalXP = (this.userData.totalXP || 0) + xpGained;
+      this.userData.level = Math.floor(this.userData.totalXP / 1000) + 1;
+      saveDataLocally({ totalXP: this.userData.totalXP, level: this.userData.level });
+      
+      this.currentView = 'home';
+      this.lastCompletedWorkout = null;
+      this.loadUserData();
   }
 
   _handleWorkoutCancelled() {
@@ -227,7 +241,7 @@ SECTION 6: VIEW RENDERING LOGIC
         <main>
           ${this._renderCurrentView()}
         </main>
-        ${this.currentView !== 'onboarding' && this.currentView !== 'workout' ? this._renderNavBar() : ''}
+        ${this.currentView !== 'onboarding' && this.currentView !== 'workout' && this.currentView !== 'summary' ? this._renderNavBar() : ''}
         ${this.showReadinessModal ? this._renderReadinessModal() : ''}
         ${this.toast.show ? this._renderToast() : ''}
       </div>
@@ -252,6 +266,8 @@ SECTION 6: VIEW RENDERING LOGIC
         return html`<achievements-view></achievements-view>`;
       case 'workout':
         return html`<workout-session .workout=${this.currentWorkout}></workout-session>`;
+      case 'summary':
+        return html`<workout-summary .workoutData=${this.lastCompletedWorkout} .userData=${this.userData}></workout-summary>`;
       default:
         return html`<h1>Error</h1><p>Unknown view: ${this.currentView}</p>`;
     }
@@ -360,7 +376,7 @@ SECTION 6: VIEW RENDERING LOGIC
             @click=${() => this._navigateTo(item.view)}
             aria-label=${item.label}
           >
-            <span class="nav-icon">${item.icon}</span>
+            <span class.nav-icon">${item.icon}</span>
             <span class="nav-label">${item.label}</span>
           </button>
         `)}
