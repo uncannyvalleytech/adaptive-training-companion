@@ -11,9 +11,7 @@ const LOCAL_STORAGE_KEY = 'userWorkoutData';
  * This now includes a pre-populated list of workout templates.
  */
 function createDefaultUserData() {
-  const defaultTemplates = [
-    
-  ];
+  const defaultTemplates = [];
 
   return {
     onboardingComplete: false,
