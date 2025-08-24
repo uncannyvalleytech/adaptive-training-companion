@@ -99,12 +99,21 @@ SECTION 5: RENDERING LOGIC
             `
           : html`
               <div class="goals-list">
-                </div>
+                ${this.goals.map(goal => html`
+                  <div class="card goal-card">
+                    <h4>${goal.exercise}</h4>
+                    <p>Target: ${goal.targetWeight} ${goal.units} x ${goal.targetReps} reps</p>
+                    <div class="progress-bar">
+                      <div class="progress-fill" style="width: 0%;"></div>
+                    </div>
+                  </div>
+                `)}
+              </div>
             `}
       </div>
 
       ${this.showSetGoalModal 
-        ? html`<set-goal-modal .onClose=${() => this.showSetGoalModal = false} .onSetGoal=${(e) => this._handleSetGoal(e)}></set-goal-modal>` 
+        ? html`<set-goal-modal .onClose=${() => this.showSetGoalModal = false} .onSetGoal=${(goal) => this._handleSetGoal({ detail: goal })}></set-goal-modal>` 
         : ''}
     `;
   }
