@@ -1,3 +1,9 @@
+/*
+===============================================
+SECTION 1: CLASS DEFINITION AND CONSTRUCTOR
+===============================================
+*/
+
 /**
  * @file workout-engine.js
  * This service implements the comprehensive "Mathematical Personal Training Algorithm".
@@ -15,6 +21,11 @@ export class WorkoutEngine {
       arms: 6,
       legs: 14,
       glutes: 10,
+      biceps: 6,
+      triceps: 6,
+      quads: 10,
+      hamstrings: 8,
+      calves: 6,
       "neck & traps": 6,
     };
     this.muscleSizeFactor = {
@@ -25,6 +36,10 @@ export class WorkoutEngine {
       back: 0.4,
       legs: 0.4,
       glutes: 0.3,
+      biceps: 0.1,
+      triceps: 0.1,
+      quads: 0.3,
+      hamstrings: 0.2,
       "neck & traps": 0.1,
     };
     
@@ -92,7 +107,12 @@ export class WorkoutEngine {
     };
   }
 
-  // --- 1. User Profile Initialization ---
+/*
+===============================================
+SECTION 2: USER PROFILE CALCULATIONS
+===============================================
+*/
+
   calculateTAF() {
     const { training_months } = this.userProfile;
     const taf = 1 + (training_months / 12) * 0.1;
@@ -109,7 +129,12 @@ export class WorkoutEngine {
     return baseRecovery * sexModifier * ageModifier * sleepModifier * stressModifier;
   }
 
-  // --- 2. Volume Landmark Calculations ---
+/*
+===============================================
+SECTION 3: VOLUME LANDMARK CALCULATIONS
+===============================================
+*/
+
   getVolumeLandmarks(muscleGroup, trainingFrequency = 2) {
     const taf = this.calculateTAF();
     const rcs = this.calculateRCS();
@@ -129,7 +154,12 @@ export class WorkoutEngine {
     };
   }
 
-  // --- 3. Weekly Volume Progression ---
+/*
+===============================================
+SECTION 4: PROGRESSION AND INTENSITY
+===============================================
+*/
+
   calculateWeeklyVolume(startingVolume, weekNumber, maxVolume) {
     const taf = this.calculateTAF();
     const progressionRate = taf < 1.5 ? 0.1 : 0.05;
@@ -145,7 +175,6 @@ export class WorkoutEngine {
     };
   }
     
-  // --- 4. Intensity Prescription ---
   calculateTargetRIR(exerciseType, currentVolume, mrv) {
     const baseRIR = exerciseType === 'compound' ? 2 : 1;
     let fatigueAdjustment = 0;
@@ -161,7 +190,6 @@ export class WorkoutEngine {
     return previousLoad;
   }
 
-  // --- 5. Progression Algorithm based on past results ---
   calculateProgression(previousWorkoutExercise) {
     const { completedSets = [], targetRir = 2, targetReps = 10 } = previousWorkoutExercise;
     
@@ -213,7 +241,12 @@ export class WorkoutEngine {
     };
   }
 
-  // --- 6 & 8. Recovery Monitoring & Daily Autoregulation ---
+/*
+===============================================
+SECTION 5: AUTOREGULATION AND RECOVERY
+===============================================
+*/
+
   calculateRecoveryScore(readinessData) {
     const { sleep_quality, energy_level, motivation, muscle_soreness } = readinessData;
     const sorenessInverse = 11 - muscle_soreness;
@@ -227,23 +260,29 @@ export class WorkoutEngine {
   adjustWorkout(plannedWorkout, readinessScore) {
     const adjustedWorkout = JSON.parse(JSON.stringify(plannedWorkout));
     let adjustmentNote = "Workout is as planned.";
+    
     if (readinessScore < 6) {
       adjustmentNote = "Readiness is low. Volume reduced by 20% and intensity reduced.";
       adjustedWorkout.exercises.forEach(ex => {
         if (ex.sets && ex.sets.length > 3) ex.sets.pop();
-        ex.targetReps = Math.max(5, ex.targetReps - 2);
+        ex.targetReps = Math.max(5, (parseInt(ex.targetReps) || 10) - 2);
       });
     } else if (readinessScore > 8) {
       adjustmentNote = "Feeling great! Increasing intensity slightly.";
       adjustedWorkout.exercises.forEach(ex => {
-        ex.targetReps += 1;
+        ex.targetReps = (parseInt(ex.targetReps) || 10) + 1;
       });
     }
     adjustedWorkout.adjustmentNote = adjustmentNote;
     return adjustedWorkout;
   }
 
-  // --- 7. Exercise Selection Algorithm ---
+/*
+===============================================
+SECTION 6: EXERCISE SELECTION ALGORITHM
+===============================================
+*/
+
   calculateEPS(exercise, context = {}) {
     const { weakMuscles = [], recentExercises = [], gender } = context;
     const compoundBonus = exercise.type === 'compound' ? 3 : 1;
@@ -277,18 +316,44 @@ export class WorkoutEngine {
     return scoredExercises.slice(0, count);
   }
   
-  // --- Workout Split Logic ---
+/*
+===============================================
+SECTION 7: WORKOUT SPLIT AND MESOCYCLE LOGIC
+===============================================
+*/
+
   getWorkoutSplit(daysPerWeek) {
     const splits = {
-      3: [['chest', 'triceps'], ['back', 'biceps'], ['legs', 'shoulders']],
-      4: [['chest', 'triceps'], ['back', 'biceps'], ['shoulders'], ['legs']],
-      5: [['chest'], ['back'], ['legs'], ['shoulders'], ['biceps', 'triceps']],
-      6: [['chest'], ['back'], ['legs'], ['shoulders'], ['biceps'], ['triceps']]
+      3: [
+        { name: 'Full Body A', groups: ['quads', 'hamstrings', 'chest', 'back'] },
+        { name: 'Full Body B', groups: ['quads', 'glutes', 'shoulders', 'biceps', 'triceps'] },
+        { name: 'Full Body C', groups: ['chest', 'back', 'quads', 'hamstrings', 'calves'] }
+      ],
+      4: [
+        { name: 'Upper A', groups: ['chest', 'back', 'shoulders'] },
+        { name: 'Lower A', groups: ['quads', 'hamstrings', 'glutes'] },
+        { name: 'Upper B', groups: ['chest', 'back', 'biceps', 'triceps'] },
+        { name: 'Lower B', groups: ['quads', 'hamstrings', 'calves'] }
+      ],
+      5: [
+        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
+        { name: 'Pull', groups: ['back', 'biceps'] },
+        { name: 'Legs', groups: ['quads', 'hamstrings', 'glutes'] },
+        { name: 'Upper', groups: ['chest', 'back', 'shoulders'] },
+        { name: 'Lower', groups: ['quads', 'hamstrings', 'calves'] }
+      ],
+      6: [
+        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
+        { name: 'Pull', groups: ['back', 'biceps'] },
+        { name: 'Legs', groups: ['quads', 'hamstrings', 'glutes'] },
+        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
+        { name: 'Pull', groups: ['back', 'biceps'] },
+        { name: 'Legs', groups: ['quads', 'hamstrings', 'calves'] }
+      ]
     };
     return splits[daysPerWeek] || splits[4];
   }
 
-  // --- 9. Periodization Model ---
   generateMesocycle(daysPerWeek, mesocycleLength = 4) {
     const mesocycle = { weeks: [] };
     const workoutSplit = this.getWorkoutSplit(daysPerWeek);
@@ -298,11 +363,15 @@ export class WorkoutEngine {
       const weeklyPlan = { week: week, days: [] };
       
       for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
-        const dayMuscleGroups = workoutSplit[dayIndex % workoutSplit.length];
-        const dayPlan = { muscleGroups: dayMuscleGroups, exercises: [] };
+        const splitDay = workoutSplit[dayIndex % workoutSplit.length];
+        const dayPlan = { 
+          name: splitDay.name,
+          muscleGroups: splitDay.groups, 
+          exercises: [] 
+        };
         
-        for (const muscle of dayMuscleGroups) {
-          const landmarks = this.getVolumeLandmarks(muscle, daysPerWeek);
+        for (const muscle of splitDay.groups) {
+          const landmarks = this.getVolumeLandmarks(muscle, Math.ceil(daysPerWeek / workoutSplit.length));
           const startingVolume = landmarks.mev * 1.1;
           const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
           
@@ -332,9 +401,13 @@ export class WorkoutEngine {
     // Add a deload week
     const deloadWeek = { week: mesocycleLength + 1, isDeload: true, days: [] };
     for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
-      const dayMuscleGroups = workoutSplit[dayIndex % workoutSplit.length];
-      const deloadDayPlan = { muscleGroups: dayMuscleGroups, exercises: [] };
-      for (const muscle of dayMuscleGroups) {
+      const splitDay = workoutSplit[dayIndex % workoutSplit.length];
+      const deloadDayPlan = { 
+        name: `${splitDay.name} (Deload)`,
+        muscleGroups: splitDay.groups, 
+        exercises: [] 
+      };
+      for (const muscle of splitDay.groups) {
           const landmarks = this.getVolumeLandmarks(muscle);
           const deloadVolume = Math.round(landmarks.mev * 0.6);
           const numExercises = deloadVolume > 8 ? 2 : 1;
@@ -356,7 +429,12 @@ export class WorkoutEngine {
     return mesocycle;
   }
 
-  // --- 10. Long-term Progression ---
+/*
+===============================================
+SECTION 8: LONG-TERM PROGRESSION AND WORKOUT GENERATION
+===============================================
+*/
+
   adaptVolumeLandmarks() {
     const taf = this.calculateTAF();
     let adaptationRate = 0.01; 
@@ -373,14 +451,13 @@ export class WorkoutEngine {
     return newBaseMEV;
   }
 
-  // --- Integrated Workout Generation ---
-  generateDailyWorkout(muscleGroupsForDay, weeklyPlan) {
+  generateDailyWorkout(muscleGroupsForDay) {
     let exercises = [];
     const userGender = this.userProfile.sex;
     const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [], gender: userGender }; 
     for (const muscle of muscleGroupsForDay) {
         const landmarks = this.getVolumeLandmarks(muscle);
-        const targetVolume = weeklyPlan.muscleData?.[muscle]?.targetVolume || landmarks.mev;
+        const targetVolume = landmarks.mev;
         const numExercises = targetVolume > 12 ? 3 : 2;
         const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
         let setsRemaining = targetVolume;
