@@ -117,8 +117,6 @@ SECTION 5: RENDERING LOGIC
             .xpToNext=${xpToNextLevel}
           ></level-progress>
         </div>
-
-        <motivational-quote></motivational-quote>
         
         <button class="btn btn-primary cta-button" @click=${this._handleContinue}>
           Continue
