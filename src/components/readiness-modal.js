@@ -8,29 +8,43 @@ class ReadinessModal extends LitElement {
   };
 
   // SECTION 1: STYLES
-  // Added component-specific styles to make the modal more compact.
+  // Styles have been further adjusted to be more compact and prevent scrolling.
   static styles = css`
     .modal-content {
-      max-height: 95vh; /* Ensure it fits on screen */
+      padding: var(--space-4); /* 16px */
+      max-height: 95vh;
       overflow-y: auto;
     }
+    .modal-header {
+      margin-bottom: var(--space-2); /* 8px */
+    }
+    #modal-title {
+      font-size: var(--font-size-xl); /* 1.5rem */
+      margin-bottom: 0;
+    }
     .modal-subtitle {
-      margin-bottom: var(--space-4); /* Reduced from space-6 */
+      font-size: var(--font-size-sm); /* 0.875rem */
+      margin-bottom: var(--space-4); /* 16px */
+      line-height: 1.4;
     }
     .form-inputs {
-      margin: var(--space-4) 0; /* Reduced from space-8 */
-      gap: var(--space-4);      /* Reduced from space-6 */
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3); /* 12px */
     }
     .slider-group {
-      margin-bottom: 0; /* Reduced from space-5 */
+      margin-bottom: 0;
     }
     .slider-group label {
-      margin-bottom: var(--space-2); /* Reduced from space-3 */
+      font-size: var(--font-size-sm);
+      margin-bottom: var(--space-1); /* 4px */
     }
     .button-group {
-      margin-top: var(--space-5); /* Reduced from space-6 */
+      margin-top: var(--space-5); /* 20px */
+      display: flex;
       flex-direction: column;
-      gap: var(--space-3);
+      gap: var(--space-3); /* 12px */
     }
     .cta-button, .secondary-button {
       width: 100%;
