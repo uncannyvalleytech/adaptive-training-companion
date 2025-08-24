@@ -1,448 +1,450 @@
-import { LitElement, html } from "lit";
-import { saveDataLocally, getDataLocally, deleteDataLocally } from "../services/local-storage.js";
-import { WorkoutEngine } from "../services/workout-engine.js";
+/**
+ * @file workout-engine.js
+ * This service implements the comprehensive "Mathematical Personal Training Algorithm".
+ * It's responsible for all calculations related to user profiling, volume landmarks,
+ * progression, intensity, and autoregulation.
+ */
 
-// Import all view components
-import "./workout-session.js";
-import "./history-view.js";
-import "./onboarding-flow.js";
-import "./settings-view.js";
-import "./workout-templates.js";
-import "./achievements-view.js";
-import "./readiness-modal.js";
-import "./motivational-elements.js";
-
-class AppShell extends LitElement {
-  static properties = {
-    userCredential: { type: Object },
-    userData: { type: Object },
-    loadingMessage: { type: String },
-    errorMessage: { type: String },
-    isWorkoutActive: { type: Boolean },
-    currentView: { type: String },
-    toast: { type: Object },
-    showOnboarding: { type: Boolean },
-    showReadinessModal: { type: Boolean },
-    theme: { type: String },
-    units: { type: String },
-    lastCompletedWorkout: { type: Object },
-    workout: { type: Object },
-    offlineMode: { type: Boolean },
-    userLevel: { type: Number },
-    userXP: { type: Number },
-    currentStreak: { type: Number },
-  };
-
-  constructor() {
-    super();
-    this.userCredential = null;
-    this.userData = null;
-    this.loadingMessage = "Initializing...";
-    this.errorMessage = "";
-    this.isWorkoutActive = false;
-    this.currentView = "home";
-    this.toast = null;
-    this.showOnboarding = false;
-    this.showReadinessModal = false;
-    this.theme = localStorage.getItem('theme') || 'dark';
-    this.units = localStorage.getItem('units') || 'lbs';
-    this.lastCompletedWorkout = null;
-    this.workout = null;
-    this.offlineMode = !navigator.onLine;
-    this._viewHistory = ['home'];
-    this.userLevel = 1;
-    this.userXP = 0;
-    this.currentStreak = 0;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this._initLocalMode();
-    window.addEventListener('app-online', this._handleOnlineMode.bind(this));
-    window.addEventListener('theme-change', (e) => this._applyTheme(e.detail.theme));
-    window.addEventListener('units-change', (e) => (this.units = e.detail.units));
-    this.addEventListener('show-toast', (e) => this._showToast(e.detail.message, e.detail.type));
-    this.addEventListener('workout-cancelled', this._exitWorkout.bind(this));
-    this.addEventListener('workout-completed', this._onWorkoutCompleted.bind(this));
-    this.addEventListener('start-workout-with-template', this._startWorkoutWithTemplate.bind(this));
-    this.addEventListener('setView', (e) => this._setView(e.detail.view));
-    this.addEventListener('sign-out', this._handleSignOut.bind(this));
-    this.addEventListener('delete-data', this._handleDeleteData.bind(this));
-    this._applyTheme();
-  }
-  
-  _initLocalMode() {
-    this.loadingMessage = "Loading your data...";
+export class WorkoutEngine {
+  constructor(userProfile) {
+    this.userProfile = userProfile;
+    this.baseMEV = {
+      chest: 8,
+      back: 10,
+      shoulders: 8,
+      arms: 6,
+      legs: 14,
+      glutes: 10,
+      biceps: 6,
+      triceps: 6,
+      quads: 10,
+      hamstrings: 8,
+      calves: 6,
+      "neck & traps": 6,
+    };
+    this.muscleSizeFactor = {
+      arms: 0.0,
+      calves: 0.0,
+      chest: 0.2,
+      shoulders: 0.2,
+      back: 0.4,
+      legs: 0.4,
+      glutes: 0.3,
+      biceps: 0.1,
+      triceps: 0.1,
+      quads: 0.3,
+      hamstrings: 0.2,
+      "neck & traps": 0.1,
+    };
     
-    const localData = getDataLocally();
-    if (localData) {
-      this.userData = localData;
-      this._initializeGamificationData();
-      if (!this.userData.onboardingComplete) this.showOnboarding = true;
-    } else {
-      this.userData = createDefaultUserData();
-      this.showOnboarding = true;
+    this.exerciseDatabase = {
+      chest: [
+        { name: 'Barbell Bench Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Dumbbell Bench Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Incline Dumbbell Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Machine Chest Press', type: 'compound', recoveryCost: 'low' },
+        { name: 'Cable Crossover', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Push-ups', type: 'compound', recoveryCost: 'low' },
+        { name: 'Incline Barbell Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Decline Bench Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Chest Dip', type: 'compound', recoveryCost: 'medium' }
+      ],
+      back: [
+        { name: 'Deadlift', type: 'compound', recoveryCost: 'high' },
+        { name: 'Pull-ups', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Barbell Row', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Lat Pulldown', type: 'compound', recoveryCost: 'low' },
+        { name: 'Seated Cable Row', type: 'compound', recoveryCost: 'low' },
+        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' },
+        { name: 'T-Bar Row', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Dumbbell Row', type: 'compound', recoveryCost: 'medium' }
+      ],
+      biceps: [
+        { name: 'Barbell Curl', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Dumbbell Hammer Curl', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Preacher Curl', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Incline Dumbbell Curl', type: 'isolation', recoveryCost: 'low' }
+      ],
+      triceps: [
+        { name: 'Tricep Pushdown', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Skull Crushers', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Overhead Tricep Extension', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Close Grip Bench Press', type: 'compound', recoveryCost: 'medium' }
+      ],
+      quads: [
+        { name: 'Barbell Squat', type: 'compound', recoveryCost: 'high' },
+        { name: 'Leg Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Leg Extensions', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Hack Squat', type: 'compound', recoveryCost: 'high' }
+      ],
+      hamstrings: [
+        { name: 'Romanian Deadlift', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Hamstring Curls', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Good Mornings', type: 'compound', recoveryCost: 'medium' }
+      ],
+      glutes: [
+        { name: 'Hip Thrust', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Glute Kickback', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Bulgarian Split Squat', type: 'compound', recoveryCost: 'high' }
+      ],
+      calves: [
+        { name: 'Calf Raises', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Seated Calf Raises', type: 'isolation', recoveryCost: 'low' }
+      ],
+      shoulders: [
+        { name: 'Overhead Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Dumbbell Shoulder Press', type: 'compound', recoveryCost: 'medium' },
+        { name: 'Lateral Raises', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Front Raises', type: 'isolation', recoveryCost: 'low' },
+        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' }
+      ]
+    };
+  }
+
+  // --- 1. User Profile Initialization ---
+  calculateTAF() {
+    const { training_months } = this.userProfile;
+    const taf = 1 + (training_months / 12) * 0.1;
+    return Math.min(taf, 3.0);
+  }
+
+  calculateRCS() {
+    const { sex, age, sleep_hours, stress_level } = this.userProfile;
+    const baseRecovery = 1.0;
+    const sexModifier = sex === 'female' ? 1.15 : 1.0;
+    const ageModifier = Math.max(0.7, 1.2 - (age - 18) * 0.005);
+    const sleepModifier = Math.min(1.2, sleep_hours / 8);
+    const stressModifier = (10 - stress_level) / 10;
+    return baseRecovery * sexModifier * ageModifier * sleepModifier * stressModifier;
+  }
+
+  // --- 2. Volume Landmark Calculations ---
+  getVolumeLandmarks(muscleGroup, trainingFrequency = 2) {
+    const taf = this.calculateTAF();
+    const rcs = this.calculateRCS();
+    const base_mev = this.userProfile.baseMEV?.[muscleGroup] || this.baseMEV[muscleGroup] || 8;
+    const muscle_size_factor = this.muscleSizeFactor[muscleGroup] || 0.2;
+    const mev = base_mev * (1 + muscle_size_factor) * Math.pow(taf, 0.3);
+    const freqFactorMap = { 1: 0.8, 2: 1.0, 3: 1.2, 4: 1.2, 5: 1.3, 6: 1.4 };
+    const trainingFrequencyFactor = freqFactorMap[trainingFrequency] || 1.3;
+    const mrv = mev * (2.5 + rcs) * trainingFrequencyFactor;
+    const mav = mev + (mrv - mev) * 0.7;
+    const mv = mev * 0.6;
+    return {
+      mev: Math.round(mev),
+      mrv: Math.round(mrv),
+      mav: Math.round(mav),
+      mv: Math.round(mv),
+    };
+  }
+
+  // --- 3. Weekly Volume Progression ---
+  calculateWeeklyVolume(startingVolume, weekNumber, maxVolume) {
+    const taf = this.calculateTAF();
+    const progressionRate = taf < 1.5 ? 0.1 : 0.05;
+    let weekVolume = startingVolume * (1 + (weekNumber - 1) * progressionRate);
+    if (weekVolume >= maxVolume) {
+        weekVolume = maxVolume;
     }
+    const deloadTriggered = weekVolume >= maxVolume * 0.95;
+    return { 
+        targetVolume: Math.round(weekVolume), 
+        deloadVolume: Math.round(startingVolume * 0.6),
+        deloadTriggered 
+    };
+  }
     
-    this.userCredential = { credential: 'local-mode-user' };
-    this.offlineMode = true;
-    this.loadingMessage = "";
+  // --- 4. Intensity Prescription ---
+  calculateTargetRIR(exerciseType, currentVolume, mrv) {
+    const baseRIR = exerciseType === 'compound' ? 2 : 1;
+    let fatigueAdjustment = 0;
+    if (currentVolume / mrv > 0.8) fatigueAdjustment = -1;
+    if (currentVolume / mrv < 0.4) fatigueAdjustment = 1;
+    
+    return baseRIR + fatigueAdjustment;
   }
 
-  _applyTheme(newTheme) {
-    if (newTheme) this.theme = newTheme;
-    document.body.setAttribute('data-theme', this.theme);
+  suggestLoadProgression(previousLoad, lastSessionRIR, targetRIR) {
+    if (lastSessionRIR > targetRIR + 1) return previousLoad * 1.025;
+    if (lastSessionRIR < targetRIR - 1) return previousLoad * 0.975;
+    return previousLoad;
   }
 
-  _handleOnlineMode() {
-    this.offlineMode = false;
-    this._showToast("Connection restored!", "success");
-  }
-
-  _showToast(message, type = 'success', duration = 4000) {
-    this.toast = { message, type };
-    setTimeout(() => { this.toast = null; }, duration);
-  }
-
-  async fetchUserData() {
-    this.loadingMessage = "Loading your data...";
-    this.errorMessage = "";
-    try {
-      const response = getDataLocally();
-      if (response) {
-        this.userData = response;
-        this._initializeGamificationData();
-        if (!this.userData.onboardingComplete) this.showOnboarding = true;
-      } else {
-        throw new Error("Failed to fetch data.");
-      }
-    } catch (error) {
-      this.errorMessage = "Could not load your profile. Please try again.";
-    } finally {
-      this.loadingMessage = "";
-    }
-  }
-
-  _handleSignOut() {
-    this.userCredential = null;
-    this.userData = null;
-    this.currentView = 'home';
-    this._viewHistory = ['home'];
-    this._showToast("You have been signed out.", "info");
-    this._initLocalMode();
-  }
-  
-  _setView(view) {
-      if (view !== this.currentView) {
-          this._viewHistory.push(this.currentView);
-          this.currentView = view;
-      }
-  }
-
-  _goBack() {
-      if (this.isWorkoutActive) {
-          this._exitWorkout();
-      } else if (this._viewHistory.length > 1) {
-          this.currentView = this._viewHistory.pop();
-      } else {
-          this.currentView = 'home';
-      }
-  }
-  
-  _initializeGamificationData() {
-    const workouts = this.userData?.workouts || [];
-    this.userXP = this.userData?.totalXP || (workouts.length * 100);
-    this.userLevel = Math.floor(this.userXP / 1000) + 1;
-    this.currentStreak = this._calculateStreak(workouts);
-  }
-  
-  _calculateStreak(workouts) {
-    if (!workouts || workouts.length === 0) return 0;
-    const sortedWorkouts = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date));
-    let streak = 0;
-    let today = new Date();
-    today.setHours(0,0,0,0);
-    if (sortedWorkouts.length > 0) {
-        let lastWorkoutDate = new Date(sortedWorkouts[0].date);
-        lastWorkoutDate.setHours(0,0,0,0);
-        let diffDays = Math.floor((today - lastWorkoutDate) / (1000 * 60 * 60 * 24));
-        if (diffDays <= 1) {
-            streak = 1;
-            for (let i = 0; i < sortedWorkouts.length - 1; i++) {
-                let current = new Date(sortedWorkouts[i].date);
-                current.setHours(0,0,0,0);
-                let previous = new Date(sortedWorkouts[i+1].date);
-                previous.setHours(0,0,0,0);
-                if (Math.floor((current - previous) / (1000 * 60 * 60 * 24)) === 1) {
-                    streak++;
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-    return streak;
-  }
-  
-  async _handleOnboardingComplete(e) {
-      const onboardingData = e.detail.userData;
-      this.userData = { 
-        ...createDefaultUserData(),
-        ...this.userData, 
-        ...onboardingData, 
-        onboardingComplete: true
+  // --- 5. Progression Algorithm based on past results ---
+  calculateProgression(previousWorkoutExercise) {
+    const { completedSets = [], targetRir = 2, targetReps = 10 } = previousWorkoutExercise;
+    
+    if (completedSets.length === 0) {
+      return { 
+        targetLoad: null, 
+        targetReps: targetReps, 
+        note: "No past data, starting fresh." 
       };
-      
-      const engine = new WorkoutEngine(this.userData);
-      
-      this.userData.mesocycle = engine.generateMesocycle(Number(this.userData.daysPerWeek));
-      
-      this.showOnboarding = false;
-      this._showToast("Profile created! Your new workout plan is ready.", "success");
-      
-      saveDataLocally(this.userData);
-      this.fetchUserData = () => Promise.resolve();
-  }
-  
-  _exitWorkout() {
-      this.isWorkoutActive = false;
-      this.currentView = "home";
-  }
-
-  async _onWorkoutCompleted(event) {
-      this.isWorkoutActive = false;
-      this.lastCompletedWorkout = event.detail.workoutData;
-      const xpGained = 100 + (this.lastCompletedWorkout.newPRs?.length || 0) * 25;
-      this.userXP += xpGained;
-      this.lastCompletedWorkout.xpGained = xpGained;
-      if (Math.floor(this.userXP / 1000) + 1 > this.userLevel) {
-          this._showToast("Level Up!", "success");
-      }
-      this.userLevel = Math.floor(this.userXP / 1000) + 1;
-      
-      this.userData.workouts = [...(this.userData.workouts || []), this.lastCompletedWorkout];
-      this.userData.totalXP = this.userXP;
-      this.currentStreak = this._calculateStreak(this.userData.workouts);
-      
-      saveDataLocally(this.userData);
-      this.currentView = "summary";
-  }
-
-  _startWorkoutWithTemplate(event) {
-      this.workout = { ...event.detail.template };
-      this.isWorkoutActive = true;
-  }
-  
-  async _handleDeleteData() {
-    deleteDataLocally();
-    this._showToast("All data deleted.", "info");
-    this._handleSignOut();
-  }
-
-  _getTimeOfDay() {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'morning';
-    if (hour < 17) return 'afternoon';
-    return 'evening';
-  }
-  
-  render() {
-    return html`
-      ${this.renderToast()}
-      ${this._renderCurrentView()}
-    `;
-  }
-  
-  _renderHeader(title) {
-    return html`
-      <header class="app-header">
-        <button class="btn btn-icon" @click=${() => this._goBack()} aria-label="Back">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
-        </button>
-        <h1>${title}</h1>
-        <div style="width: 48px;"></div>
-      </header>
-    `;
-  }
-
-  _renderCurrentView() {
-    if (!this.userCredential) return this.renderLoginScreen();
-    if (this.errorMessage) return this.renderErrorScreen();
-    if (!this.userData) return this.renderSkeletonScreen(this.loadingMessage);
-    if (this.showOnboarding) return html`<onboarding-flow @onboarding-complete=${this._handleOnboardingComplete.bind(this)}></onboarding-flow>`;
-    if (this.showReadinessModal) return html`<readiness-modal .onSubmit=${this._handleReadinessSubmit.bind(this)} .onClose=${() => this.showReadinessModal = false}></readiness-modal>`;
-    if (this.isWorkoutActive) return html`<workout-session .workout=${this.workout}></workout-session>`;
-
-    switch (this.currentView) {
-      case "home": return this.renderHomeScreen();
-      case "templates": return html`<div class="container">${this._renderHeader("Routine")}<workout-templates></workout-templates></div>`;
-      case "history": return html`<div class="container">${this._renderHeader("Progress")}<history-view></history-view></div>`;
-      case "settings": return html`<div class="container">${this._renderHeader("Settings")}<settings-view .theme=${this.theme} .units=${this.units}></settings-view></div>`;
-      case "achievements": return html`<div class="container">${this._renderHeader("Achievements")}<achievements-view></achievements-view></div>`;
-      case "summary": return this.renderWorkoutSummary();
-      default: return this.renderHomeScreen();
     }
-  }
-
-  renderLoginScreen() {
-    this._initLocalMode();
-    return this.renderSkeletonScreen("Setting up your profile...");
-  }
-  
-  renderHomeScreen() {
-    return html`
-      <div id="home-screen" class="container">
-        <div class="home-header">
-          <h1 class="main-title">Good ${this._getTimeOfDay()}!</h1>
-        </div>
-        <nav class="home-nav-buttons">
-          <button class="hub-option card-interactive" @click=${() => this.showReadinessModal = true}>
-            <div class="hub-option-icon">🏋️</div>
-            <div class="hub-option-text"><h3>Start Workout</h3><p>Begin your training session</p></div>
-          </button>
-          <button class="hub-option card-interactive" @click=${() => this._setView('templates')}>
-            <div class="hub-option-icon">📋</div>
-            <div class="hub-option-text"><h3>Routine</h3><p>Custom workout routines</p></div>
-          </button>
-          <button class="hub-option card-interactive" @click=${() => this._setView('history')}>
-            <div class="hub-option-icon">📊</div>
-            <div class="hub-option-text"><h3>Progress</h3><p>Track your journey</p></div>
-          </button>
-          <button class="hub-option card-interactive" @click=${() => this._setView('achievements')}>
-            <div class="hub-option-icon">🏆</div>
-            <div class="hub-option-text"><h3>Achievements</h3><p>Unlock rewards</p></div>
-          </button>
-        </nav>
-        <level-progress .currentLevel=${this.userLevel} .currentXP=${this.userXP} .xpToNext=${1000}></level-progress>
-        ${this.currentStreak > 0 ? html`<workout-streak .streak=${this.currentStreak}></workout-streak>` : ''}
-        <div class="home-footer-actions">
-            <button class="btn btn-icon" @click=${() => this._setView('settings')} aria-label="Settings">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            </button>
-        </div>
-      </div>
-    `;
-  }
-  
-  renderToast() {
-      if (!this.toast) return '';
-      return html`<div class="toast-notification ${this.toast.type}" role="alert">${this.toast.message}</div>`;
-  }
-  
-  renderSkeletonScreen(message = "Loading...") {
-    return html`
-      <div class="container" aria-live="polite" aria-busy="true">
-        <div class="skeleton skeleton-title"></div>
-        <div class="skeleton skeleton-text"></div>
-        <div class="skeleton skeleton-btn-large"></div>
-        <p>${message}</p>
-      </div>
-    `;
-  }
-
-  renderErrorScreen() {
-    return html`
-      <div class="container error-container" role="alert">
-        <h2>❌ Error</h2>
-        <p>${this.errorMessage}</p>
-        <button class="btn btn-primary" @click=${() => window.location.reload()}>Reload App</button>
-      </div>
-    `;
-  }
-
-  renderWorkoutSummary() {
-      const workout = this.lastCompletedWorkout;
-      if (!workout) return this.renderHomeScreen();
-      return html`
-          <div class="container">
-              ${this._renderHeader("Workout Complete!")}
-              <div class="card">
-                  <p>Duration: ${Math.floor(workout.durationInSeconds / 60)}m ${workout.durationInSeconds % 60}s</p>
-                  <p>Total Volume: ${workout.totalVolume} ${this.units}</p>
-                  <p>XP Gained: +${workout.xpGained || 100}</p>
-              </div>
-              <button class="btn btn-primary cta-button" @click=${() => this._setView('home')}>Done</button>
-          </div>
-      `;
-  }
-
-  _handleReadinessSubmit(readinessData) {
-      this.showReadinessModal = false;
-      const engine = new WorkoutEngine(this.userData);
-      const recoveryScore = engine.calculateRecoveryScore(readinessData);
-      const readinessScore = engine.getDailyReadiness(recoveryScore);
+    
+    const totalRir = completedSets.reduce((sum, set) => sum + (set.rir || 0), 0);
+    const avgRir = totalRir / completedSets.length;
+    
+    const lastLoad = completedSets[0].weight;
+    let newTargetLoad = lastLoad;
+    let newTargetReps = targetReps;
+    let note = "Maintaining current plan.";
+    
+    const rirDifference = avgRir - targetRir;
+    
+    if (rirDifference > 1) {
+      newTargetLoad = lastLoad + 5;
+      newTargetReps = targetReps;
+      note = `Excellent performance! Increasing weight to ${newTargetLoad}lbs for the next session.`;
+    } else if (rirDifference < -1) {
+      newTargetLoad = lastLoad;
+      newTargetReps = targetReps;
+      note = `Last session was challenging. Maintain ${newTargetLoad}lbs and focus on hitting your rep targets.`;
+    } else {
+      const lastSetReps = completedSets[completedSets.length - 1].reps;
+      const targetRepsUpper = targetReps + 2;
       
-      const plannedWorkout = this._getPlannedWorkout();
-      
-      if (plannedWorkout) {
-          this.workout = engine.adjustWorkout(plannedWorkout, readinessScore);
-          this._showToast(this.workout.adjustmentNote, "info");
-          this.isWorkoutActive = true;
+      if (lastSetReps >= targetRepsUpper) {
+        newTargetLoad = lastLoad + 5;
+        newTargetReps = targetReps;
+        note = `All sets hit the rep target. Increasing weight to ${newTargetLoad}lbs for the next session.`;
       } else {
-          this._showToast("Could not generate a workout.", "error");
+        newTargetLoad = lastLoad;
+        newTargetReps = targetReps + 1;
+        note = `Solid performance! Aim for one more rep per set in your next session with the same weight.`;
       }
+    }
+    
+    return {
+      targetLoad: newTargetLoad,
+      targetReps: newTargetReps,
+      note: note
+    };
   }
 
-  _getPlannedWorkout() {
-    if (!this.userData?.mesocycle?.weeks || this.userData.mesocycle.weeks.length === 0) {
-        this._showToast("No mesocycle found. Please complete onboarding.", "error");
-        return null;
+  // --- 6 & 8. Recovery Monitoring & Daily Autoregulation ---
+  calculateRecoveryScore(readinessData) {
+    const { sleep_quality, energy_level, motivation, muscle_soreness } = readinessData;
+    const sorenessInverse = 11 - muscle_soreness;
+    return (sleep_quality + energy_level + motivation + sorenessInverse) / 4;
+  }
+
+  getDailyReadiness(recoveryScore) {
+    return recoveryScore;
+  }
+
+  adjustWorkout(plannedWorkout, readinessScore) {
+    const adjustedWorkout = JSON.parse(JSON.stringify(plannedWorkout));
+    let adjustmentNote = "Workout is as planned.";
+    
+    if (readinessScore < 6) {
+      adjustmentNote = "Readiness is low. Volume reduced by 20% and intensity reduced.";
+      adjustedWorkout.exercises.forEach(ex => {
+        if (ex.sets && ex.sets.length > 3) ex.sets.pop();
+        ex.targetReps = Math.max(5, (parseInt(ex.targetReps) || 10) - 2);
+      });
+    } else if (readinessScore > 8) {
+      adjustmentNote = "Feeling great! Increasing intensity slightly.";
+      adjustedWorkout.exercises.forEach(ex => {
+        ex.targetReps = (parseInt(ex.targetReps) || 10) + 1;
+      });
     }
+    adjustedWorkout.adjustmentNote = adjustmentNote;
+    return adjustedWorkout;
+  }
+
+  // --- 7. Exercise Selection Algorithm ---
+  calculateEPS(exercise, context = {}) {
+    const { weakMuscles = [], recentExercises = [], gender } = context;
+    const compoundBonus = exercise.type === 'compound' ? 3 : 1;
+    const isWeakMuscle = weakMuscles.includes(exercise.muscleGroup);
+    const weaknessMultiplier = isWeakMuscle ? 1.5 : 1.0;
+    let noveltyFactor = 0;
+    const lastUsedIndex = recentExercises.findIndex(e => e.id === exercise.id);
+    if (lastUsedIndex === -1) noveltyFactor = 2;
+    else if (lastUsedIndex > 4) noveltyFactor = 1;
+    const recoveryCostMap = { high: -1, medium: 0, low: 1 };
+    const recoveryCost = recoveryCostMap[exercise.recoveryCost] || 0;
     
-    const workoutsCompleted = (this.userData.workouts || []).length;
-    const mesocycle = this.userData.mesocycle;
-    const totalWorkoutDays = mesocycle.weeks.reduce((total, week) => total + week.days.length, 0);
-    
-    if (workoutsCompleted >= totalWorkoutDays) {
-        // Generate new mesocycle if completed
-        const engine = new WorkoutEngine(this.userData);
-        this.userData.mesocycle = engine.generateMesocycle(Number(this.userData.daysPerWeek || 4));
-        saveDataLocally(this.userData);
-        this._showToast("New training cycle started!", "success");
+    let genderModifier = 1.0;
+    if (gender === 'female' && (exercise.muscleGroup === 'glutes' || exercise.muscleGroup === 'hamstrings')) {
+      genderModifier = 1.2;
     }
-    
-    // Calculate current position in mesocycle
-    let currentWorkoutIndex = workoutsCompleted % totalWorkoutDays;
-    let workoutDayCount = 0;
-    
-    for (const week of mesocycle.weeks) {
-        for (const day of week.days) {
-            if (workoutDayCount === currentWorkoutIndex) {
-                return {
-                    name: `Week ${week.week} - ${day.muscleGroups.join(' & ')}`,
-                    exercises: day.exercises || []
-                };
-            }
-            workoutDayCount++;
+
+    const score = (compoundBonus + noveltyFactor + recoveryCost) * weaknessMultiplier * genderModifier;
+    return score;
+  }
+
+  selectExercisesForMuscle(muscleGroup, count = 2, context = {}) {
+    const availableExercises = this.exerciseDatabase[muscleGroup];
+    if (!availableExercises) return [];
+    const scoredExercises = availableExercises.map(ex => ({
+      ...ex,
+      muscleGroup: muscleGroup,
+      score: this.calculateEPS(ex, context),
+    }));
+    scoredExercises.sort((a, b) => b.score - a.score);
+    return scoredExercises.slice(0, count);
+  }
+  
+  // --- Workout Split Logic ---
+  getWorkoutSplit(daysPerWeek) {
+    const splits = {
+      3: [
+        { name: 'Full Body A', groups: ['chest', 'back', 'legs'] },
+        { name: 'Full Body B', groups: ['shoulders', 'arms', 'legs'] },
+        { name: 'Full Body C', groups: ['chest', 'back', 'arms'] }
+      ],
+      4: [
+        { name: 'Upper A', groups: ['chest', 'back', 'shoulders'] },
+        { name: 'Lower A', groups: ['quads', 'hamstrings', 'glutes'] },
+        { name: 'Upper B', groups: ['chest', 'back', 'biceps', 'triceps'] },
+        { name: 'Lower B', groups: ['quads', 'hamstrings', 'calves'] }
+      ],
+      5: [
+        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
+        { name: 'Pull', groups: ['back', 'biceps'] },
+        { name: 'Legs', groups: ['quads', 'hamstrings', 'glutes'] },
+        { name: 'Upper', groups: ['chest', 'back', 'shoulders'] },
+        { name: 'Lower', groups: ['quads', 'hamstrings', 'calves'] }
+      ],
+      6: [
+        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
+        { name: 'Pull', groups: ['back', 'biceps'] },
+        { name: 'Legs', groups: ['quads', 'hamstrings', 'glutes'] },
+        { name: 'Push', groups: ['chest', 'shoulders', 'triceps'] },
+        { name: 'Pull', groups: ['back', 'biceps'] },
+        { name: 'Legs', groups: ['quads', 'hamstrings', 'calves'] }
+      ]
+    };
+    return splits[daysPerWeek] || splits[4];
+  }
+
+  // --- 9. Periodization Model ---
+  generateMesocycle(daysPerWeek, mesocycleLength = 4) {
+    const mesocycle = { weeks: [] };
+    const workoutSplit = this.getWorkoutSplit(daysPerWeek);
+    const userGender = this.userProfile.sex;
+
+    for (let week = 1; week <= mesocycleLength; week++) {
+      const weeklyPlan = { week: week, days: [] };
+      
+      for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
+        const splitDay = workoutSplit[dayIndex % workoutSplit.length];
+        const dayPlan = { 
+          name: splitDay.name,
+          muscleGroups: splitDay.groups, 
+          exercises: [] 
+        };
+        
+        for (const muscle of splitDay.groups) {
+          const landmarks = this.getVolumeLandmarks(muscle, Math.ceil(daysPerWeek / workoutSplit.length));
+          const startingVolume = landmarks.mev * 1.1;
+          const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
+          
+          const numExercises = targetVolume > 12 ? 3 : 2;
+          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+
+          let setsRemaining = targetVolume;
+          const exercisesWithSets = selectedExercises.map((ex, index) => {
+              const setsForThisEx = Math.round(setsRemaining / (selectedExercises.length - index));
+              setsRemaining -= setsForThisEx;
+              return {
+                  name: ex.name,
+                  sets: Array(Math.max(1, setsForThisEx)).fill({}),
+                  targetReps: ex.type === 'compound' ? (userGender === 'male' ? "6-8" : "8-10") : "10-12",
+                  muscleGroup: muscle,
+                  category: ex.type || 'strength',
+                  type: ex.type
+              };
+          });
+          dayPlan.exercises.push(...exercisesWithSets);
         }
+        weeklyPlan.days.push(dayPlan);
+      }
+      mesocycle.weeks.push(weeklyPlan);
     }
     
-    // Fallback to first workout if something goes wrong
-    const firstWeek = mesocycle.weeks[0];
-    const firstDay = firstWeek?.days[0];
+    // Add a deload week
+    const deloadWeek = { week: mesocycleLength + 1, isDeload: true, days: [] };
+    for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
+      const splitDay = workoutSplit[dayIndex % workoutSplit.length];
+      const deloadDayPlan = { 
+        name: `${splitDay.name} (Deload)`,
+        muscleGroups: splitDay.groups, 
+        exercises: [] 
+      };
+      for (const muscle of splitDay.groups) {
+          const landmarks = this.getVolumeLandmarks(muscle);
+          const deloadVolume = Math.round(landmarks.mev * 0.6);
+          const numExercises = deloadVolume > 8 ? 2 : 1;
+          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+          const exercisesWithSets = selectedExercises.map(ex => ({
+              name: ex.name,
+              sets: Array(Math.max(1, Math.round(deloadVolume / numExercises))).fill({}),
+              targetReps: ex.type === 'compound' ? "6-8" : "10-12",
+              muscleGroup: muscle,
+              category: ex.type || 'strength',
+              type: ex.type
+          }));
+          deloadDayPlan.exercises.push(...exercisesWithSets);
+      }
+      deloadWeek.days.push(deloadDayPlan);
+    }
+    mesocycle.weeks.push(deloadWeek);
     
-    return {
-        name: `Week ${firstWeek?.week || 1} - ${firstDay?.muscleGroups.join(' & ') || 'Workout'}`,
-        exercises: firstDay?.exercises || []
-    };
+    return mesocycle;
   }
 
-  createRenderRoot() {
-    return this;
+  // --- 10. Long-term Progression ---
+  adaptVolumeLandmarks() {
+    const taf = this.calculateTAF();
+    let adaptationRate = 0.01; 
+    if (taf < 1.5) adaptationRate = 0.05; 
+    else if (taf < 2.5) adaptationRate = 0.025; 
+
+    const currentBaseMEV = this.userProfile.baseMEV || this.baseMEV;
+    const newBaseMEV = {};
+
+    for (const muscle in currentBaseMEV) {
+      newBaseMEV[muscle] = Math.round(currentBaseMEV[muscle] * (1 + adaptationRate));
+    }
+    
+    return newBaseMEV;
+  }
+
+  // --- Integrated Workout Generation ---
+  generateDailyWorkout(muscleGroupsForDay, weeklyPlan) {
+    let exercises = [];
+    const userGender = this.userProfile.sex;
+    const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [], gender: userGender }; 
+    for (const muscle of muscleGroupsForDay) {
+        const landmarks = this.getVolumeLandmarks(muscle);
+        const targetVolume = weeklyPlan.muscleData?.[muscle]?.targetVolume || landmarks.mev;
+        const numExercises = targetVolume > 12 ? 3 : 2;
+        const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
+        let setsRemaining = targetVolume;
+        const exercisesWithSets = selected.map((ex, index) => {
+            const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
+            setsRemaining -= setsForThisEx;
+            
+            const targetReps = ex.type === 'compound' 
+                ? (userGender === 'male' ? "6-8" : "8-10")
+                : "10-15";
+            
+            return {
+                ...ex,
+                sets: Array(Math.max(1, setsForThisEx)).fill({}),
+                targetReps: targetReps,
+                muscleGroup: muscle,
+                category: ex.type || 'strength',
+            };
+        });
+        exercises.push(...exercisesWithSets);
+    }
+    return {
+        name: `Dynamic Workout - ${muscleGroupsForDay.join(', ')}`,
+        exercises: exercises,
+    };
   }
 }
-
-function createDefaultUserData() {
-    return {
-        onboardingComplete: false,
-        workouts: [],
-        templates: [],
-        currentWeek: 1,
-        workoutsCompletedThisMeso: 0,
-        totalXP: 0,
-        level: 1,
-        baseMEV: { chest: 8, back: 10, shoulders: 8, arms: 6, legs: 14 }
-    };
-}
-
-customElements.define("app-shell", AppShell);
