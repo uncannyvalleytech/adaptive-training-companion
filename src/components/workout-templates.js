@@ -267,9 +267,7 @@ class WorkoutTemplates extends LitElement {
         ]
     };
     
-    this.premadeMesocycles = [
-      
-    ];
+    this.premadeMesocycles = [];
   }
 
   connectedCallback() {
@@ -315,44 +313,92 @@ class WorkoutTemplates extends LitElement {
   async _saveTemplate() {
     this.isSaving = true;
     try {
+        if (!this.newTemplateName.trim()) {
+            throw new Error("Please enter a template name");
+        }
+        
+        const validExercises = this.newTemplateExercises.filter(ex => ex.name && ex.muscleGroup);
+        if (validExercises.length === 0) {
+            throw new Error("Please add at least one exercise");
+        }
+
         const newTemplate = {
-            name: this.newTemplateName,
+            id: Date.now().toString(),
+            name: this.newTemplateName.trim(),
             primaryFocus: "custom",
             daysPerWeek: 0,
             genderFocus: "all",
             equipment: [],
-            exercises: this.newTemplateExercises.map(ex => ({
+            exercises: validExercises.map(ex => ({
                 name: ex.name,
                 sets: Array(Number(ex.sets) || 3).fill({}),
-                targetReps: Number(ex.reps) || 10,
+                targetReps: `${Number(ex.reps) || 10}`,
                 targetRir: Number(ex.rir) || 2,
+                muscleGroup: ex.muscleGroup
             }))
         };
-        const updatedTemplates = [...this.templates.filter(t => t.primaryFocus !== "custom"), newTemplate];
+        
+        const existingData = getDataLocally();
+        const existingTemplates = existingData?.templates || [];
+        const customTemplates = existingTemplates.filter(t => t.primaryFocus === "custom");
+        const otherTemplates = existingTemplates.filter(t => t.primaryFocus !== "custom");
+        const updatedTemplates = [...otherTemplates, ...customTemplates, newTemplate];
+        
         const response = saveDataLocally({ templates: updatedTemplates });
 
         if (response.success) {
             this.templates = updatedTemplates;
             this.currentRoutineView = "menu";
             this.newTemplateName = "";
-            this.newTemplateExercises = [];
-            this.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Template saved successfully!', type: 'success' }, bubbles: true, composed: true }));
+            this.newTemplateExercises = [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }];
+            this.dispatchEvent(new CustomEvent('show-toast', { 
+                detail: { message: 'Template saved successfully!', type: 'success' }, 
+                bubbles: true, 
+                composed: true 
+            }));
         } else {
-            throw new Error(response.error);
+            throw new Error(response.error || "Failed to save template");
         }
     } catch (error) {
-        this.dispatchEvent(new CustomEvent('show-toast', { detail: { message: `Failed to save template: ${error.message}`, type: 'error' }, bubbles: true, composed: true }));
+        console.error("Save template error:", error);
+        this.dispatchEvent(new CustomEvent('show-toast', { 
+            detail: { message: error.message, type: 'error' }, 
+            bubbles: true, 
+            composed: true 
+        }));
     } finally {
         this.isSaving = false;
     }
   }
   
   _loadTemplate(template) {
+    // Ensure template has proper structure for workout session
+    const workoutTemplate = {
+        name: template.name,
+        exercises: (template.exercises || []).map(exercise => ({
+            name: exercise.name,
+            sets: exercise.sets || Array(3).fill({}),
+            targetReps: exercise.targetReps || "8-12",
+            targetRir: exercise.targetRir || 2,
+            muscleGroup: exercise.muscleGroup || this._inferMuscleGroup(exercise.name)
+        }))
+    };
+
     this.dispatchEvent(new CustomEvent('start-workout-with-template', { 
-      detail: { template: template },
+      detail: { template: workoutTemplate },
       bubbles: true, 
       composed: true 
     }));
+  }
+
+  _inferMuscleGroup(exerciseName) {
+    const name = exerciseName.toLowerCase();
+    for (const [muscleGroup, exercises] of Object.entries(this.exerciseDatabase)) {
+      if (exercises.some(ex => ex.name.toLowerCase() === name)) {
+        return muscleGroup;
+      }
+    }
+    return 'general';
   }
 
   _handleFilterChange(e) {
@@ -432,13 +478,30 @@ class WorkoutTemplates extends LitElement {
         <nav class="home-nav-buttons">
           <button class="hub-option card-interactive" @click=${() => this.currentRoutineView = 'premade'}>
             <div class="hub-option-icon">📋</div>
-            <div class="hub-option-text"><h3>Pre Made Mesocycles</h3><p>Choose from our library</p></div>
+            <div class="hub-option-text"><h3>Pre-Made Templates</h3><p>Choose from our library</p></div>
           </button>
           <button class="hub-option card-interactive" @click=${() => this.currentRoutineView = 'create'}>
             <div class="hub-option-icon">✍️</div>
             <div class="hub-option-text"><h3>Create Your Own</h3><p>Build a routine from scratch</p></div>
           </button>
         </nav>
+        
+        ${this.templates.length > 0 ? html`
+          <h2 class="section-title">Your Templates</h2>
+          <div class="templates-list">
+            ${this.templates.filter(t => t.primaryFocus === "custom").map(template => html`
+              <div class="card link-card template-card" @click=${() => this._loadTemplate(template)}>
+                <div class="template-info">
+                  <h3>${template.name}</h3>
+                  <p>${template.exercises?.length || 0} exercises</p>
+                </div>
+                <button class="btn-icon" aria-label="Load template">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
+            `)}
+          </div>
+        ` : ''}
       `;
   }
   
@@ -449,55 +512,33 @@ class WorkoutTemplates extends LitElement {
     const genderOptions = [...new Set(this.premadeMesocycles.flatMap(t => t.genderFocus))].filter(g => g !== 'all');
     const equipmentOptions = [...new Set(this.premadeMesocycles.flatMap(t => t.equipment))];
 
+    // Show templates from local storage if no premade mesocycles
+    const templatesToShow = filteredMesocycles.length > 0 
+      ? filteredMesocycles 
+      : this.templates.filter(t => t.primaryFocus !== "custom");
+
     return html`
-      <div class="filter-controls card">
-          <div class="input-group">
-            <label for="focus-select">Primary Focus:</label>
-            <select name="focus" id="focus-select" @change=${this._handleFilterChange}>
-              <option value="all">All</option>
-              ${focusOptions.map(focus => html`<option value="${focus}">${focus}</option>`)}
-            </select>
-          </div>
-          <div class="input-group">
-            <label for="frequency-select">Workout Frequency (days/week):</label>
-            <select name="frequency" id="frequency-select" @change=${this._handleFilterChange}>
-              <option value="all">All</option>
-               ${frequencyOptions.map(days => html`<option value="${days}">${days}</option>`)}
-            </select>
-          </div>
-          <div class="input-group">
-            <label>Equipment:</label>
-            <div class="checkbox-group">
-              ${equipmentOptions.map(eq => html`
-                <label class="checkbox-label">
-                  <input type="checkbox" name="equipment" value="${eq}" @change=${this._handleFilterChange} .checked=${this.selectedEquipment.includes(eq)}>
-                  ${eq.charAt(0).toUpperCase() + eq.slice(1)}
-                </label>
-              `)}
-            </div>
-          </div>
-          <div class="input-group">
-            <label for="gender-select">Gender Focus:</label>
-            <select name="genderFocus" id="gender-select" @change=${this._handleFilterChange}>
-              <option value="all">All</option>
-              ${genderOptions.map(gender => html`<option value="${gender}">${gender.charAt(0).toUpperCase() + gender.slice(1)}</option>`)}
-            </select>
-          </div>
+      ${filteredMesocycles.length === 0 && templatesToShow.length === 0 ? html`
+        <div class="card">
+          <p class="no-data">No pre-made templates available. Try creating your own!</p>
         </div>
-      <div class="templates-list">
-        ${filteredMesocycles.length === 0 ? html`<p class="no-data">No mesocycles match your criteria.</p>` : ''}
-        ${filteredMesocycles.map(meso => html`
-          <div class="card link-card template-card" @click=${() => this.selectedMesocycle = meso}>
-            <div class="template-info">
-              <h3>${meso.name}</h3>
-              <p>${meso.primaryFocus} | ${meso.daysPerWeek}x/week</p>
+      ` : ''}
+      
+      ${templatesToShow.length > 0 ? html`
+        <div class="templates-list">
+          ${templatesToShow.map(template => html`
+            <div class="card link-card template-card" @click=${() => this._loadTemplate(template)}>
+              <div class="template-info">
+                <h3>${template.name}</h3>
+                <p>${template.exercises?.length || 0} exercises</p>
+              </div>
+              <button class="btn-icon" aria-label="Load template">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
-            <button class="btn-icon" aria-label="View mesocycle">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </button>
-          </div>
-        `)}
-      </div>
+          `)}
+        </div>
+      ` : ''}
     `;
   }
   
@@ -577,9 +618,9 @@ class WorkoutTemplates extends LitElement {
                 </button>
               </div>
               <div class="exercise-details">
-                <label>Sets: <input type="number" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(index, 'sets', e.target.value)}></label>
-                <label>Reps: <input type="number" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(index, 'reps', e.target.value)}></label>
-                <label>RIR: <input type="number" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(index, 'rir', e.target.value)}></label>
+                <label>Sets: <input type="number" min="1" max="10" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(index, 'sets', e.target.value)}></label>
+                <label>Reps: <input type="number" min="1" max="50" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(index, 'reps', e.target.value)}></label>
+                <label>RIR: <input type="number" min="0" max="10" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(index, 'rir', e.target.value)}></label>
               </div>
             </div>
           `})}
