@@ -25,7 +25,10 @@ class WorkoutTemplates extends LitElement {
     selectedEquipment: { type: Array },
     selectedGenderFocus: { type: String },
     currentRoutineView: { type: String }, // 'menu', 'premade', 'create'
-    selectedMesocycle: { type: Object }, // The selected mesocycle to view its phases
+    selectedProgram: { type: Object },
+    selectedDurationType: { type: String },
+    selectedDuration: { type: Number },
+    selectedStartWorkout: { type: Number },
   };
 
   constructor() {
@@ -42,7 +45,10 @@ class WorkoutTemplates extends LitElement {
     this.selectedEquipment = [];
     this.selectedGenderFocus = "all";
     this.currentRoutineView = "menu";
-    this.selectedMesocycle = null;
+    this.selectedProgram = null;
+    this.selectedDurationType = 'weeks';
+    this.selectedDuration = 4;
+    this.selectedStartWorkout = 0;
 
     this.exerciseDatabase = {
         'chest': [
@@ -977,20 +983,9 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
   }
   
   _loadTemplate(template) {
-    // Ensure template has proper structure for workout session
-    const workoutTemplate = {
-        name: template.name,
-        exercises: (template.exercises || []).map(exercise => ({
-            name: exercise.name,
-            sets: exercise.sets || Array(3).fill({}),
-            targetReps: exercise.targetReps || "8-12",
-            targetRir: exercise.targetRir || 2,
-            muscleGroup: exercise.muscleGroup || this._inferMuscleGroup(exercise.name)
-        }))
-    };
-
+    // This will be handled by the new program detail view
     this.dispatchEvent(new CustomEvent('start-workout-with-template', { 
-      detail: { template: workoutTemplate },
+      detail: { template: template },
       bubbles: true, 
       composed: true 
     }));
@@ -1051,8 +1046,8 @@ SECTION 6: RENDERING LOGIC
             viewContent = this._renderRoutineMenu();
             break;
         case 'premade':
-            if (this.selectedMesocycle) {
-                viewContent = this._renderMesocyclePhases();
+            if (this.selectedProgram) {
+                viewContent = this._renderProgramDetailView();
             } else {
                 viewContent = this._renderMesocycleList();
             }
@@ -1068,13 +1063,13 @@ SECTION 6: RENDERING LOGIC
       <div class="container">
         <header class="app-header">
           <h1>Routine</h1>
-          ${this.currentRoutineView !== 'menu' && !this.selectedMesocycle ? html`
+          ${this.currentRoutineView !== 'menu' && !this.selectedProgram ? html`
               <button class="btn btn-icon" @click=${() => this.currentRoutineView = 'menu'}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
               </button>
           ` : ''}
-          ${this.selectedMesocycle ? html`
-              <button class="btn btn-icon" @click=${() => this.selectedMesocycle = null}>
+          ${this.selectedProgram ? html`
+              <button class="btn btn-icon" @click=${() => this.selectedProgram = null}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
               </button>
           ` : ''}
@@ -1133,7 +1128,7 @@ SECTION 6: RENDERING LOGIC
       ${filteredMesocycles.length > 0 ? html`
         <div class="templates-list">
           ${filteredMesocycles.map(program => html`
-            <div class="card link-card template-card" @click=${() => this.selectedMesocycle = program}>
+            <div class="card link-card template-card" @click=${() => this.selectedProgram = program}>
               <div class="template-info">
                 <h3>${program.name}</h3>
                 <p>${program.workouts.length} workouts</p>
@@ -1148,31 +1143,73 @@ SECTION 6: RENDERING LOGIC
     `;
   }
   
-  _renderMesocyclePhases() {
-      if (!this.selectedMesocycle) return html``;
+  _renderProgramDetailView() {
+      if (!this.selectedProgram) return html``;
       
+      const durationOptions = this.selectedDurationType === 'weeks' 
+        ? [4, 5, 6, 7, 8] 
+        : [30, 60, 90];
+
       return html`
-        <div class="mesocycle-phases-view">
-          <h2>${this.selectedMesocycle.name}</h2>
-          <p>Choose a workout to start.</p>
+        <div class="program-detail-view">
+          <h2>${this.selectedProgram.name}</h2>
+          <p>Customize your program before starting.</p>
           
-            <div class="card" style="margin-bottom: var(--space-6);">
-              <div class="templates-list" style="margin-top: var(--space-4);">
-                ${this.selectedMesocycle.workouts.map(workout => html`
-                  <div class="card link-card template-card">
-                    <div class="template-info" @click=${() => this._loadTemplate(workout)}>
-                      <h3>${workout.name.split(' - ')[1]}</h3>
-                      <p>${workout.exercises.length} exercises</p>
-                    </div>
-                    <button class="btn-icon" @click=${() => this._loadTemplate(workout)} aria-label="Load workout">
-                      ▶️
-                    </button>
-                  </div>
-                `)}
-              </div>
+          <div class="card">
+            <h3>Program Duration</h3>
+            <div class="button-toggle-group">
+                <button class="toggle-btn ${this.selectedDurationType === 'weeks' ? 'active' : ''}" @click=${() => this.selectedDurationType = 'weeks'}>Weeks</button>
+                <button class="toggle-btn ${this.selectedDurationType === 'days' ? 'active' : ''}" @click=${() => this.selectedDurationType = 'days'}>Days</button>
             </div>
+            <div class="input-group slider-group">
+              <label for="duration">Duration: <strong>${this.selectedDuration} ${this.selectedDurationType}</strong></label>
+              <input
+                type="range"
+                id="duration"
+                .value=${this.selectedDuration}
+                @input=${(e) => this.selectedDuration = Number(e.target.value)}
+                min="${durationOptions[0]}"
+                max="${durationOptions[durationOptions.length - 1]}"
+                step="1"
+              />
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Starting Workout</h3>
+            <div class="button-toggle-group">
+              ${this.selectedProgram.workouts.map((workout, index) => html`
+                <button 
+                  class="toggle-btn ${this.selectedStartWorkout === index ? 'active' : ''}" 
+                  @click=${() => this.selectedStartWorkout = index}>
+                  ${workout.name.split(' - ')[1]}
+                </button>
+              `)}
+            </div>
+          </div>
+          
+          <button class="btn btn-primary cta-button" @click=${this._startProgram}>
+            Start Program
+          </button>
         </div>
       `;
+  }
+
+  _startProgram() {
+      const { selectedProgram, selectedDurationType, selectedDuration, selectedStartWorkout } = this;
+      
+      this.dispatchEvent(new CustomEvent('program-selected', {
+          detail: {
+              program: selectedProgram,
+              duration: {
+                  type: selectedDurationType,
+                  value: selectedDuration,
+              },
+              startWorkoutIndex: selectedStartWorkout,
+          },
+          bubbles: true,
+          composed: true,
+      }));
   }
 
   _getExercisesForGroup(groupName) {
