@@ -16,7 +16,7 @@ import "./history-view.js";
 import "./settings-view.js";
 import "./workout-templates.js";
 import "./analytics-dashboard.js";
-import "./achievements-view.js";
+import "./goals-view.js";
 import "./readiness-modal.js";
 
 /*
@@ -262,8 +262,8 @@ SECTION 6: VIEW RENDERING LOGIC
         return html`<analytics-dashboard></analytics-dashboard>`;
       case 'settings':
         return html`<settings-view></settings-view>`;
-       case 'achievements':
-        return html`<achievements-view></achievements-view>`;
+       case 'goals':
+        return html`<goals-view></goals-view>`;
       case 'workout':
         return html`<workout-session .workout=${this.currentWorkout}></workout-session>`;
       case 'summary':
@@ -348,11 +348,11 @@ SECTION 6: VIEW RENDERING LOGIC
                     <p>Track your journey</p>
                 </div>
             </button>
-            <button class="hub-option card-interactive" @click=${() => this._navigateTo('achievements')}>
+            <button class="hub-option card-interactive" @click=${() => this._navigateTo('goals')}>
                 <div class="hub-option-icon">🏆</div>
                 <div class="hub-option-text">
-                    <h3>Achievements</h3>
-                    <p>Unlock rewards</p>
+                    <h3>Goals</h3>
+                    <p>Set and track your goals</p>
                 </div>
             </button>
         </nav>
@@ -365,7 +365,7 @@ SECTION 6: VIEW RENDERING LOGIC
       { view: 'home', label: 'Home', icon: '🏠' },
       { view: 'templates', label: 'Routines', icon: '📋' },
       { view: 'history', label: 'History', icon: '📊' },
-      { view: 'analytics', label: 'Analytics', icon: '📈' },
+      { view: 'goals', label: 'Goals', icon: '🏆' },
       { view: 'settings', label: 'Settings', icon: '⚙️' },
     ];
     return html`
