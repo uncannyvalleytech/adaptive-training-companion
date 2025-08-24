@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 
 class ReadinessModal extends LitElement {
   static properties = {
@@ -6,6 +6,36 @@ class ReadinessModal extends LitElement {
     onClose: { type: Function },
     onSubmit: { type: Function },
   };
+
+  // SECTION 1: STYLES
+  // Added component-specific styles to make the modal more compact.
+  static styles = css`
+    .modal-content {
+      max-height: 95vh; /* Ensure it fits on screen */
+      overflow-y: auto;
+    }
+    .modal-subtitle {
+      margin-bottom: var(--space-4); /* Reduced from space-6 */
+    }
+    .form-inputs {
+      margin: var(--space-4) 0; /* Reduced from space-8 */
+      gap: var(--space-4);      /* Reduced from space-6 */
+    }
+    .slider-group {
+      margin-bottom: 0; /* Reduced from space-5 */
+    }
+    .slider-group label {
+      margin-bottom: var(--space-2); /* Reduced from space-3 */
+    }
+    .button-group {
+      margin-top: var(--space-5); /* Reduced from space-6 */
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .cta-button, .secondary-button {
+      width: 100%;
+    }
+  `;
 
   constructor() {
     super();
@@ -17,6 +47,7 @@ class ReadinessModal extends LitElement {
     };
   }
   
+  // SECTION 2: EVENT HANDLERS
   _handleSliderInput(e) {
     const { field } = e.target.dataset;
     const value = e.target.value;
@@ -36,13 +67,13 @@ class ReadinessModal extends LitElement {
     }
   }
 
-  // This function ensures the modal only closes on a direct click to the overlay
   _handleOverlayClick(e) {
     if (e.target === e.currentTarget) {
       this._handleClose();
     }
   }
 
+  // SECTION 3: RENDER METHOD
   render() {
     return html`
       <div class="modal-overlay" @click=${this._handleOverlayClick}>
