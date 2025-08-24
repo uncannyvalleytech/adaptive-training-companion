@@ -235,15 +235,13 @@ SECTION 6: VIEW RENDERING LOGIC
   }
 
   _renderHomeView() {
-    // Generate a suggested workout for the day
     const dayOfWeek = new Date().getDay();
     const split = this.workoutEngine.getWorkoutSplit(this.userData.daysPerWeek || 4);
     const todaySplitDay = split[dayOfWeek % split.length];
     
-    // The workout generation is complex, let's keep it simple for now
     const suggestedWorkout = {
       name: `Today's Suggested: ${todaySplitDay.name}`,
-      exercises: this.workoutEngine.generateDailyWorkout(todaySplitDay.groups, {}).exercises
+      exercises: this.workoutEngine.generateDailyWorkout(todaySplitDay.groups).exercises
     };
 
     return html`
