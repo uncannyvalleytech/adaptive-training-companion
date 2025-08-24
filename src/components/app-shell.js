@@ -148,8 +148,16 @@ SECTION 4: EVENT HANDLERS
   }
 
   _handleWorkoutCompleted(e) {
-    // We already saved the workout in workout-session.js
-    // We just need to update the view and show a confirmation
+    const { completedWorkoutDay } = e.detail;
+    if (this.userData.activeProgram && completedWorkoutDay) {
+        const program = this.userData.activeProgram;
+        const workoutIndex = program.workouts.findIndex(w => w.day === completedWorkoutDay);
+        if (workoutIndex > -1) {
+            program.workouts[workoutIndex].completed = true;
+            saveDataLocally({ activeProgram: program });
+        }
+    }
+
     this.currentView = 'home';
     this.currentWorkout = null;
     this.loadUserData(); // Reload data to reflect new workout
