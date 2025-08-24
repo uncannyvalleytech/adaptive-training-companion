@@ -2553,8 +2553,24 @@ body[data-theme="light"] .answer-option label:hover {
 }
 
 /* =============================================== */
+/* =============================================== */
 /* 32. FINAL INTERACTIVE FIXES                    */
 /* =============================================== */
+
+/* Fix for .goal-card in section 32 - line 2847 has syntax error */
+.goal-card {
+  background: var(--gradient-surface);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Fixed: was "1 px" with space */
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10;
+}
 
 /* Ensure all interactive elements are always clickable */
 button,
@@ -2563,9 +2579,9 @@ select,
 textarea,
 [role="button"],
 [tabindex]:not([tabindex="-1"]) {
- pointer-events: auto !important;
- position: relative;
- z-index: 10;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 10;
 }
 
 /* Prevent any parent hover effects from interfering with child interactions */
@@ -2574,54 +2590,54 @@ textarea,
 .card-interactive:hover select,
 .card-interactive:hover textarea,
 .card-interactive:hover [role="button"] {
- pointer-events: auto !important;
- position: relative;
- z-index: 20;
- transform: none !important;
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 20;
+  transform: none !important;
 }
 
 /* Ensure touch targets are large enough on mobile */
 @media (max-width: 768px) {
- button,
- input,
- select,
- .btn,
- [role="button"] {
-   min-height: 44px;
-   min-width: 44px;
- }
+  button,
+  input,
+  select,
+  .btn,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
  
- .set-complete-btn {
-   width: 44px;
-   height: 44px;
- }
+  .set-complete-btn {
+    width: 44px;
+    height: 44px;
+  }
  
- .btn-icon {
-   width: 48px;
-   height: 48px;
- }
+  .btn-icon {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* Accessibility: Ensure focus is always visible */
 *:focus-visible {
- outline: 2px solid var(--color-accent-primary) !important;
- outline-offset: 2px !important;
- z-index: 100 !important;
+  outline: 2px solid var(--color-accent-primary) !important;
+  outline-offset: 2px !important;
+  z-index: 100 !important;
 }
 
 /* Ensure modals and overlays don't interfere with clicks */
 .modal-overlay {
- pointer-events: auto;
+  pointer-events: auto;
 }
 
 .modal-content {
- pointer-events: auto;
- position: relative;
- z-index: 1001;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1001;
 }
 
 .modal-content * {
- pointer-events: auto;
+  pointer-events: auto;
 }
 /* =============================================== */
 /* 33. TEMPLATE AND WORKOUT SPECIFIC STYLES       */
