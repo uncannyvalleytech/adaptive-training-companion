@@ -172,11 +172,56 @@ h4 { font-size: var(--font-size-xl); }
   text-align: center;
   font-size: var(--font-size-display-md);
   font-weight: 800;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-text-primary); /* CHANGED: Replaced gradient with solid color */
 }
+
+/* =============================================== */
+/* 3.5 BOTTOM NAVIGATION                           */
+/* =============================================== */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(60px + env(safe-area-inset-bottom));
+  background: rgba(31, 34, 51, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding-top: var(--space-2);
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--border-color);
+  z-index: 100;
+}
+
+body[data-theme="light"] .bottom-nav {
+  background: rgba(241, 245, 249, 0.8);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  gap: 2px;
+  transition: color 0.2s ease-in-out;
+  flex: 1;
+}
+
+.nav-item.active {
+  color: var(--color-accent-primary);
+}
+
+.nav-icon {
+  font-size: 24px; /* ADDED: Explicit size for emoji icons */
+}
+
 
 /* =============================================== */
 /* 4. MODERN CARD SYSTEM                          */
