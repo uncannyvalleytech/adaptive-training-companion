@@ -45,14 +45,19 @@ class HistoryView extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     // Clean up charts when the component is removed
-    Object.values(this.chartInstances).forEach(chart => chart.destroy());
+    Object.values(this.chartInstances).forEach(chart => {
+      if (chart && typeof chart.destroy === 'function') {
+        chart.destroy();
+      }
+    });
     window.removeEventListener('units-change', this._handleUnitsChange.bind(this));
   }
   
   _handleUnitsChange(units) {
     this.units = units;
     this.requestUpdate();
-    this.createCharts();
+    // Delay chart recreation to ensure DOM is updated
+    setTimeout(() => this.createCharts(), 200);
   }
 
   async fetchWorkoutHistory() {
@@ -61,9 +66,11 @@ class HistoryView extends LitElement {
 
     try {
       const data = getDataLocally();
-      if (data && data.workouts) {
+      if (data && data.workouts && Array.isArray(data.workouts)) {
         // Sort workouts by date, newest to oldest for display
-        const sortedWorkouts = data.workouts.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const sortedWorkouts = data.workouts
+          .filter(workout => workout && workout.date && workout.exercises)
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
         this.workouts = sortedWorkouts;
         this.filteredWorkouts = this._applyFilters();
         this.isLoading = false;
@@ -94,10 +101,11 @@ class HistoryView extends LitElement {
   }
 
   _convertWeight(weight) {
+    const numWeight = parseFloat(weight) || 0;
     if (this.units === 'kg') {
-      return (weight * 0.453592).toFixed(1);
+      return (numWeight * 0.453592).toFixed(1);
     }
-    return weight;
+    return numWeight.toString();
   }
   
   updated(changedProperties) {
@@ -109,14 +117,18 @@ class HistoryView extends LitElement {
 
   // Epley formula for 1RM estimation
   _calculate1RM(weight, reps) {
-    if (reps === 1) return weight;
-    return weight * (1 + reps / 30);
+    const w = parseFloat(weight) || 0;
+    const r = parseInt(reps) || 1;
+    if (r === 1) return w;
+    return w * (1 + r / 30);
   }
 
   _calculateVolume(exercises) {
     return exercises.reduce((total, exercise) => {
       const exerciseVolume = (exercise.completedSets || []).reduce((sum, set) => {
-        return sum + (set.reps * set.weight);
+        const weight = parseFloat(set.weight) || 0;
+        const reps = parseInt(set.reps) || 0;
+        return sum + (reps * weight);
       }, 0);
       return total + exerciseVolume;
     }, 0);
@@ -128,8 +140,12 @@ class HistoryView extends LitElement {
     const unitLabel = this.units === 'lbs' ? 'lbs' : 'kg';
 
     this.workouts.forEach(workout => {
+      if (!workout.date || !workout.exercises) return;
+      
       const workoutDate = new Date(workout.date).toLocaleDateString();
       (workout.exercises || []).forEach(exercise => {
+        if (!exercise.name || !exercise.completedSets || exercise.completedSets.length === 0) return;
+        
         if (!exerciseData[exercise.name]) {
           exerciseData[exercise.name] = {
             labels: [],
@@ -141,27 +157,31 @@ class HistoryView extends LitElement {
         let dailyMax1RM = 0;
         let dailyVolume = 0;
         (exercise.completedSets || []).forEach(set => {
-          const estimated1RM = this._calculate1RM(set.weight, set.reps);
-          if (estimated1RM > dailyMax1RM) {
-            dailyMax1RM = estimated1RM;
-          }
-          dailyVolume += set.reps * set.weight;
+          const weight = parseFloat(set.weight) || 0;
+          const reps = parseInt(set.reps) || 0;
+          if (weight > 0 && reps > 0) {
+            const estimated1RM = this._calculate1RM(weight, reps);
+            if (estimated1RM > dailyMax1RM) {
+              dailyMax1RM = estimated1RM;
+            }
+            dailyVolume += reps * weight;
 
-          // Update personal records
-          if (!personalRecords[exercise.name] || estimated1RM > personalRecords[exercise.name].oneRepMax) {
-            personalRecords[exercise.name] = {
-              oneRepMax: Math.round(this._convertWeight(estimated1RM)),
-              weight: this._convertWeight(set.weight),
-              reps: set.reps,
-              date: workoutDate,
-            };
+            // Update personal records
+            if (!personalRecords[exercise.name] || estimated1RM > personalRecords[exercise.name].oneRepMax) {
+              personalRecords[exercise.name] = {
+                oneRepMax: Math.round(parseFloat(this._convertWeight(estimated1RM))),
+                weight: this._convertWeight(weight),
+                reps: reps,
+                date: workoutDate,
+              };
+            }
           }
         });
 
         if (dailyMax1RM > 0) {
           exerciseData[exercise.name].labels.push(workoutDate);
-          exerciseData[exercise.name].data.push(this._convertWeight(dailyMax1RM));
-          exerciseData[exercise.name].volumeData.push(this._convertWeight(dailyVolume));
+          exerciseData[exercise.name].data.push(parseFloat(this._convertWeight(dailyMax1RM)));
+          exerciseData[exercise.name].volumeData.push(parseFloat(this._convertWeight(dailyVolume)));
         }
       });
     });
@@ -174,21 +194,32 @@ class HistoryView extends LitElement {
   }
 
   createCharts() {
-    // Only create charts if Chart.js is available
+    // Only create charts if Chart.js is available and we have data
     if (typeof Chart === 'undefined') {
       console.warn('Chart.js not loaded, skipping chart creation');
+      return;
+    }
+
+    if (!this.workouts || this.workouts.length === 0) {
       return;
     }
 
     const { exerciseData } = this._processDataForCharts();
     const unitLabel = this.units === 'lbs' ? 'lbs' : 'kg';
     
-    Object.values(this.chartInstances).forEach(chart => chart.destroy());
+    // Clean up existing charts
+    Object.values(this.chartInstances).forEach(chart => {
+      if (chart && typeof chart.destroy === 'function') {
+        chart.destroy();
+      }
+    });
     this.chartInstances = {};
 
     for (const exerciseName in exerciseData) {
+      const safeExerciseName = exerciseName.replace(/[^a-zA-Z0-9]/g, '-');
+      
       // 1RM Chart
-      const canvas1RM = this.querySelector(`#chart-1rm-${exerciseName.replace(/\s+/g, '-')}`);
+      const canvas1RM = this.querySelector(`#chart-1rm-${safeExerciseName}`);
       if (canvas1RM) {
         const ctx = canvas1RM.getContext('2d');
         this.chartInstances[`1rm-${exerciseName}`] = new Chart(ctx, {
@@ -199,7 +230,7 @@ class HistoryView extends LitElement {
               label: `Estimated 1RM (${unitLabel})`,
               data: exerciseData[exerciseName].data,
               borderColor: 'var(--color-accent-primary)',
-              backgroundColor: 'rgba(0, 191, 255, 0.2)',
+              backgroundColor: 'rgba(0, 212, 255, 0.2)',
               fill: true,
               tension: 0.4,
               pointBackgroundColor: 'var(--color-accent-primary)',
@@ -258,7 +289,7 @@ class HistoryView extends LitElement {
       }
 
       // Volume Chart
-      const canvasVolume = this.querySelector(`#chart-volume-${exerciseName.replace(/\s+/g, '-')}`);
+      const canvasVolume = this.querySelector(`#chart-volume-${safeExerciseName}`);
       if (canvasVolume) {
         const ctx = canvasVolume.getContext('2d');
         this.chartInstances[`volume-${exerciseName}`] = new Chart(ctx, {
@@ -268,7 +299,7 @@ class HistoryView extends LitElement {
             datasets: [{
               label: `Total Volume (${unitLabel})`,
               data: exerciseData[exerciseName].volumeData,
-              backgroundColor: 'rgba(0, 191, 255, 0.6)',
+              backgroundColor: 'rgba(0, 212, 255, 0.6)',
               borderColor: 'var(--color-accent-primary)',
               borderWidth: 1,
             }]
@@ -339,13 +370,13 @@ class HistoryView extends LitElement {
   }
 
   _applyFilters() {
-    let tempWorkouts = this.workouts;
+    let tempWorkouts = [...this.workouts];
 
     if (this.searchTerm) {
       tempWorkouts = tempWorkouts.map(workout => ({
         ...workout,
         exercises: (workout.exercises || []).filter(exercise =>
-          exercise.name.toLowerCase().includes(this.searchTerm)
+          exercise.name && exercise.name.toLowerCase().includes(this.searchTerm)
         )
       })).filter(workout => workout.exercises.length > 0);
     }
@@ -381,13 +412,13 @@ class HistoryView extends LitElement {
       return this.filteredWorkouts.map((workout, workoutIndex) => html`
         <div class="card workout-card" @click=${() => this._toggleExpand(workoutIndex)}>
           <div class="workout-summary">
-            <h3 class="workout-name">${workout.name}</h3>
+            <h3 class="workout-name">${workout.name || 'Workout Session'}</h3>
             <span class="workout-date">${new Date(workout.date).toLocaleDateString()}</span>
           </div>
           <div class="workout-details ${this.expandedWorkouts[workoutIndex] ? 'expanded' : 'collapsed'}">
             <div class="workout-metrics">
               <p>Total Volume: ${this._convertWeight(this._calculateVolume(workout.exercises))} ${weightUnit}</p>
-              <p>Duration: ${this._formatDuration(workout.durationInSeconds)}</p>
+              <p>Duration: ${this._formatDuration(workout.durationInSeconds || 0)}</p>
             </div>
             ${(workout.exercises || []).map(exercise => html`
               <div class="exercise-item">
@@ -463,14 +494,14 @@ class HistoryView extends LitElement {
         (exercise.completedSets || []).forEach((set, setIndex) => {
           const row = [
             `"${workoutDate}"`,
-            `"${workout.name}"`,
+            `"${workout.name || 'Workout Session'}"`,
             `"${exercise.name}"`,
             `"${exercise.category}"`,
             `"${exercise.muscleGroup}"`,
             setIndex + 1,
             set.reps,
             set.weight,
-            (set.weight * 0.453592).toFixed(1),
+            (parseFloat(set.weight) * 0.453592).toFixed(1),
             set.rir || 0
           ];
           csvContent += row.join(",") + "\n";
@@ -570,27 +601,29 @@ class HistoryView extends LitElement {
 
         ${Object.keys(exerciseData).length > 0 ? html`
           <h2 class="section-title">Strength Progress</h2>
-          ${Object.keys(exerciseData).map(exerciseName => html`
-          <div class="card progress-card">
-            <div class="exercise-header">
-              <div class="exercise-title-group">
-                <span class="exercise-icon">${this._getExerciseIcon('strength')}</span>
-                <h2>${exerciseName}</h2>
+          ${Object.keys(exerciseData).map(exerciseName => {
+            const safeExerciseName = exerciseName.replace(/[^a-zA-Z0-9]/g, '-');
+            return html`
+            <div class="card progress-card">
+              <div class="exercise-header">
+                <div class="exercise-title-group">
+                  <span class="exercise-icon">${this._getExerciseIcon('strength')}</span>
+                  <h2>${exerciseName}</h2>
+                </div>
+              </div>
+              <div class="personal-record">
+                <strong>Personal Record:</strong> 
+                ${personalRecords[exerciseName] 
+                  ? `${personalRecords[exerciseName].weight} ${this.units} x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} ${this.units}) on ${personalRecords[exerciseName].date}`
+                  : 'No records yet.'
+                }
+              </div>
+              <div class="chart-container">
+                <canvas id="chart-1rm-${safeExerciseName}"></canvas>
+                <canvas id="chart-volume-${safeExerciseName}"></canvas>
               </div>
             </div>
-            <div class="personal-record">
-              <strong>Personal Record:</strong> 
-              ${personalRecords[exerciseName] 
-                ? `${personalRecords[exerciseName].weight} ${this.units} x ${personalRecords[exerciseName].reps} reps (Est. 1RM: ${personalRecords[exerciseName].oneRepMax} ${this.units}) on ${personalRecords[exerciseName].date}`
-                : 'No records yet.'
-              }
-            </div>
-            <div class="chart-container">
-              <canvas id="chart-1rm-${exerciseName.replace(/\s+/g, '-')}"></canvas>
-              <canvas id="chart-volume-${exerciseName.replace(/\s+/g, '-')}"></canvas>
-            </div>
-          </div>
-        `)}
+          `})}
         ` : ''}
       </div>
     `;
