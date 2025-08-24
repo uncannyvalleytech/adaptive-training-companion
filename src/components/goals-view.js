@@ -102,7 +102,7 @@ SECTION 5: RENDERING LOGIC
                 ${this.goals.map(goal => html`
                   <div class="card goal-card">
                     <h4>${goal.exercise}</h4>
-                    <p>Target: ${goal.targetWeight} ${goal.units} x ${goal.targetReps} reps</p>
+                    <p>Target: ${goal.targetWeight} ${goal.units || 'lbs'} x ${goal.targetReps} reps</p>
                     <div class="progress-bar">
                       <div class="progress-fill" style="width: 0%;"></div>
                     </div>
