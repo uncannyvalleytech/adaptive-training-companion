@@ -274,21 +274,45 @@ SECTION 5: AUTOREGULATION AND RECOVERY
       });
     }
 
-    // SECTION 5.1: RIR ASSIGNMENT LOGIC
+    // SECTION 5.1: RIR ASSIGNMENT LOGIC (REVISED)
     // This loop ensures every exercise has a targetRir value before the workout starts.
     adjustedWorkout.exercises.forEach(ex => {
+      // Step 1: Ensure muscleGroup exists on the exercise object.
+      if (!ex.muscleGroup) {
+        ex.muscleGroup = this._getExerciseMuscleGroup(ex.name);
+      }
+
+      // Step 2: Ensure targetRir exists, assigning a default if necessary.
       if (ex.targetRir === undefined || ex.targetRir === null) {
-        // Find the exercise type from our database to determine a default RIR
         const dbExercise = this.exerciseDatabase[ex.muscleGroup]?.find(dbEx => dbEx.name === ex.name);
-        const exerciseType = dbExercise?.type || 'compound'; // Default to compound if not found
-        
-        // Assign a default RIR based on exercise type
+        const exerciseType = dbExercise?.type || 'compound';
         ex.targetRir = exerciseType === 'compound' ? 2 : 3;
       }
     });
     
     adjustedWorkout.adjustmentNote = adjustmentNote;
     return adjustedWorkout;
+  }
+
+  // Helper function to infer muscle group from exercise name
+  _getExerciseMuscleGroup(exerciseName) {
+    const name = exerciseName.toLowerCase();
+    for (const group in this.exerciseDatabase) {
+      if (this.exerciseDatabase[group].some(ex => ex.name.toLowerCase() === name)) {
+        return group;
+      }
+    }
+    // Fallback logic if not in database
+    if (name.includes('bench') || name.includes('chest') || name.includes('fly') || name.includes('press-around')) return 'chest';
+    if (name.includes('squat') || name.includes('quad') || name.includes('leg extension')) return 'quads';
+    if (name.includes('deadlift') || name.includes('row') || name.includes('pull') || name.includes('lat') || name.includes('shrug')) return 'back';
+    if (name.includes('curl') && !name.includes('leg curl')) return 'biceps';
+    if (name.includes('tricep') || name.includes('pushdown') || name.includes('skullcrusher') || name.includes('dip')) return 'triceps';
+    if (name.includes('shoulder') || name.includes('lateral') || name.includes('arnold') || (name.includes('press') && !name.includes('bench') && !name.includes('leg'))) return 'shoulders';
+    if (name.includes('leg curl') || name.includes('hamstring') || name.includes('rdl') || name.includes('romanian')) return 'hamstrings';
+    if (name.includes('hip thrust') || name.includes('glute') || name.includes('lunge')) return 'glutes';
+    if (name.includes('calf')) return 'calves';
+    return 'general';
   }
 
 /*
