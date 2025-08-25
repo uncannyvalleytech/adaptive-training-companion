@@ -273,6 +273,20 @@ SECTION 5: AUTOREGULATION AND RECOVERY
         ex.targetReps = (parseInt(ex.targetReps) || 10) + 1;
       });
     }
+
+    // SECTION 5.1: RIR ASSIGNMENT LOGIC
+    // This loop ensures every exercise has a targetRir value before the workout starts.
+    adjustedWorkout.exercises.forEach(ex => {
+      if (ex.targetRir === undefined || ex.targetRir === null) {
+        // Find the exercise type from our database to determine a default RIR
+        const dbExercise = this.exerciseDatabase[ex.muscleGroup]?.find(dbEx => dbEx.name === ex.name);
+        const exerciseType = dbExercise?.type || 'compound'; // Default to compound if not found
+        
+        // Assign a default RIR based on exercise type
+        ex.targetRir = exerciseType === 'compound' ? 2 : 3;
+      }
+    });
+    
     adjustedWorkout.adjustmentNote = adjustmentNote;
     return adjustedWorkout;
   }
