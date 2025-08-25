@@ -293,7 +293,6 @@ SECTION 6: RENDERING
                     ${(exercise.sets || []).map((set, setIndex) => html`
                       <div class="set-row-log ${set.completed ? 'completed' : ''}">
                         <span class="set-number">${setIndex + 1}</span>
-                        <!-- SECTION 6.1: INPUT FIELD UPDATES -->
                         <input 
                           type="tel"
                           inputmode="decimal"
