@@ -34,6 +34,7 @@ class AppShell extends LitElement {
     lastCompletedWorkout: { type: Object },
     showReadinessModal: { type: Boolean },
     toast: { type: Object },
+    editingRoutineId: { type: String, state: true },
   };
 
   constructor() {
@@ -46,6 +47,7 @@ class AppShell extends LitElement {
     this.showReadinessModal = false;
     this.toast = { show: false, message: '', type: '' };
     this.workoutEngine = null;
+    this.editingRoutineId = null;
   }
 
 /*
@@ -68,6 +70,10 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     this.addEventListener('units-change', this._handleUnitsChange);
     this.addEventListener('sign-out', this._handleSignOut);
     this.addEventListener('delete-data', this._handleDeleteData);
+    this.addEventListener('edit-routine', this._handleEditRoutine);
+    this.addEventListener('delete-routine', this._handleDeleteRoutine);
+    this.addEventListener('routine-saved', this._handleRoutineSaved);
+
   }
 
   disconnectedCallback() {
@@ -84,6 +90,10 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     this.removeEventListener('units-change', this._handleUnitsChange);
     this.removeEventListener('sign-out', this._handleSignOut);
     this.removeEventListener('delete-data', this._handleDeleteData);
+    this.removeEventListener('edit-routine', this._handleEditRoutine);
+    this.removeEventListener('delete-routine', this._handleDeleteRoutine);
+    this.removeEventListener('routine-saved', this._handleRoutineSaved);
+
   }
 
   loadUserData() {
@@ -188,12 +198,10 @@ SECTION 4: EVENT HANDLERS
   }
   
   _handleUnitsChange(e) {
-    // The units are saved in settings-view, this is just to acknowledge
     console.log(`Units changed to ${e.detail.units}`);
   }
   
   _handleSignOut() {
-    // For local storage, "signing out" is the same as deleting data
     this._handleDeleteData();
   }
   
@@ -201,6 +209,26 @@ SECTION 4: EVENT HANDLERS
     deleteDataLocally();
     window.location.reload();
   }
+
+  _handleEditRoutine(e) {
+    this.editingRoutineId = e.detail.routineId;
+    this.currentView = 'templates';
+  }
+
+  _handleDeleteRoutine(e) {
+    const { routineId } = e.detail;
+    const updatedTemplates = this.userData.templates.filter(t => t.id !== routineId);
+    saveDataLocally({ templates: updatedTemplates });
+    this.loadUserData(); 
+    this._showToast({ detail: { message: "Routine deleted.", type: "success" } });
+  }
+
+  _handleRoutineSaved() {
+    this.editingRoutineId = null;
+    this.loadUserData();
+    this.currentView = 'settings';
+  }
+
 
 /*
 ===============================================
@@ -233,7 +261,7 @@ SECTION 6: VIEW RENDERING LOGIC
 
   render() {
     if (this.isLoading) {
-      return html`<div></div>`; // The main index.html has the loading spinner
+      return html`<div></div>`;
     }
 
     return html`
@@ -255,7 +283,7 @@ SECTION 6: VIEW RENDERING LOGIC
       case 'home':
         return this._renderHomeView();
       case 'templates':
-        return html`<workout-templates></workout-templates>`;
+        return html`<workout-templates .editingRoutineId=${this.editingRoutineId}></workout-templates>`;
       case 'history':
         return html`<history-view></history-view>`;
       case 'analytics':
