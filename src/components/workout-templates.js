@@ -18,7 +18,8 @@ class WorkoutTemplates extends LitElement {
     errorMessage: { type: String },
     showNewTemplateForm: { type: Boolean },
     newTemplateName: { type: String },
-    newTemplateExercises: { type: Array },
+    newTemplateDays: { type: Array },
+    activeDayIndex: { type: Number },
     isSaving: { type: Boolean },
     selectedFocus: { type: String },
     selectedFrequency: { type: String },
@@ -38,7 +39,10 @@ class WorkoutTemplates extends LitElement {
     this.errorMessage = "";
     this.showNewTemplateForm = false;
     this.newTemplateName = "";
-    this.newTemplateExercises = [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }];
+    this.newTemplateDays = [
+      { name: "Day 1", exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }
+    ];
+    this.activeDayIndex = 0;
     this.isSaving = false;
     this.selectedFocus = "all";
     this.selectedFrequency = "all";
@@ -899,28 +903,59 @@ SECTION 4: WORKOUT GROUPING
 SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
 ===============================================
 */
-  _addExerciseToTemplate() {
-    this.newTemplateExercises = [...this.newTemplateExercises, { muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }];
+  _addExerciseToTemplate(dayIndex) {
+    const updatedDays = [...this.newTemplateDays];
+    updatedDays[dayIndex].exercises.push({ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 });
+    this.newTemplateDays = updatedDays;
   }
 
-  _handleExerciseInput(index, field, value) {
-    const updatedExercises = [...this.newTemplateExercises];
-    updatedExercises[index][field] = value;
-    this.newTemplateExercises = updatedExercises;
-  }
-  
-  _handleMuscleGroupChange(index, value) {
-    const updatedExercises = [...this.newTemplateExercises];
-    updatedExercises[index].muscleGroup = value;
-    updatedExercises[index].name = "";
-    this.newTemplateExercises = updatedExercises;
+  _handleExerciseInput(dayIndex, exerciseIndex, field, value) {
+    const updatedDays = [...this.newTemplateDays];
+    updatedDays[dayIndex].exercises[exerciseIndex][field] = value;
+    this.newTemplateDays = updatedDays;
   }
 
-  _removeExercise(index) {
-    const updatedExercises = this.newTemplateExercises.filter((_, i) => i !== index);
-    this.newTemplateExercises = updatedExercises;
+  _handleMuscleGroupChange(dayIndex, exerciseIndex, value) {
+    const updatedDays = [...this.newTemplateDays];
+    updatedDays[dayIndex].exercises[exerciseIndex].muscleGroup = value;
+    updatedDays[dayIndex].exercises[exerciseIndex].name = "";
+    this.newTemplateDays = updatedDays;
   }
-  
+
+  _removeExercise(dayIndex, exerciseIndex) {
+    const updatedDays = [...this.newTemplateDays];
+    updatedDays[dayIndex].exercises = updatedDays[dayIndex].exercises.filter((_, i) => i !== exerciseIndex);
+    this.newTemplateDays = updatedDays;
+  }
+
+  _addDayToTemplate() {
+    this.newTemplateDays = [
+        ...this.newTemplateDays,
+        { name: `Day ${this.newTemplateDays.length + 1}`, exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }
+    ];
+    this.activeDayIndex = this.newTemplateDays.length - 1;
+  }
+
+  _removeDay(dayIndex) {
+    if (this.newTemplateDays.length <= 1) {
+        this.dispatchEvent(new CustomEvent('show-toast', {
+            detail: { message: "You must have at least one day in your template.", type: 'error' },
+            bubbles: true, composed: true
+        }));
+        return;
+    }
+    this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== dayIndex);
+    if (this.activeDayIndex >= this.newTemplateDays.length) {
+        this.activeDayIndex = this.newTemplateDays.length - 1;
+    }
+  }
+
+  _handleDayNameChange(dayIndex, newName) {
+    const updatedDays = [...this.newTemplateDays];
+    updatedDays[dayIndex].name = newName;
+    this.newTemplateDays = updatedDays;
+  }
+
   async _saveTemplate() {
     this.isSaving = true;
     try {
@@ -928,32 +963,33 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
             throw new Error("Please enter a template name");
         }
         
-        const validExercises = this.newTemplateExercises.filter(ex => ex.name && ex.muscleGroup);
-        if (validExercises.length === 0) {
-            throw new Error("Please add at least one exercise");
-        }
-
-        const newTemplate = {
-            id: Date.now().toString(),
+        const newProgram = {
             name: this.newTemplateName.trim(),
             primaryFocus: "custom",
-            daysPerWeek: 0,
+            daysPerWeek: this.newTemplateDays.length,
             genderFocus: "all",
             equipment: [],
-            exercises: validExercises.map(ex => ({
-                name: ex.name,
-                sets: Array(Number(ex.sets) || 3).fill({}),
-                targetReps: `${Number(ex.reps) || 10}`,
-                targetRir: Number(ex.rir) || 2,
-                muscleGroup: ex.muscleGroup
-            }))
+            workouts: this.newTemplateDays.map(day => {
+                const validExercises = day.exercises.filter(ex => ex.name && ex.muscleGroup);
+                if (validExercises.length === 0) {
+                    throw new Error(`Please add at least one exercise to ${day.name}`);
+                }
+                return {
+                    name: `${this.newTemplateName.trim()} - ${day.name}`,
+                    exercises: validExercises.map(ex => ({
+                        name: ex.name,
+                        sets: Array(Number(ex.sets) || 3).fill({}),
+                        targetReps: `${Number(ex.reps) || 10}`,
+                        targetRir: Number(ex.rir) || 2,
+                        muscleGroup: ex.muscleGroup
+                    }))
+                };
+            })
         };
         
         const existingData = getDataLocally();
         const existingTemplates = existingData?.templates || [];
-        const customTemplates = existingTemplates.filter(t => t.primaryFocus === "custom");
-        const otherTemplates = existingTemplates.filter(t => t.primaryFocus !== "custom");
-        const updatedTemplates = [...otherTemplates, ...customTemplates, newTemplate];
+        const updatedTemplates = [...existingTemplates, newProgram];
         
         const response = saveDataLocally({ templates: updatedTemplates });
 
@@ -961,7 +997,8 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
             this.templates = updatedTemplates;
             this.currentRoutineView = "menu";
             this.newTemplateName = "";
-            this.newTemplateExercises = [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }];
+            this.newTemplateDays = [{ name: "Day 1", exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }];
+            this.activeDayIndex = 0;
             this.dispatchEvent(new CustomEvent('show-toast', { 
                 detail: { message: 'Template saved successfully!', type: 'success' }, 
                 bubbles: true, 
@@ -982,13 +1019,9 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
     }
   }
   
-  _loadTemplate(template) {
-    // This will be handled by the new program detail view
-    this.dispatchEvent(new CustomEvent('start-workout-with-template', { 
-      detail: { template: template },
-      bubbles: true, 
-      composed: true 
-    }));
+  _loadTemplate(program) {
+    this.selectedProgram = program;
+    this.currentRoutineView = 'premade';
   }
 
   _inferMuscleGroup(exerciseName) {
@@ -1017,7 +1050,8 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
   }
   
   _getFilteredMesocycles() {
-    return this.premadeMesocycles.filter(meso => {
+    const customTemplates = this.templates.filter(t => t.primaryFocus === "custom");
+    return [...this.premadeMesocycles, ...customTemplates].filter(meso => {
       const focusMatch = this.selectedFocus === 'all' || meso.primaryFocus.includes(this.selectedFocus);
       const frequencyMatch = this.selectedFrequency === 'all' || meso.daysPerWeek == this.selectedFrequency;
       const genderMatch = this.selectedGenderFocus === 'all' || meso.genderFocus === this.selectedGenderFocus;
@@ -1065,7 +1099,7 @@ SECTION 6: RENDERING LOGIC
           <h1>Routine</h1>
           ${this.currentRoutineView !== 'menu' && !this.selectedProgram ? html`
               <button class="btn btn-icon" @click=${() => this.currentRoutineView = 'menu'}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
               </button>
           ` : ''}
           ${this.selectedProgram ? html`
@@ -1092,14 +1126,14 @@ SECTION 6: RENDERING LOGIC
           </button>
         </nav>
         
-        ${this.templates.length > 0 ? html`
+        ${this.templates.filter(t => t.primaryFocus === "custom").length > 0 ? html`
           <h2 class="section-title">Your Templates</h2>
           <div class="templates-list">
             ${this.templates.filter(t => t.primaryFocus === "custom").map(template => html`
               <div class="card link-card template-card" @click=${() => this._loadTemplate(template)}>
                 <div class="template-info">
                   <h3>${template.name}</h3>
-                  <p>${template.exercises?.length || 0} exercises</p>
+                  <p>${template.workouts?.length || 0} days</p>
                 </div>
                 <button class="btn-icon" aria-label="Load template">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -1113,11 +1147,7 @@ SECTION 6: RENDERING LOGIC
   
   _renderMesocycleList() {
     const filteredMesocycles = this._getFilteredMesocycles();
-    const focusOptions = [...new Set(this.premadeMesocycles.map(t => t.primaryFocus))];
-    const frequencyOptions = [...new Set(this.premadeMesocycles.map(t => t.daysPerWeek))].sort((a,b) => a-b);
-    const genderOptions = [...new Set(this.premadeMesocycles.flatMap(t => t.genderFocus))].filter(g => g !== 'all');
-    const equipmentOptions = [...new Set(this.premadeMesocycles.flatMap(t => t.equipment))];
-
+    
     return html`
       ${filteredMesocycles.length === 0 ? html`
         <div class="card">
@@ -1182,7 +1212,7 @@ SECTION 6: RENDERING LOGIC
                 <button 
                   class="toggle-btn ${this.selectedStartWorkout === index ? 'active' : ''}" 
                   @click=${() => this.selectedStartWorkout = index}>
-                  ${workout.name.split(' - ')[1]}
+                  ${workout.name.split(' - ')[1] || `Day ${index + 1}`}
                 </button>
               `)}
             </div>
@@ -1219,64 +1249,89 @@ SECTION 6: RENDERING LOGIC
 
   _renderNewTemplateForm() {
     const muscleGroups = Object.keys(this.exerciseDatabase);
+    const activeDay = this.newTemplateDays[this.activeDayIndex];
 
     return html`
       <div class="new-template-form card">
-        <h3>Create New Template</h3>
+        <h3>Create New Routine</h3>
         <div class="input-group">
-          <label for="template-name">Template Name:</label>
+          <label for="template-name">Routine Name:</label>
           <input
             id="template-name"
             type="text"
             .value=${this.newTemplateName}
             @input=${(e) => this.newTemplateName = e.target.value}
-            placeholder="e.g., Full Body A"
+            placeholder="e.g., My 4-Day Split"
           />
         </div>
-        
-        <div class="exercise-list">
-          ${this.newTemplateExercises.map((exercise, index) => {
-            const availableExercises = this._getExercisesForGroup(exercise.muscleGroup);
-            return html`
-            <div class="exercise-editor card">
-              <div class="exercise-editor-header">
-                <div class="exercise-selectors">
-                  <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(index, e.target.value)}>
-                    <option value="">Select Muscle Group</option>
-                    ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
-                  </select>
 
-                  ${exercise.muscleGroup ? html`
-                    <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(index, 'name', e.target.value)}>
-                      <option value="">Select Exercise</option>
-                      ${availableExercises.map(ex => html`<option value="${ex.name}" ?selected=${exercise.name === ex.name}>${ex.name}</option>`)}
-                    </select>
-                  ` : ''}
-                </div>
-                <button class="btn-icon" @click=${() => this._removeExercise(index)}>
-                  ✖️
+        <div class="day-tabs">
+            ${this.newTemplateDays.map((day, index) => html`
+                <button class="tab-btn ${this.activeDayIndex === index ? 'active' : ''}" @click=${() => this.activeDayIndex = index}>
+                    ${day.name}
                 </button>
-              </div>
-              <div class="exercise-details">
-                <label>Sets: <input type="number" min="1" max="10" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(index, 'sets', e.target.value)}></label>
-                <label>Reps: <input type="number" min="1" max="50" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(index, 'reps', e.target.value)}></label>
-                <label>RIR: <input type="number" min="0" max="10" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(index, 'rir', e.target.value)}></label>
-              </div>
-            </div>
-          `})}
+            `)}
+            <button class="btn-icon" @click=${this._addDayToTemplate}>+</button>
         </div>
+
+        ${activeDay ? html`
+        <div class="day-editor card">
+            <div class="day-header">
+                <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
+                <button class="btn-icon btn-danger-icon" @click=${() => this._removeDay(this.activeDayIndex)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+
+            <div class="exercise-list">
+            ${activeDay.exercises.map((exercise, index) => {
+                const availableExercises = this._getExercisesForGroup(exercise.muscleGroup);
+                return html`
+                <div class="exercise-editor card">
+                <div class="exercise-editor-header">
+                    <div class="exercise-selectors">
+                    <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
+                        <option value="">Select Muscle Group</option>
+                        ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
+                    </select>
+
+                    ${exercise.muscleGroup ? html`
+                        <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'name', e.target.value)}>
+                        <option value="">Select Exercise</option>
+                        ${availableExercises.map(ex => html`<option value="${ex.name}" ?selected=${exercise.name === ex.name}>${ex.name}</option>`)}
+                        </select>
+                    ` : ''}
+                    </div>
+                    <button class="btn-icon" @click=${() => this._removeExercise(this.activeDayIndex, index)}>
+                    ✖️
+                    </button>
+                </div>
+                <div class="exercise-details">
+                    <label>Sets: <input type="number" min="1" max="10" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'sets', e.target.value)}></label>
+                    <label>Reps: <input type="number" min="1" max="50" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'reps', e.target.value)}></label>
+                    <label>RIR: <input type="number" min="0" max="10" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'rir', e.target.value)}></label>
+                </div>
+                </div>
+            `})}
+            </div>
+            <button class="secondary-button" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>
+                Add Exercise to ${activeDay.name}
+            </button>
+        </div>
+        ` : ''}
         
         <div class="form-actions">
-          <button class="secondary-button" @click=${this._addExerciseToTemplate}>
-            Add Exercise
+          <button class="secondary-button" @click=${() => this.currentRoutineView = 'menu'}>
+            Cancel
           </button>
-          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.newTemplateExercises.length === 0 || this.isSaving}>
-            ${this.isSaving ? html`<div class="spinner"></div>` : 'Save Template'}
+          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.newTemplateDays.length === 0 || this.isSaving}>
+            ${this.isSaving ? html`<div class="spinner"></div>` : 'Save Routine'}
           </button>
         </div>
       </div>
     `;
   }
+
 
 /*
 ===============================================
