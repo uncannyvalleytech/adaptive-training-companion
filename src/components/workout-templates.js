@@ -3,7 +3,7 @@
 SECTION 1: COMPONENT AND SERVICE IMPORTS
 ===============================================
 */
-import { LitElement, html } from "lit";
+import { LitElement, html, css } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
 
 /*
@@ -960,10 +960,11 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
     this.isSaving = true;
     try {
         if (!this.newTemplateName.trim()) {
-            throw new Error("Please enter a template name");
+            throw new Error("Please enter a routine name");
         }
         
         const newProgram = {
+            id: Date.now().toString(),
             name: this.newTemplateName.trim(),
             primaryFocus: "custom",
             daysPerWeek: this.newTemplateDays.length,
@@ -988,8 +989,7 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
         };
         
         const existingData = getDataLocally();
-        const existingTemplates = existingData?.templates || [];
-        const updatedTemplates = [...existingTemplates, newProgram];
+        const updatedTemplates = [...(existingData.templates || []), newProgram];
         
         const response = saveDataLocally({ templates: updatedTemplates });
 
@@ -1000,12 +1000,12 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
             this.newTemplateDays = [{ name: "Day 1", exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }];
             this.activeDayIndex = 0;
             this.dispatchEvent(new CustomEvent('show-toast', { 
-                detail: { message: 'Template saved successfully!', type: 'success' }, 
+                detail: { message: 'Routine saved successfully!', type: 'success' }, 
                 bubbles: true, 
                 composed: true 
             }));
         } else {
-            throw new Error(response.error || "Failed to save template");
+            throw new Error(response.error || "Failed to save routine");
         }
     } catch (error) {
         console.error("Save template error:", error);
@@ -1099,7 +1099,7 @@ SECTION 6: RENDERING LOGIC
           <h1>Routine</h1>
           ${this.currentRoutineView !== 'menu' && !this.selectedProgram ? html`
               <button class="btn btn-icon" @click=${() => this.currentRoutineView = 'menu'}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
               </button>
           ` : ''}
           ${this.selectedProgram ? html`
@@ -1271,7 +1271,7 @@ SECTION 6: RENDERING LOGIC
                     ${day.name}
                 </button>
             `)}
-            <button class="btn-icon" @click=${this._addDayToTemplate}>+</button>
+            <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate}>+</button>
         </div>
 
         ${activeDay ? html`
@@ -1303,7 +1303,7 @@ SECTION 6: RENDERING LOGIC
                     ` : ''}
                     </div>
                     <button class="btn-icon" @click=${() => this._removeExercise(this.activeDayIndex, index)}>
-                    ✖️
+                    &#x2716;
                     </button>
                 </div>
                 <div class="exercise-details">
@@ -1338,6 +1338,64 @@ SECTION 6: RENDERING LOGIC
 SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
+  static styles = css`
+    .day-tabs {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      align-items: center;
+    }
+    .tab-btn {
+      background: var(--color-surface-tertiary);
+      border: 1px solid var(--border-color);
+      color: var(--color-text-secondary);
+      border-radius: var(--radius-full);
+      padding: var(--space-2) var(--space-4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .tab-btn.active {
+      background: var(--color-accent-primary);
+      color: var(--color-surface-primary);
+      border-color: var(--color-accent-primary);
+    }
+    .add-day-btn {
+        border-radius: var(--radius-full);
+        width: 36px;
+        height: 36px;
+    }
+    .day-editor {
+        padding: var(--space-4);
+        background: var(--color-surface-secondary);
+    }
+    .day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-4);
+    }
+    .day-name-input {
+        flex-grow: 1;
+        background: var(--color-surface-tertiary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: var(--space-2) var(--space-3);
+        color: var(--color-text-primary);
+        font-weight: 600;
+    }
+    .btn-danger-icon {
+        background-color: var(--color-state-error);
+        color: white;
+    }
+    #template-name {
+        border-radius: var(--radius-md);
+    }
+    .exercise-details input {
+        width: 70px;
+        border-radius: var(--radius-md);
+    }
+  `;
+
   createRenderRoot() {
       return this;
   }
