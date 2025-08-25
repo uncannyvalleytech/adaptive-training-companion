@@ -79,7 +79,18 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
   _handleSetInput(exerciseIndex, setIndex, field, value) {
     const exercise = this.workout.exercises[exerciseIndex];
     if (exercise && exercise.sets[setIndex]) {
-      exercise.sets[setIndex][field] = value;
+      // SECTION 4.1: INPUT VALIDATION
+      // Enforce max values for weight and reps.
+      let processedValue = value;
+      if (field === 'weight' && Number(value) > 999) {
+        processedValue = '999';
+      }
+      if (field === 'reps' && Number(value) > 50) {
+        processedValue = '50';
+      }
+      
+      exercise.sets[setIndex][field] = processedValue;
+      // Force a re-render to update the input field value if it was capped
       this.requestUpdate();
     }
   }
@@ -168,6 +179,18 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
 SECTION 5: HELPER METHODS
 ===============================================
 */
+  // SECTION 5.1: RIR PLACEHOLDER HELPER
+  // Creates the smart placeholder for the reps input field.
+  _getRepPlaceholder(exercise) {
+    const reps = exercise.targetReps || '8-12';
+    const rir = exercise.targetRir;
+    
+    if (rir !== undefined && rir !== null) {
+      return `${reps} / ${rir} RIR`;
+    }
+    return reps;
+  }
+
   _getExerciseCategory(exerciseName) {
     const compoundExercises = [
       'squat', 'deadlift', 'bench press', 'pull-up', 'chin-up', 'row', 'press', 'lunge',
@@ -272,21 +295,26 @@ SECTION 6: RENDERING
                     ${(exercise.sets || []).map((set, setIndex) => html`
                       <div class="set-row-log ${set.completed ? 'completed' : ''}">
                         <span class="set-number">${setIndex + 1}</span>
+                        <!-- SECTION 6.1: INPUT FIELD UPDATES -->
                         <input 
-                          type="number" 
+                          type="tel"
+                          inputmode="decimal"
+                          pattern="[0-9]*"
+                          max="999"
                           class="set-input-log" 
                           placeholder="-" 
                           .value=${set.weight || ''} 
                           @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'weight', e.target.value)}
-                          @change=${() => this.requestUpdate()}
                         >
                         <input 
-                          type="number" 
+                          type="tel"
+                          inputmode="numeric"
+                          pattern="[0-9]*"
+                          max="50"
                           class="set-input-log" 
-                          placeholder="${exercise.targetReps || '8-12'}" 
+                          placeholder="${this._getRepPlaceholder(exercise)}" 
                           .value=${set.reps || ''} 
                           @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'reps', e.target.value)}
-                          @change=${() => this.requestUpdate()}
                         >
                         <button 
                           class="set-log-checkbox" 
