@@ -99,7 +99,15 @@ SECTION 3: EVENT HANDLERS AND LOGIC
 */
 
   _handleInputChange(field, value) {
-    this.userData = { ...this.userData, [field]: value };
+    // SECTION 3.1: INPUT VALIDATION
+    // Enforce max value for age.
+    let processedValue = value;
+    if (field === 'age') {
+        if (Number(value) > 99) {
+            processedValue = 99;
+        }
+    }
+    this.userData = { ...this.userData, [field]: processedValue };
     this.error = "";
     this.requestUpdate();
   }
@@ -239,7 +247,7 @@ SECTION 4: RENDERING LOGIC
                 <label for=${field.key}>${field.label}</label>
                 <input
                   type="number" id=${field.key} .value=${this.userData[field.key]}
-                  @input=${e => { e.stopPropagation(); this._handleInputChange(field.key, Number(e.target.value)); }}
+                  @input=${e => { e.stopPropagation(); this._handleInputChange(field.key, e.target.value); }}
                   min=${field.min} max=${field.max} placeholder="Enter ${field.label.toLowerCase()}"
                   inputmode="numeric" pattern="[0-9]*"
                 />
