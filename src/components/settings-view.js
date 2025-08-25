@@ -7,12 +7,14 @@
  */
 
 import { LitElement, html } from "lit";
+import { getDataLocally } from "../services/local-storage.js";
 
 class SettingsView extends LitElement {
   static properties = {
     theme: { type: String },
     units: { type: String },
     showDeleteConfirm: { type: Boolean },
+    userData: { type: Object },
   };
 
   constructor() {
@@ -20,6 +22,7 @@ class SettingsView extends LitElement {
     this.theme = localStorage.getItem('theme') || 'dark';
     this.units = localStorage.getItem('units') || 'lbs';
     this.showDeleteConfirm = false;
+    this.userData = getDataLocally();
   }
 
   // Helper to dispatch events up to the app-shell
@@ -35,7 +38,6 @@ class SettingsView extends LitElement {
     this.theme = newTheme;
     localStorage.setItem('theme', this.theme);
     this._dispatchEvent('theme-change', { theme: this.theme });
-    // Force a re-render to update the button's active state
     this.requestUpdate();
   }
 
@@ -43,22 +45,31 @@ class SettingsView extends LitElement {
     this.units = newUnits;
     localStorage.setItem('units', this.units);
     this._dispatchEvent('units-change', { units: this.units });
-    // Force a re-render to update the button's active state
     this.requestUpdate();
   }
   
-  // This method correctly dispatches a 'sign-out' event which app-shell will now handle.
   _handleSignOut() {
     this._dispatchEvent('sign-out');
   }
   
-  // This dispatches the event to delete data.
   _handleDeleteData() {
     this._dispatchEvent('delete-data');
     this.showDeleteConfirm = false;
   }
 
+  _handleEditRoutine(routineId) {
+    this._dispatchEvent('edit-routine', { routineId });
+  }
+
+  _handleDeleteRoutine(routineId) {
+    this._dispatchEvent('delete-routine', { routineId });
+    this.userData = getDataLocally();
+    this.requestUpdate();
+  }
+
   render() {
+    const customRoutines = this.userData.templates.filter(t => t.primaryFocus === 'custom');
+
     return html`
       <div class="settings-container container">
         <div class="card settings-group">
@@ -81,6 +92,25 @@ class SettingsView extends LitElement {
               <button class="toggle-btn ${this.units === 'kg' ? 'active' : ''}" @click=${() => this._handleUnitsChange('kg')}>Kilograms (kg)</button>
             </div>
           </div>
+        </div>
+
+        <div class="card settings-group">
+            <h3>Routine</h3>
+            <div class="setting-item">
+                <label>Active Mesocycle</label>
+                <span>${this.userData.activeProgram ? this.userData.activeProgram.name : 'None'}</span>
+            </div>
+            <div class="divider"></div>
+            <label>Your Custom Routines</label>
+            ${customRoutines.length > 0 ? customRoutines.map(routine => html`
+                <div class="routine-management-item">
+                    <span>${routine.name}</span>
+                    <div class="routine-actions">
+                        <button class="btn-icon" @click=${() => this._handleEditRoutine(routine.id)}>✏️</button>
+                        <button class="btn-icon btn-danger" @click=${() => this._handleDeleteRoutine(routine.id)}>🗑️</button>
+                    </div>
+                </div>
+            `) : html`<p>No custom routines created yet.</p>`}
         </div>
         
         <div class="card settings-group danger-zone">
