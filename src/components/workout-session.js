@@ -82,11 +82,11 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
       // SECTION 4.1: INPUT VALIDATION
       // Enforce max values for weight and reps.
       let processedValue = value;
-      if (field === 'weight' && Number(value) > 999) {
-        processedValue = '999';
+      if (field === 'weight' && Number(value) > 1000) {
+        processedValue = '1000';
       }
-      if (field === 'reps' && Number(value) > 50) {
-        processedValue = '50';
+      if (field === 'reps' && Number(value) > 100) {
+        processedValue = '100';
       }
       
       exercise.sets[setIndex][field] = processedValue;
@@ -179,8 +179,6 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
 SECTION 5: HELPER METHODS
 ===============================================
 */
-  // SECTION 5.1: RIR PLACEHOLDER HELPER
-  // Creates the smart placeholder for the reps input field.
   _getRepPlaceholder(exercise) {
     const reps = exercise.targetReps || '8-12';
     const rir = exercise.targetRir;
@@ -300,7 +298,7 @@ SECTION 6: RENDERING
                           type="tel"
                           inputmode="decimal"
                           pattern="[0-9]*"
-                          max="999"
+                          max="1000"
                           class="set-input-log" 
                           placeholder="-" 
                           .value=${set.weight || ''} 
@@ -310,7 +308,7 @@ SECTION 6: RENDERING
                           type="tel"
                           inputmode="numeric"
                           pattern="[0-9]*"
-                          max="50"
+                          max="100"
                           class="set-input-log" 
                           placeholder="${this._getRepPlaceholder(exercise)}" 
                           .value=${set.reps || ''} 
