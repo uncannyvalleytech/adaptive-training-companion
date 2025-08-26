@@ -107,7 +107,7 @@ class SettingsView extends LitElement {
                     <span>${routine.name}</span>
                     <div class="routine-actions">
                         <button class="btn-icon" @click=${() => this._handleEditRoutine(routine.id)}>✏️</button>
-                        <button class="btn-icon btn-danger" @click=${() => this._handleDeleteRoutine(routine.id)}>🗑️</button>
+                        <button class="btn-icon btn-danger-icon" @click=${() => this._handleDeleteRoutine(routine.id)}>🗑️</button>
                     </div>
                 </div>
             `) : html`<p>No custom routines created yet.</p>`}
