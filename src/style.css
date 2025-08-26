@@ -2031,6 +2031,37 @@ body[data-theme="light"] .toggle-btn.active {
 }
 
 /* =============================================== */
+/* SECTION 22.1: ROUTINE MANAGEMENT STYLES         */
+/* =============================================== */
+.routine-management-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.routine-management-item:last-of-type {
+  border-bottom: none;
+}
+
+.routine-management-item span {
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.routine-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.btn-danger-icon {
+  background-color: var(--color-state-error) !important;
+  color: white !important;
+}
+
+
+/* =============================================== */
 /* 23. TEMPLATE STYLES                            */
 /* =============================================== */
 
