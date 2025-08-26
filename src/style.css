@@ -379,6 +379,9 @@ body[data-theme="light"] .btn-ghost {
   padding: 0;
   pointer-events: auto !important;
   z-index: 30 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cta-button {
