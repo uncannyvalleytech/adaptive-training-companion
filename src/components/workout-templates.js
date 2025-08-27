@@ -1314,12 +1314,6 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         gap: var(--space-3);
         width: 100%;
     }
-    .muscle-group-select, .exercise-select {
-        width: 100%;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-    }
     .exercise-details {
         display: flex;
         gap: var(--space-3);
