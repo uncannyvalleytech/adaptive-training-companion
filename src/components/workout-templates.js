@@ -1289,7 +1289,7 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
   `;
 
   createRenderRoot() {
-      return this;
+    return this;
   }
 }
 
