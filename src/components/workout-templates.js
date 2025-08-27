@@ -1314,6 +1314,12 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         gap: var(--space-3);
         width: 100%;
     }
+    .muscle-group-select, .exercise-select {
+        width: 100%;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
     .exercise-details {
         display: flex;
         gap: var(--space-3);
@@ -1334,8 +1340,8 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .delete-exercise-btn {
         width: 40px;
         height: 40px;
-        background: rgba(255, 71, 87, 0.1);
-        border: 1px solid rgba(255, 71, 87, 0.2);
+        background: rgba(255, 71, 87, 0.2);
+        border: none;
         border-radius: 50%;
         color: #ff4757;
         cursor: pointer;
@@ -1346,19 +1352,17 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         transition: all 0.3s ease;
         pointer-events: auto !important;
         z-index: 30 !important;
-        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.1);
     }
     .delete-exercise-btn:hover {
         background: #ff4757;
         color: white;
         transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.5);
     }
     .day-delete-btn {
         width: 36px;
         height: 36px;
-        background: rgba(255, 71, 87, 0.1);
-        border: 1px solid rgba(255, 71, 87, 0.2);
+        background: rgba(255, 71, 87, 0.2);
+        border: none;
         border-radius: 50%;
         color: #ff4757;
         cursor: pointer;
@@ -1369,13 +1373,11 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         transition: all 0.3s ease;
         pointer-events: auto !important;
         z-index: 30 !important;
-        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.1);
     }
     .day-delete-btn:hover {
         background: #ff4757;
         color: white;
         transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(255, 71, 87, 0.5);
     }
   `;
 
