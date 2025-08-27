@@ -5,6 +5,7 @@ SECTION 1: COMPONENT AND SERVICE IMPORTS
 */
 
 import { LitElement, html, css } from "lit";
+import { sanitizeHTML } from "../services/sanitization.js";
 
 /*
 ===============================================
@@ -99,11 +100,11 @@ SECTION 3: EVENT HANDLERS AND LOGIC
 */
 
   _handleInputChange(field, value) {
-    // SECTION 3.1: INPUT VALIDATION
-    // Enforce max value for age.
-    let processedValue = value;
+    // SECTION 3.1: INPUT VALIDATION & SANITIZATION
+    // Enforce max value for age and sanitize input.
+    let processedValue = sanitizeHTML(value);
     if (field === 'age') {
-        if (Number(value) > 99) {
+        if (Number(processedValue) > 99) {
             processedValue = 99;
         }
     }
