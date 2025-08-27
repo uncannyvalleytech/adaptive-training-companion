@@ -59,6 +59,66 @@ export const exerciseDatabase = {
       name: 'Chest Dip',
       type: 'compound',
       recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_chest_010',
+      name: 'Dumbbell Fly',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_chest_011',
+      name: 'Incline Dumbbell Fly',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_chest_012',
+      name: 'Pec Deck Machine',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_chest_013',
+      name: 'Smith Machine Bench Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_chest_014',
+      name: 'Svend Press',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_chest_015',
+      name: 'Cable Guillotine Press',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_chest_016',
+      name: 'Floor Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_chest_017',
+      name: 'Single-Arm Dumbbell Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_chest_018',
+      name: 'Guillotine Press (on bench)',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_chest_019',
+      name: 'Around the Worlds',
+      type: 'isolation',
+      recoveryCost: 'low',
     }
   ],
   back: [
@@ -109,6 +169,66 @@ export const exerciseDatabase = {
       name: 'Dumbbell Row',
       type: 'compound',
       recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_back_009',
+      name: 'Straight-Arm Pulldown',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_back_010',
+      name: 'Pendlay Row',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_back_011',
+      name: 'Chest-Supported Row',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_back_012',
+      name: 'Inverted Row',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_back_013',
+      name: 'Single-Arm Lat Pulldown',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_back_014',
+      name: 'Kroc Rows',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_back_015',
+      name: 'Barbell Shrug',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_back_016',
+      name: 'Dumbbell Pullover',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_back_017',
+      name: 'Hyperextensions',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_back_018',
+      name: 'Chin-ups',
+      type: 'compound',
+      recoveryCost: 'medium',
     }
   ],
   biceps: [
@@ -133,6 +253,66 @@ export const exerciseDatabase = {
     {
       id: 'ex_biceps_004',
       name: 'Incline Dumbbell Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_005',
+      name: 'Cable Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_006',
+      name: 'Concentration Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_007',
+      name: 'Zottman Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_008',
+      name: 'Spider Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_009',
+      name: 'Drag Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_010',
+      name: 'Reverse Barbell Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_011',
+      name: 'Cable Hammer Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_012',
+      name: 'Waiter\'s Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_013',
+      name: 'Cross Body Hammer Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_biceps_014',
+      name: 'Bayesian Cable Curl',
       type: 'isolation',
       recoveryCost: 'low',
     }
@@ -161,6 +341,66 @@ export const exerciseDatabase = {
       name: 'Close Grip Bench Press',
       type: 'compound',
       recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_triceps_005',
+      name: 'Tricep Dips',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_triceps_006',
+      name: 'Rope Pushdown',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_triceps_007',
+      name: 'Dumbbell Kickback',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_triceps_008',
+      name: 'Single-Arm Overhead Extension',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_triceps_009',
+      name: 'JM Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_triceps_010',
+      name: 'Diamond Push-ups',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_triceps_011',
+      name: 'Tate Press',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_triceps_012',
+      name: 'Cable Kickback',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_triceps_013',
+      name: 'Bench Dips',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_triceps_014',
+      name: 'Reverse Grip Pushdown',
+      type: 'isolation',
+      recoveryCost: 'low',
     }
   ],
   forearms: [
@@ -173,6 +413,24 @@ export const exerciseDatabase = {
     {
       id: 'ex_forearms_002',
       name: 'Reverse Wrist Curls',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_forearms_003',
+      name: 'Farmer\'s Walk',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_forearms_004',
+      name: 'Plate Pinch',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_forearms_005',
+      name: 'Gripper',
       type: 'isolation',
       recoveryCost: 'low',
     }
@@ -201,6 +459,66 @@ export const exerciseDatabase = {
       name: 'Hack Squat',
       type: 'compound',
       recoveryCost: 'high',
+    },
+    {
+      id: 'ex_quads_005',
+      name: 'Front Squat',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_quads_006',
+      name: 'Goblet Squat',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_quads_007',
+      name: 'Dumbbell Lunges',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_quads_008',
+      name: 'Sissy Squat',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_quads_009',
+      name: 'Belt Squat',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_quads_010',
+      name: 'Zercher Squat',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_quads_011',
+      name: 'Safety Bar Squat',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_quads_012',
+      name: 'Single-Leg Leg Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_quads_013',
+      name: 'Pistol Squat',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_quads_014',
+      name: 'Step-Ups',
+      type: 'compound',
+      recoveryCost: 'low',
     }
   ],
   hamstrings: [
@@ -219,6 +537,66 @@ export const exerciseDatabase = {
     {
       id: 'ex_hamstrings_003',
       name: 'Good Mornings',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_hamstrings_004',
+      name: 'Stiff-Legged Deadlift',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_hamstrings_005',
+      name: 'Glute-Ham Raise',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_hamstrings_006',
+      name: 'Nordic Ham Curl',
+      type: 'isolation',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_hamstrings_007',
+      name: 'Kettlebell Swing',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_hamstrings_008',
+      name: 'Single-Leg RDL',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_hamstrings_009',
+      name: 'Reverse Hyperextension',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_hamstrings_010',
+      name: 'Seated Leg Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_hamstrings_011',
+      name: 'Lying Leg Curl',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_hamstrings_012',
+      name: 'Cable Pull-Through',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_hamstrings_013',
+      name: 'Dumbbell RDL',
       type: 'compound',
       recoveryCost: 'medium',
     }
@@ -241,6 +619,66 @@ export const exerciseDatabase = {
       name: 'Bulgarian Split Squat',
       type: 'compound',
       recoveryCost: 'high',
+    },
+    {
+      id: 'ex_glutes_004',
+      name: 'Glute Bridge',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_glutes_005',
+      name: 'Cable Pull-Through',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_glutes_006',
+      name: 'Reverse Lunge',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_glutes_007',
+      name: 'Banded Hip Abduction',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_glutes_008',
+      name: 'Frog Pumps',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_glutes_009',
+      name: 'Single-Leg Hip Thrust',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_glutes_010',
+      name: 'Cable Hip Abduction',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_glutes_011',
+      name: 'Sumo Squat',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_glutes_012',
+      name: 'Step-Ups',
+      type: 'compound',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_glutes_013',
+      name: 'Fire Hydrants',
+      type: 'isolation',
+      recoveryCost: 'low',
     }
   ],
   calves: [
@@ -253,6 +691,24 @@ export const exerciseDatabase = {
     {
       id: 'ex_calves_002',
       name: 'Seated Calf Raises',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_calves_003',
+      name: 'Leg Press Calf Raise',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_calves_004',
+      name: 'Donkey Calf Raise',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_calves_005',
+      name: 'Single-Leg Calf Raise',
       type: 'isolation',
       recoveryCost: 'low',
     }
@@ -283,10 +739,70 @@ export const exerciseDatabase = {
       recoveryCost: 'low',
     },
     {
-        id: 'ex_shoulders_005',
-        name: 'Face Pulls',
-        type: 'isolation',
-        recoveryCost: 'low',
+      id: 'ex_shoulders_005',
+      name: 'Face Pulls',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_shoulders_006',
+      name: 'Arnold Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_shoulders_007',
+      name: 'Upright Row',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_shoulders_008',
+      name: 'Reverse Pec Deck',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_shoulders_009',
+      name: 'Cable Lateral Raise',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_shoulders_010',
+      name: 'Push Press',
+      type: 'compound',
+      recoveryCost: 'high',
+    },
+    {
+      id: 'ex_shoulders_011',
+      name: 'Landmine Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_shoulders_012',
+      name: 'Seated Dumbbell Press',
+      type: 'compound',
+      recoveryCost: 'medium',
+    },
+    {
+      id: 'ex_shoulders_013',
+      name: 'Bent-Over Dumbbell Raise',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_shoulders_014',
+      name: 'Bus Drivers',
+      type: 'isolation',
+      recoveryCost: 'low',
+    },
+    {
+      id: 'ex_shoulders_015',
+      name: 'Y-Raises',
+      type: 'isolation',
+      recoveryCost: 'low',
     }
   ]
 };
