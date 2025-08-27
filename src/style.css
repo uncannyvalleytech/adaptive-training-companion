@@ -805,8 +805,8 @@ body[data-theme="light"] .set-row-log.completed {
 .set-input-log {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-lg);
-  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -1729,7 +1729,7 @@ body[data-theme="light"] .set-row.completed {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: var(--space-4);
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
@@ -3082,7 +3082,7 @@ readiness-modal .button-group {
 .delete-exercise-btn {
     width: 40px;
     height: 40px;
-    background: transparent;
+    background: rgba(255, 71, 87, 0.2);
     border: none;
     border-radius: 50%;
     color: #ff4757;
@@ -3096,14 +3096,14 @@ readiness-modal .button-group {
     z-index: 30 !important;
 }
 .delete-exercise-btn:hover {
-    background: rgba(255, 71, 87, 0.2);
-    color: #ff4757;
+    background: #ff4757;
+    color: white;
     transform: scale(1.1);
 }
 .day-delete-btn {
     width: 36px;
     height: 36px;
-    background: transparent;
+    background: rgba(255, 71, 87, 0.2);
     border: none;
     border-radius: 50%;
     color: #ff4757;
@@ -3117,7 +3117,7 @@ readiness-modal .button-group {
     z-index: 30 !important;
 }
 .day-delete-btn:hover {
-    background: rgba(255, 71, 87, 0.2);
-    color: #ff4757;
+    background: #ff4757;
+    color: white;
     transform: scale(1.1);
 }
