@@ -3039,3 +3039,36 @@ readiness-modal .button-group {
   flex-direction: column;
   gap: var(--space-3);
 }
+
+/* =============================================== */
+/* 39. WORKOUT TEMPLATE UI IMPROVEMENTS           */
+/* =============================================== */
+.day-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background: var(--color-accent-primary);
+  color: var(--color-surface-primary);
+  border-color: var(--color-accent-primary);
+}
+
+.add-day-btn {
+  border-radius: var(--radius-full);
+  width: 36px;
+  height: 36px;
+}
