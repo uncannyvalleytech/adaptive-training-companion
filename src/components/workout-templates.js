@@ -5,6 +5,7 @@ SECTION 1: COMPONENT AND SERVICE IMPORTS
 */
 import { LitElement, html, css } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
+import { sanitizeHTML } from "../services/sanitization.js";
 
 /*
 ===============================================
@@ -926,7 +927,7 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
 
   _handleExerciseInput(dayIndex, exerciseIndex, field, value) {
     const updatedDays = [...this.newTemplateDays];
-    updatedDays[dayIndex].exercises[exerciseIndex][field] = value;
+    updatedDays[dayIndex].exercises[exerciseIndex][field] = sanitizeHTML(value);
     this.newTemplateDays = updatedDays;
   }
 
@@ -964,7 +965,7 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
 
   _handleDayNameChange(dayIndex, newName) {
     const updatedDays = [...this.newTemplateDays];
-    updatedDays[dayIndex].name = newName;
+    updatedDays[dayIndex].name = sanitizeHTML(newName);
     this.newTemplateDays = updatedDays;
   }
 
@@ -991,7 +992,7 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
 
         const routineData = {
             id: this.editingRoutineId || Date.now().toString(),
-            name: this.newTemplateName.trim(),
+            name: sanitizeHTML(this.newTemplateName.trim()),
             primaryFocus: "custom",
             daysPerWeek: this.newTemplateDays.length,
             workouts: this.newTemplateDays.map(day => {
@@ -999,7 +1000,7 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
                 const validExercises = day.exercises.filter(ex => ex.name && ex.muscleGroup);
                 if (validExercises.length === 0) throw new Error(`Please add at least one exercise to ${day.name}`);
                 return {
-                    name: `${this.newTemplateName.trim()} - ${day.name}`,
+                    name: `${sanitizeHTML(this.newTemplateName.trim())} - ${sanitizeHTML(day.name)}`,
                     exercises: validExercises.map(ex => ({
                         name: ex.name,
                         sets: Array(Number(ex.sets) || 3).fill({}),
@@ -1236,7 +1237,7 @@ SECTION 6: RENDERING LOGIC
                 <div class="exercise-editor card">
                 <div class="exercise-editor-header">
                     <div class="exercise-selectors">
-                    <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
+                    <select class.muscle-group-select @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
                         <option value="">Select Muscle Group</option>
                         ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
                     </select>
