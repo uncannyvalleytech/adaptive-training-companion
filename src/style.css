@@ -805,8 +805,8 @@ body[data-theme="light"] .set-row-log.completed {
 .set-input-log {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-sm);
-  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
   color: var(--color-text-primary);
   font-size: var(--font-size-sm);
   font-weight: 600;
@@ -1729,7 +1729,7 @@ body[data-theme="light"] .set-row.completed {
   width: 100%;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-4);
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
@@ -2055,12 +2055,6 @@ body[data-theme="light"] .toggle-btn.active {
   gap: var(--space-3);
 }
 
-.btn-danger-icon {
-  background-color: var(--color-state-error) !important;
-  color: white !important;
-}
-
-
 /* =============================================== */
 /* 23. TEMPLATE STYLES                            */
 /* =============================================== */
@@ -2123,6 +2117,9 @@ body[data-theme="light"] .toggle-btn.active {
  align-items: center;
  gap: var(--space-3);
  margin-bottom: var(--space-3);
+ background: rgba(255, 255, 255, 0.05);
+ border-radius: var(--radius-lg);
+ padding: var(--space-3);
 }
 
 .exercise-editor-header input {
@@ -3071,4 +3068,56 @@ readiness-modal .button-group {
   border-radius: var(--radius-full);
   width: 36px;
   height: 36px;
+}
+
+.day-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+    padding-right: var(--space-8);
+}
+
+.delete-exercise-btn {
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: #ff4757;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    pointer-events: auto !important;
+    z-index: 30 !important;
+}
+.delete-exercise-btn:hover {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+    transform: scale(1.1);
+}
+.day-delete-btn {
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: #ff4757;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    pointer-events: auto !important;
+    z-index: 30 !important;
+}
+.day-delete-btn:hover {
+    background: rgba(255, 71, 87, 0.2);
+    color: #ff4757;
+    transform: scale(1.1);
 }
