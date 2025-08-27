@@ -1247,7 +1247,7 @@ SECTION 6: RENDERING LOGIC
                         </select>
                     ` : ''}
                     </div>
-                    <button class="btn-icon" @click=${() => this._removeExercise(this.activeDayIndex, index)}>&#x2716;</button>
+                    <button class="btn-icon btn-danger-icon" @click=${() => this._removeExercise(this.activeDayIndex, index)}>&#x2716;</button>
                 </div>
                 <div class="exercise-details">
                     <label>Sets: <input type="number" min="1" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'sets', e.target.value)}></label>
@@ -1283,7 +1283,6 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .day-editor { padding: var(--space-4); background: var(--color-surface-secondary); }
     .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); }
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
-    .btn-danger-icon { background-color: var(--color-state-error); color: white; }
     #template-name { border-radius: var(--radius-md); }
     .exercise-details input { width: 70px; border-radius: var(--radius-md); }
   `;
