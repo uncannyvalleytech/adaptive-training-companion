@@ -1284,13 +1284,9 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; font-size: var(--font-size-md); }
     #template-name { border-radius: var(--radius-md); }
     .exercise-details input { width: 70px; border-radius: var(--radius-md); }
-    .exercise-editor { position: relative; }
-    .exercise-delete-btn { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 1; }
+    .exercise-editor { position: relative; padding-top: var(--space-8); }
+    .exercise-delete-btn { position: absolute; top: var(--space-2); right: var(--space-2); z-index: 1; width: 32px; height: 32px; min-width: 32px; min-height: 32px; }
   `;
-
-  createRenderRoot() {
-      return this;
-  }
 }
 
 customElements.define("workout-templates", WorkoutTemplates);
