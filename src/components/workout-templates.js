@@ -1237,7 +1237,7 @@ SECTION 6: RENDERING LOGIC
                 <div class="exercise-editor card">
                 <div class="exercise-editor-header">
                     <div class="exercise-selectors">
-                    <select class.muscle-group-select @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
+                    <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
                         <option value="">Select Muscle Group</option>
                         ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
                     </select>
