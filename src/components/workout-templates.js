@@ -1227,7 +1227,7 @@ SECTION 6: RENDERING LOGIC
             <div class="day-header">
                 <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
                 <button class="btn-icon btn-danger-icon" @click=${() => this._removeDay(this.activeDayIndex)}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6M5 6l1 14a2 2 0 002 2h8a2 2 0 002-2l1-14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18m-11 0V4a2 2 0 012-2h4a2 2 0 012 2v2M5 6l1 14a2 2 0 002 2h8a2 2 0 002-2l1-14"/></svg>
                 </button>
             </div>
             <div class="exercise-list">
@@ -1235,26 +1235,26 @@ SECTION 6: RENDERING LOGIC
                 const availableExercises = this._getExercisesForGroup(exercise.muscleGroup);
                 return html`
                 <div class="exercise-editor card">
-                <div class="exercise-editor-header">
-                    <div class="exercise-selectors">
-                    <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
-                        <option value="">Select Muscle Group</option>
-                        ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
-                    </select>
-                    ${exercise.muscleGroup ? html`
-                        <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'name', e.target.value)}>
-                        <option value="">Select Exercise</option>
-                        ${availableExercises.map(ex => html`<option value="${ex.name}" ?selected=${exercise.name === ex.name}>${ex.name}</option>`)}
-                        </select>
-                    ` : ''}
+                    <div class="exercise-editor-header">
+                        <div class="exercise-selectors">
+                            <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
+                                <option value="">Select Muscle Group</option>
+                                ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
+                            </select>
+                            ${exercise.muscleGroup ? html`
+                                <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'name', e.target.value)}>
+                                <option value="">Select Exercise</option>
+                                ${availableExercises.map(ex => html`<option value="${ex.name}" ?selected=${exercise.name === ex.name}>${ex.name}</option>`)}
+                                </select>
+                            ` : ''}
+                        </div>
+                        <button class="btn-icon btn-danger-icon" @click=${() => this._removeExercise(this.activeDayIndex, index)}>&#x2716;</button>
                     </div>
-                    <button class="btn-icon btn-danger-icon" @click=${() => this._removeExercise(this.activeDayIndex, index)}>&#x2716;</button>
-                </div>
-                <div class="exercise-details">
-                    <label>Sets: <input type="number" min="1" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'sets', e.target.value)}></label>
-                    <label>Reps: <input type="number" min="1" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'reps', e.target.value)}></label>
-                    <label>RIR: <input type="number" min="0" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'rir', e.target.value)}></label>
-                </div>
+                    <div class="exercise-details">
+                        <label>Sets: <input type="number" min="1" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'sets', e.target.value)}></label>
+                        <label>Reps: <input type="number" min="1" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'reps', e.target.value)}></label>
+                        <label>RIR: <input type="number" min="0" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'rir', e.target.value)}></label>
+                    </div>
                 </div>
             `})}
             </div>
@@ -1286,6 +1286,18 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
     #template-name { border-radius: var(--radius-md); }
     .exercise-details input { width: 70px; border-radius: var(--radius-md); }
+    .exercise-editor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        position: relative;
+    }
+    .exercise-editor-header .btn-danger-icon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: translate(50%, -50%);
+    }
   `;
 
   createRenderRoot() {
