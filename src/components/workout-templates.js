@@ -1334,10 +1334,10 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .delete-exercise-btn {
         width: 40px;
         height: 40px;
-        background: #ff4757;
-        border: none;
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.2);
         border-radius: 50%;
-        color: white;
+        color: #ff4757;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1346,20 +1346,21 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         transition: all 0.3s ease;
         pointer-events: auto !important;
         z-index: 30 !important;
-        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.1);
     }
     .delete-exercise-btn:hover {
-        background: #ff3742;
+        background: #ff4757;
+        color: white;
         transform: scale(1.1);
         box-shadow: 0 4px 12px rgba(255, 71, 87, 0.5);
     }
     .day-delete-btn {
         width: 36px;
         height: 36px;
-        background: #ff4757;
-        border: none;
+        background: rgba(255, 71, 87, 0.1);
+        border: 1px solid rgba(255, 71, 87, 0.2);
         border-radius: 50%;
-        color: white;
+        color: #ff4757;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1368,10 +1369,11 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         transition: all 0.3s ease;
         pointer-events: auto !important;
         z-index: 30 !important;
-        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.1);
     }
     .day-delete-btn:hover {
-        background: #ff3742;
+        background: #ff4757;
+        color: white;
         transform: scale(1.1);
         box-shadow: 0 4px 12px rgba(255, 71, 87, 0.5);
     }
