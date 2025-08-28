@@ -358,7 +358,7 @@ body[data-theme="light"] .btn-secondary {
 }
 
 body[data-theme="light"] .btn-secondary:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .btn-ghost {
@@ -690,6 +690,16 @@ body[data-theme="light"] .exercise-log-card {
   border-color: rgba(0, 0, 0, 0.1);
 }
 
+.exercise-log-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+body[data-theme="light"] .exercise-log-card:hover {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(30, 113, 255, 0.3);
+}
+
 .exercise-log-header {
   display: flex;
   justify-content: space-between;
@@ -859,6 +869,11 @@ body[data-theme="light"] .set-log-checkbox {
 .set-log-checkbox:hover {
   transform: scale(1.1);
   border-color: var(--color-accent-secondary);
+}
+
+body[data-theme="light"] .set-log-checkbox:hover {
+  background: rgba(0, 0, 0, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
 }
 
 .workout-header {
@@ -1805,17 +1820,17 @@ body[data-theme="light"] .choice-btn.selected {
 }
 
 .goal-card {
- background: var(--gradient-surface);
- backdrop-filter: blur(20px);
- border: 1px solid rgba(255, 255, 255, 0.1);
- border-radius: var(--radius-xl);
- padding: var(--space-6);
- text-align: left;
- cursor: pointer;
- transition: all 0.3s ease;
- pointer-events: auto !important;
- position: relative;
- z-index: 10 !important;
+  background: var(--gradient-surface);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  position: relative;
+  z-index: 10;
 }
 
 body[data-theme="light"] .goal-card {
@@ -3087,10 +3102,31 @@ readiness-modal .button-group {
     padding-right: var(--space-8);
 }
 
+.new-template-form input[type="text"],
+.new-template-form input[type="number"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+body[data-theme="light"] .new-template-form input[type="text"],
+body[data-theme="light"] .new-template-form input[type="number"] {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: var(--color-text-primary);
+}
+
+
 .delete-exercise-btn {
     width: 40px;
     height: 40px;
-    background: rgba(255, 71, 87, 0.2);
+    background: rgba(255, 71, 87, 0.4);
     border: none;
     border-radius: 50%;
     color: #ff4757;
@@ -3111,7 +3147,7 @@ readiness-modal .button-group {
 .day-delete-btn {
     width: 36px;
     height: 36px;
-    background: rgba(255, 71, 87, 0.2);
+    background: rgba(255, 71, 87, 0.4);
     border: none;
     border-radius: 50%;
     color: #ff4757;
