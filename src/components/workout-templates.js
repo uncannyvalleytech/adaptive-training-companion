@@ -949,6 +949,7 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
         ...this.newTemplateDays,
         { name: `Day ${this.newTemplateDays.length + 1}`, exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }
     ];
+    this._renumberDays();
     this.activeDayIndex = this.newTemplateDays.length - 1;
   }
 
@@ -958,9 +959,17 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
         return;
     }
     this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== dayIndex);
+    this._renumberDays();
     if (this.activeDayIndex >= this.newTemplateDays.length) {
         this.activeDayIndex = this.newTemplateDays.length - 1;
     }
+  }
+  
+  _renumberDays() {
+      this.newTemplateDays = this.newTemplateDays.map((day, index) => ({
+          ...day,
+          name: `Day ${index + 1}`
+      }));
   }
 
   _handleDayNameChange(dayIndex, newName) {
