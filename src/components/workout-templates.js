@@ -27,6 +27,8 @@ class WorkoutTemplates extends LitElement {
     selectedDurationType: { type: String },
     selectedDuration: { type: Number },
     selectedStartWorkout: { type: Number },
+    showDeleteConfirmation: { type: Boolean },
+    dayToDeleteIndex: { type: Number },
   };
 
   constructor() {
@@ -46,6 +48,8 @@ class WorkoutTemplates extends LitElement {
     this.selectedDurationType = 'weeks';
     this.selectedDuration = 4;
     this.selectedStartWorkout = 0;
+    this.showDeleteConfirmation = false;
+    this.dayToDeleteIndex = null;
 
     this.exerciseDatabase = {
         'chest': [
@@ -953,16 +957,28 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
     this.activeDayIndex = this.newTemplateDays.length - 1;
   }
 
-  _removeDay(dayIndex) {
+  _requestRemoveDay(dayIndex) {
     if (this.newTemplateDays.length <= 1) {
         this._showToast("You must have at least one day in your template.", 'error');
         return;
     }
-    this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== dayIndex);
+    this.dayToDeleteIndex = dayIndex;
+    this.showDeleteConfirmation = true;
+  }
+
+  _confirmRemoveDay() {
+    if (this.dayToDeleteIndex === null) return;
+    this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== this.dayToDeleteIndex);
     this._renumberDays();
     if (this.activeDayIndex >= this.newTemplateDays.length) {
         this.activeDayIndex = this.newTemplateDays.length - 1;
     }
+    this._cancelRemoveDay(); // Hide modal and reset index
+  }
+  
+  _cancelRemoveDay() {
+      this.showDeleteConfirmation = false;
+      this.dayToDeleteIndex = null;
   }
   
   _renumberDays() {
@@ -1106,6 +1122,23 @@ SECTION 6: RENDERING LOGIC
           ` : ''}
         </header>
         ${viewContent}
+        ${this.showDeleteConfirmation ? this._renderDeleteConfirmationModal() : ''}
+      </div>
+    `;
+  }
+  
+  _renderDeleteConfirmationModal() {
+    const dayName = this.newTemplateDays[this.dayToDeleteIndex]?.name || 'this day';
+    return html`
+      <div class="modal-overlay" @click=${this._cancelRemoveDay}>
+        <div class="modal-content card" @click=${e => e.stopPropagation()}>
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete ${dayName}? This action cannot be undone.</p>
+            <div class="button-group">
+                <button class="btn btn-secondary" @click=${this._cancelRemoveDay}>Cancel</button>
+                <button class="btn btn-danger" @click=${this._confirmRemoveDay}>Delete</button>
+            </div>
+        </div>
       </div>
     `;
   }
@@ -1235,7 +1268,7 @@ SECTION 6: RENDERING LOGIC
         <div class="day-editor card">
             <div class="day-header">
                 <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
-                <button class="day-delete-btn" @click=${() => this._removeDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
+                <button class="day-delete-btn" @click=${() => this._requestRemoveDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
             </div>
             <button class="btn btn-secondary" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
             <div class="exercise-list">
