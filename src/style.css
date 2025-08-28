@@ -3068,8 +3068,36 @@ readiness-modal .button-group {
   gap: var(--space-2);
   margin-bottom: var(--space-4);
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap; /* Prevent wrapping to force scrolling */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  position: relative; /* Needed for the pseudo-element */
+  padding-right: var(--space-8); /* Space for the fade effect */
+  /* Hide scrollbar for a cleaner look */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
+
+.day-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+
+.day-tabs::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 40px;
+    background: linear-gradient(to left, var(--color-surface-secondary), transparent);
+    pointer-events: none;
+    z-index: 2;
+}
+
+body[data-theme="light"] .day-tabs::after {
+    background: linear-gradient(to left, var(--color-surface-secondary), transparent);
+}
+
 
 .tab-btn {
   background: var(--color-surface-tertiary);
