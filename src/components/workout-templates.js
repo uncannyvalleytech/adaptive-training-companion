@@ -1226,8 +1226,9 @@ SECTION 6: RENDERING LOGIC
         <div class="day-editor card">
             <div class="day-header">
                 <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
-                <button class="day-delete-btn" @click=${() => this._removeDay(this.activeDayIndex)}>🗑️</button>
+                <button class="day-delete-btn" @click=${() => this._removeDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
             </div>
+            <button class="btn btn-secondary" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
             <div class="exercise-list">
             ${activeDay.exercises.map((exercise, index) => {
                 const availableExercises = this._getExercisesForGroup(exercise.muscleGroup);
@@ -1246,7 +1247,7 @@ SECTION 6: RENDERING LOGIC
                                 </select>
                             ` : ''}
                         </div>
-                        <button class="delete-exercise-btn" @click=${() => this._removeExercise(this.activeDayIndex, index)}>🗑️</button>
+                        <button class="delete-exercise-btn" @click=${() => this._removeExercise(this.activeDayIndex, index)} aria-label="Delete Exercise">🗑️</button>
                     </div>
                     <div class="exercise-details">
                         <div class="detail-item">
@@ -1265,12 +1266,11 @@ SECTION 6: RENDERING LOGIC
                 </div>
             `})}
             </div>
-            <button class="secondary-button" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
         </div>
         ` : ''}
         <div class="form-actions">
           <button class="secondary-button" @click=${this._handleCancel}>Cancel</button>
-          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.isSaving}>
+          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName.trim() || this.isSaving}>
             ${this.isSaving ? html`<div class="spinner"></div>` : 'Save Routine'}
           </button>
         </div>
