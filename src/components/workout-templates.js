@@ -27,6 +27,8 @@ class WorkoutTemplates extends LitElement {
     selectedDurationType: { type: String },
     selectedDuration: { type: Number },
     selectedStartWorkout: { type: Number },
+    showDeleteConfirmation: { type: Boolean },
+    dayToDeleteIndex: { type: Number },
   };
 
   constructor() {
@@ -46,6 +48,8 @@ class WorkoutTemplates extends LitElement {
     this.selectedDurationType = 'weeks';
     this.selectedDuration = 4;
     this.selectedStartWorkout = 0;
+    this.showDeleteConfirmation = false;
+    this.dayToDeleteIndex = null;
 
     this.exerciseDatabase = {
         'chest': [
@@ -949,18 +953,39 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
         ...this.newTemplateDays,
         { name: `Day ${this.newTemplateDays.length + 1}`, exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }
     ];
+    this._renumberDays();
     this.activeDayIndex = this.newTemplateDays.length - 1;
   }
 
-  _removeDay(dayIndex) {
+  _requestRemoveDay(dayIndex) {
     if (this.newTemplateDays.length <= 1) {
         this._showToast("You must have at least one day in your template.", 'error');
         return;
     }
-    this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== dayIndex);
+    this.dayToDeleteIndex = dayIndex;
+    this.showDeleteConfirmation = true;
+  }
+
+  _confirmRemoveDay() {
+    if (this.dayToDeleteIndex === null) return;
+    this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== this.dayToDeleteIndex);
+    this._renumberDays();
     if (this.activeDayIndex >= this.newTemplateDays.length) {
         this.activeDayIndex = this.newTemplateDays.length - 1;
     }
+    this._cancelRemoveDay(); // Hide modal and reset index
+  }
+  
+  _cancelRemoveDay() {
+      this.showDeleteConfirmation = false;
+      this.dayToDeleteIndex = null;
+  }
+  
+  _renumberDays() {
+      this.newTemplateDays = this.newTemplateDays.map((day, index) => ({
+          ...day,
+          name: `Day ${index + 1}`
+      }));
   }
 
   _handleDayNameChange(dayIndex, newName) {
@@ -1097,6 +1122,23 @@ SECTION 6: RENDERING LOGIC
           ` : ''}
         </header>
         ${viewContent}
+        ${this.showDeleteConfirmation ? this._renderDeleteConfirmationModal() : ''}
+      </div>
+    `;
+  }
+  
+  _renderDeleteConfirmationModal() {
+    const dayName = this.newTemplateDays[this.dayToDeleteIndex]?.name || 'this day';
+    return html`
+      <div class="modal-overlay" @click=${this._cancelRemoveDay}>
+        <div class="modal-content card" @click=${e => e.stopPropagation()}>
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete ${dayName}? This action cannot be undone.</p>
+            <div class="button-group">
+                <button class="btn btn-secondary" @click=${this._cancelRemoveDay}>Cancel</button>
+                <button class="btn btn-danger" @click=${this._confirmRemoveDay}>Delete</button>
+            </div>
+        </div>
       </div>
     `;
   }
@@ -1223,11 +1265,12 @@ SECTION 6: RENDERING LOGIC
             <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate}>+</button>
         </div>
         ${activeDay ? html`
-        <div class="day-editor card">
+        <div class="day-editor">
             <div class="day-header">
                 <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
-                <button class="day-delete-btn" @click=${() => this._removeDay(this.activeDayIndex)}>🗑️</button>
+                <button class="day-delete-btn" @click=${() => this._requestRemoveDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
             </div>
+            <button class="btn btn-secondary" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
             <div class="exercise-list">
             ${activeDay.exercises.map((exercise, index) => {
                 const availableExercises = this._getExercisesForGroup(exercise.muscleGroup);
@@ -1246,7 +1289,7 @@ SECTION 6: RENDERING LOGIC
                                 </select>
                             ` : ''}
                         </div>
-                        <button class="delete-exercise-btn" @click=${() => this._removeExercise(this.activeDayIndex, index)}>🗑️</button>
+                        <button class="delete-exercise-btn" @click=${() => this._removeExercise(this.activeDayIndex, index)} aria-label="Delete Exercise">🗑️</button>
                     </div>
                     <div class="exercise-details">
                         <div class="detail-item">
@@ -1265,12 +1308,11 @@ SECTION 6: RENDERING LOGIC
                 </div>
             `})}
             </div>
-            <button class="secondary-button" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
         </div>
         ` : ''}
         <div class="form-actions">
           <button class="secondary-button" @click=${this._handleCancel}>Cancel</button>
-          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.isSaving}>
+          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName.trim() || this.isSaving}>
             ${this.isSaving ? html`<div class="spinner"></div>` : 'Save Routine'}
           </button>
         </div>
@@ -1284,72 +1326,45 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
   static styles = css`
-    .new-template-form.card {
-      padding-bottom: 0;
+    .day-tabs {
+      display: flex;
+      gap: var(--space-1);
+      border-bottom: 1px solid var(--border-color);
+      margin: 0 calc(-1 * var(--space-6)) var(--space-4);
+      padding: 0 var(--space-5);
+      align-items: flex-end;
     }
-    .day-tabs { 
-        display: flex; 
-        gap: var(--space-2); 
-        margin-left: calc(var(--space-4) * -1);
-        margin-right: calc(var(--space-4) * -1);
-        padding: 0 var(--space-4);
-        margin-top: var(--space-4);
-        position: relative;
-        top: 1px;
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: var(--color-text-secondary);
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      padding: var(--space-3) var(--space-4);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: -1px;
+      font-weight: 500;
     }
-    .tab-btn { 
-        background: var(--color-surface-tertiary); 
-        border: 1px solid var(--border-color); 
-        color: var(--color-text-secondary); 
-        border-radius: var(--radius-md) var(--radius-md) 0 0; 
-        padding: var(--space-3) var(--space-4); 
-        cursor: pointer; 
-        transition: all 0.3s ease;
-        border-bottom: none;
-        position: relative;
-        bottom: -1px;
+    .tab-btn.active {
+      background: var(--color-surface-secondary);
+      color: var(--color-accent-primary);
+      border-color: var(--border-color);
+      font-weight: 600;
     }
-    .tab-btn.active { 
-        background: var(--color-surface-secondary); 
-        color: var(--color-text-primary); 
-        border-color: var(--border-color);
-        border-bottom: 1px solid var(--color-surface-secondary);
+    .add-day-btn {
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      margin-bottom: -1px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
+      background: var(--color-surface-tertiary);
     }
-    .add-day-btn { 
-        border-radius: var(--radius-full); 
-        width: 36px; 
-        height: 36px; 
-    }
-    .day-editor { 
-        padding: var(--space-4); 
-        background: var(--color-surface-secondary); 
-        margin: 0 calc(var(--space-4) * -1);
-        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
-        border-top: 1px solid var(--border-color);
-    }
-    .day-header { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        gap: var(--space-3); 
-        margin-bottom: var(--space-4); 
-    }
-    .day-name-input { 
-        flex-grow: 1; 
-        background: var(--color-surface-tertiary); 
-        border: 1px solid var(--border-color); 
-        border-radius: var(--radius-md); 
-        padding: var(--space-2) var(--space-3); 
-        color: var(--color-text-primary); 
-        font-weight: 600; 
-    }
-    #template-name { 
-        border-radius: var(--radius-md); 
-    }
-    .exercise-details input { 
-        width: 70px; 
-        border-radius: var(--radius-md); 
-    }
+    .day-editor { padding: var(--space-4) 0; }
+    .day-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
+    .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
+    #template-name { border-radius: var(--radius-md); }
+    .exercise-details input { width: 80px; border-radius: var(--radius-md); }
+    
     .exercise-editor {
         position: relative;
         padding-top: var(--space-5);
@@ -1387,13 +1402,13 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         color: var(--color-text-secondary);
         font-weight: 500;
     }
-    .delete-exercise-btn {
+    .delete-exercise-btn, .day-delete-btn {
         width: 40px;
         height: 40px;
-        background: rgba(255, 71, 87, 0.2);
+        background: #dc2626;
         border: none;
         border-radius: 50%;
-        color: #ff4757;
+        color: white;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1403,30 +1418,8 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         pointer-events: auto !important;
         z-index: 30 !important;
     }
-    .delete-exercise-btn:hover {
-        background: #ff4757;
-        color: white;
-        transform: scale(1.1);
-    }
-    .day-delete-btn {
-        width: 36px;
-        height: 36px;
-        background: rgba(255, 71, 87, 0.2);
-        border: none;
-        border-radius: 50%;
-        color: #ff4757;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        pointer-events: auto !important;
-        z-index: 30 !important;
-    }
-    .day-delete-btn:hover {
-        background: #ff4757;
-        color: white;
+    .delete-exercise-btn:hover, .day-delete-btn:hover {
+        background: #b91c1c;
         transform: scale(1.1);
     }
   `;
