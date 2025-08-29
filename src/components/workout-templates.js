@@ -27,10 +27,6 @@ class WorkoutTemplates extends LitElement {
     selectedDurationType: { type: String },
     selectedDuration: { type: Number },
     selectedStartWorkout: { type: Number },
-    showDeleteConfirmation: { type: Boolean },
-    dayToDeleteIndex: { type: Number },
-    // New property to track collapsed exercises
-    collapsedExercises: { type: Object },
   };
 
   constructor() {
@@ -50,9 +46,6 @@ class WorkoutTemplates extends LitElement {
     this.selectedDurationType = 'weeks';
     this.selectedDuration = 4;
     this.selectedStartWorkout = 0;
-    this.showDeleteConfirmation = false;
-    this.dayToDeleteIndex = null;
-    this.collapsedExercises = {};
 
     this.exerciseDatabase = {
         'chest': [
@@ -926,19 +919,11 @@ SECTION 4: WORKOUT GROUPING
 SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
 ===============================================
 */
-_addExerciseToTemplate(dayIndex) {
+  _addExerciseToTemplate(dayIndex) {
     const updatedDays = [...this.newTemplateDays];
-    const currentExercises = updatedDays[dayIndex].exercises;
-
-    // Collapse all existing exercises
-    currentExercises.forEach((_, index) => {
-        this.collapsedExercises = { ...this.collapsedExercises, [`${dayIndex}-${index}`]: true };
-    });
-
-    // Add the new exercise (which will be expanded by default)
-    currentExercises.push({ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 });
+    updatedDays[dayIndex].exercises.push({ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 });
     this.newTemplateDays = updatedDays;
-}
+  }
 
   _handleExerciseInput(dayIndex, exerciseIndex, field, value) {
     const updatedDays = [...this.newTemplateDays];
@@ -960,47 +945,22 @@ _addExerciseToTemplate(dayIndex) {
   }
 
   _addDayToTemplate() {
-    if (this.newTemplateDays.length >= 7) {
-        this._showToast("Maximum of 7 days per routine.", 'error');
-        return;
-    }
     this.newTemplateDays = [
         ...this.newTemplateDays,
         { name: `Day ${this.newTemplateDays.length + 1}`, exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }
     ];
-    this._renumberDays();
     this.activeDayIndex = this.newTemplateDays.length - 1;
   }
 
-  _requestRemoveDay(dayIndex) {
+  _removeDay(dayIndex) {
     if (this.newTemplateDays.length <= 1) {
         this._showToast("You must have at least one day in your template.", 'error');
         return;
     }
-    this.dayToDeleteIndex = dayIndex;
-    this.showDeleteConfirmation = true;
-  }
-
-  _confirmRemoveDay() {
-    if (this.dayToDeleteIndex === null) return;
-    this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== this.dayToDeleteIndex);
-    this._renumberDays();
+    this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== dayIndex);
     if (this.activeDayIndex >= this.newTemplateDays.length) {
         this.activeDayIndex = this.newTemplateDays.length - 1;
     }
-    this._cancelRemoveDay(); // Hide modal and reset index
-  }
-  
-  _cancelRemoveDay() {
-      this.showDeleteConfirmation = false;
-      this.dayToDeleteIndex = null;
-  }
-  
-  _renumberDays() {
-      this.newTemplateDays = this.newTemplateDays.map((day, index) => ({
-          ...day,
-          name: `Day ${index + 1}`
-      }));
   }
 
   _handleDayNameChange(dayIndex, newName) {
@@ -1095,14 +1055,6 @@ _addExerciseToTemplate(dayIndex) {
     const customTemplates = this.templates.filter(t => t.primaryFocus === "custom");
     return [...this.premadeMesocycles, ...customTemplates];
   }
-  
-  _toggleExerciseCollapsed(dayIndex, exerciseIndex) {
-    const key = `${dayIndex}-${exerciseIndex}`;
-    this.collapsedExercises = {
-      ...this.collapsedExercises,
-      [key]: !this.collapsedExercises[key]
-    };
-  }
 
 /*
 ===============================================
@@ -1145,23 +1097,6 @@ SECTION 6: RENDERING LOGIC
           ` : ''}
         </header>
         ${viewContent}
-        ${this.showDeleteConfirmation ? this._renderDeleteConfirmationModal() : ''}
-      </div>
-    `;
-  }
-  
-  _renderDeleteConfirmationModal() {
-    const dayName = this.newTemplateDays[this.dayToDeleteIndex]?.name || 'this day';
-    return html`
-      <div class="modal-overlay" @click=${this._cancelRemoveDay}>
-        <div class="modal-content card" @click=${e => e.stopPropagation()}>
-            <h3>Confirm Deletion</h3>
-            <p>Are you sure you want to delete ${dayName}? This action cannot be undone.</p>
-            <div class="button-group">
-                <button class="btn btn-secondary" @click=${this._cancelRemoveDay}>Cancel</button>
-                <button class="btn btn-danger" @click=${this._confirmRemoveDay}>Delete</button>
-            </div>
-        </div>
       </div>
     `;
   }
@@ -1281,79 +1216,61 @@ SECTION 6: RENDERING LOGIC
           <label for="template-name">Routine Name:</label>
           <input id="template-name" type="text" .value=${this.newTemplateName} @input=${(e) => this.newTemplateName = e.target.value} />
         </div>
-        
-        <div class="day-tabs-container">
-          <div class="day-tabs">
-              ${this.newTemplateDays.map((day, index) => html`
-                  <button class="tab-btn ${this.activeDayIndex === index ? 'active' : ''}" @click=${() => this.activeDayIndex = index}>${day.name}</button>
-              `)}
-              <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate} ?disabled=${this.newTemplateDays.length >= 7}>+</button>
-          </div>
+        <div class="day-tabs">
+            ${this.newTemplateDays.map((day, index) => html`
+                <button class="tab-btn ${this.activeDayIndex === index ? 'active' : ''}" @click=${() => this.activeDayIndex = index}>${day.name}</button>
+            `)}
+            <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate}>+</button>
         </div>
-
         ${activeDay ? html`
         <div class="day-editor card">
             <div class="day-header">
                 <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
-                <button class="day-delete-btn" @click=${() => this._requestRemoveDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
+                <button class="day-delete-btn" @click=${() => this._removeDay(this.activeDayIndex)}>🗑️</button>
             </div>
-            <button class="btn btn-secondary" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
             <div class="exercise-list">
             ${activeDay.exercises.map((exercise, index) => {
-                const isCollapsed = this.collapsedExercises[`${this.activeDayIndex}-${index}`];
+                const availableExercises = this._getExercisesForGroup(exercise.muscleGroup);
                 return html`
-                <div class="exercise-editor card ${isCollapsed ? 'collapsed' : ''}">
-                    ${isCollapsed
-                      ? html`
-                          <div class="exercise-summary" @click=${() => this._toggleExerciseCollapsed(this.activeDayIndex, index)}>
-                            <div class="exercise-summary-info">
-                              <h4>${exercise.name || 'New Exercise'}</h4>
-                              <p>${exercise.sets} sets x ${exercise.reps} reps</p>
-                            </div>
-                            <button class="delete-exercise-btn" @click=${(e) => { e.stopPropagation(); this._removeExercise(this.activeDayIndex, index); }}>🗑️</button>
-                          </div>
-                        `
-                      : html`
-                          <div class="exercise-details-wrapper">
-                            <div class="exercise-editor-header">
-                                <div class="exercise-selectors">
-                                    <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
-                                        <option value="">Select Muscle Group</option>
-                                        ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
-                                    </select>
-                                    ${exercise.muscleGroup ? html`
-                                        <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'name', e.target.value)}>
-                                        <option value="">Select Exercise</option>
-                                        ${this._getExercisesForGroup(exercise.muscleGroup).map(ex => html`<option value="${ex.name}" ?selected=${exercise.name === ex.name}>${ex.name}</option>`)}
-                                        </select>
-                                    ` : ''}
-                                </div>
-                                <button class="delete-exercise-btn" @click=${() => this._removeExercise(this.activeDayIndex, index)} aria-label="Delete Exercise">🗑️</button>
-                            </div>
-                            <div class="exercise-details">
-                                <div class="detail-item">
-                                    <label for=${`sets-${index}`}>Sets</label>
-                                    <input id=${`sets-${index}`} type="number" min="1" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'sets', e.target.value)}>
-                                </div>
-                                <div class="detail-item">
-                                    <label for=${`reps-${index}`}>Reps</label>
-                                    <input id=${`reps-${index}`} type="number" min="1" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'reps', e.target.value)}>
-                                </div>
-                                <div class="detail-item">
-                                    <label for=${`rir-${index}`}>RIR</label>
-                                    <input id=${`rir-${index}`} type="number" min="0" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'rir', e.target.value)}>
-                                </div>
-                            </div>
-                          </div>
-                        `}
+                <div class="exercise-editor card">
+                    <div class="exercise-editor-header">
+                        <div class="exercise-selectors">
+                            <select class="muscle-group-select" @change=${(e) => this._handleMuscleGroupChange(this.activeDayIndex, index, e.target.value)}>
+                                <option value="">Select Muscle Group</option>
+                                ${muscleGroups.map(muscle => html`<option value="${muscle}" ?selected=${exercise.muscleGroup === muscle}>${muscle.charAt(0).toUpperCase() + muscle.slice(1)}</option>`)}
+                            </select>
+                            ${exercise.muscleGroup ? html`
+                                <select class="exercise-select" .value=${exercise.name} @change=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'name', e.target.value)}>
+                                <option value="">Select Exercise</option>
+                                ${availableExercises.map(ex => html`<option value="${ex.name}" ?selected=${exercise.name === ex.name}>${ex.name}</option>`)}
+                                </select>
+                            ` : ''}
+                        </div>
+                        <button class="delete-exercise-btn" @click=${() => this._removeExercise(this.activeDayIndex, index)}>🗑️</button>
+                    </div>
+                    <div class="exercise-details">
+                        <div class="detail-item">
+                            <label for=${`sets-${index}`}>Sets</label>
+                            <input id=${`sets-${index}`} type="number" min="1" .value=${exercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'sets', e.target.value)}>
+                        </div>
+                        <div class="detail-item">
+                            <label for=${`reps-${index}`}>Reps</label>
+                            <input id=${`reps-${index}`} type="number" min="1" .value=${exercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'reps', e.target.value)}>
+                        </div>
+                        <div class="detail-item">
+                            <label for=${`rir-${index}`}>RIR</label>
+                            <input id=${`rir-${index}`} type="number" min="0" .value=${exercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, index, 'rir', e.target.value)}>
+                        </div>
+                    </div>
                 </div>
             `})}
             </div>
+            <button class="secondary-button" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
         </div>
         ` : ''}
         <div class="form-actions">
           <button class="secondary-button" @click=${this._handleCancel}>Cancel</button>
-          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName.trim() || this.isSaving}>
+          <button class="cta-button" @click=${this._saveTemplate} ?disabled=${!this.newTemplateName || this.isSaving}>
             ${this.isSaving ? html`<div class="spinner"></div>` : 'Save Routine'}
           </button>
         </div>
@@ -1375,7 +1292,7 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .day-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
     #template-name { border-radius: var(--radius-md); }
-    .exercise-details input { width: 80px; border-radius: var(--radius-md); }
+    .exercise-details input { width: 70px; border-radius: var(--radius-md); }
     
     .exercise-editor {
         position: relative;
@@ -1414,13 +1331,13 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         color: var(--color-text-secondary);
         font-weight: 500;
     }
-    .delete-exercise-btn, .day-delete-btn {
+    .delete-exercise-btn {
         width: 40px;
         height: 40px;
-        background: rgba(220, 38, 38, 0.2);
+        background: rgba(255, 71, 87, 0.2);
         border: none;
         border-radius: 50%;
-        color: #DC2626;
+        color: #ff4757;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1430,8 +1347,29 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         pointer-events: auto !important;
         z-index: 30 !important;
     }
-    .delete-exercise-btn:hover, .day-delete-btn:hover {
-        background: #DC2626;
+    .delete-exercise-btn:hover {
+        background: #ff4757;
+        color: white;
+        transform: scale(1.1);
+    }
+    .day-delete-btn {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 71, 87, 0.2);
+        border: none;
+        border-radius: 50%;
+        color: #ff4757;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        pointer-events: auto !important;
+        z-index: 30 !important;
+    }
+    .day-delete-btn:hover {
+        background: #ff4757;
         color: white;
         transform: scale(1.1);
     }
