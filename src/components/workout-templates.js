@@ -1334,7 +1334,7 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .day-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
     #template-name { border-radius: var(--radius-md); }
-    .exercise-details input { width: 70px; border-radius: var(--radius-md); }
+    .exercise-details input { width: 80px; border-radius: var(--radius-md); }
     
     .exercise-editor {
         position: relative;
@@ -1373,13 +1373,13 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         color: var(--color-text-secondary);
         font-weight: 500;
     }
-    .delete-exercise-btn {
+    .delete-exercise-btn, .day-delete-btn {
         width: 40px;
         height: 40px;
-        background: rgba(255, 71, 87, 0.2);
+        background: rgba(220, 38, 38, 0.2);
         border: none;
         border-radius: 50%;
-        color: #ff4757;
+        color: #DC2626;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1389,29 +1389,8 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         pointer-events: auto !important;
         z-index: 30 !important;
     }
-    .delete-exercise-btn:hover {
-        background: #ff4757;
-        color: white;
-        transform: scale(1.1);
-    }
-    .day-delete-btn {
-        width: 36px;
-        height: 36px;
-        background: rgba(255, 71, 87, 0.2);
-        border: none;
-        border-radius: 50%;
-        color: #ff4757;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        pointer-events: auto !important;
-        z-index: 30 !important;
-    }
-    .day-delete-btn:hover {
-        background: #ff4757;
+    .delete-exercise-btn:hover, .day-delete-btn:hover {
+        background: #DC2626;
         color: white;
         transform: scale(1.1);
     }
