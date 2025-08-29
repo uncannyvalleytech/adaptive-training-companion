@@ -1284,16 +1284,72 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
   static styles = css`
-    .day-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); align-items: center; flex-wrap: wrap; }
-    .tab-btn { background: var(--color-surface-tertiary); border: 1px solid var(--border-color); color: var(--color-text-secondary); border-radius: var(--radius-full); padding: var(--space-2) var(--space-4); cursor: pointer; transition: all 0.3s ease; }
-    .tab-btn.active { background: var(--color-accent-primary); color: var(--color-surface-primary); border-color: var(--color-accent-primary); }
-    .add-day-btn { border-radius: var(--radius-full); width: 36px; height: 36px; }
-    .day-editor { padding: var(--space-4); background: var(--color-surface-secondary); }
-    .day-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
-    .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
-    #template-name { border-radius: var(--radius-md); }
-    .exercise-details input { width: 70px; border-radius: var(--radius-md); }
-    
+    .new-template-form.card {
+      padding-bottom: 0;
+    }
+    .day-tabs { 
+        display: flex; 
+        gap: var(--space-2); 
+        margin-left: calc(var(--space-4) * -1);
+        margin-right: calc(var(--space-4) * -1);
+        padding: 0 var(--space-4);
+        margin-top: var(--space-4);
+        position: relative;
+        top: 1px;
+    }
+    .tab-btn { 
+        background: var(--color-surface-tertiary); 
+        border: 1px solid var(--border-color); 
+        color: var(--color-text-secondary); 
+        border-radius: var(--radius-md) var(--radius-md) 0 0; 
+        padding: var(--space-3) var(--space-4); 
+        cursor: pointer; 
+        transition: all 0.3s ease;
+        border-bottom: none;
+        position: relative;
+        bottom: -1px;
+    }
+    .tab-btn.active { 
+        background: var(--color-surface-secondary); 
+        color: var(--color-text-primary); 
+        border-color: var(--border-color);
+        border-bottom: 1px solid var(--color-surface-secondary);
+    }
+    .add-day-btn { 
+        border-radius: var(--radius-full); 
+        width: 36px; 
+        height: 36px; 
+    }
+    .day-editor { 
+        padding: var(--space-4); 
+        background: var(--color-surface-secondary); 
+        margin: 0 calc(var(--space-4) * -1);
+        border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+        border-top: 1px solid var(--border-color);
+    }
+    .day-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        gap: var(--space-3); 
+        margin-bottom: var(--space-4); 
+    }
+    .day-name-input { 
+        flex-grow: 1; 
+        background: var(--color-surface-tertiary); 
+        border: 1px solid var(--border-color); 
+        border-radius: var(--radius-md); 
+        padding: var(--space-2) var(--space-3); 
+        color: var(--color-text-primary); 
+        font-weight: 600; 
+    }
+    #template-name { 
+        border-radius: var(--radius-md); 
+    }
+    .exercise-details input { 
+        width: 70px; 
+        border-radius: var(--radius-md); 
+    }
     .exercise-editor {
         position: relative;
         padding-top: var(--space-5);
