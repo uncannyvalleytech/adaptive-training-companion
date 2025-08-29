@@ -3193,3 +3193,89 @@ body[data-theme="light"] .new-template-form input[type="number"] {
     color: white;
     transform: scale(1.1);
 }
+
+/* SECTION 40: NEW TABBED INTERFACE STYLES */
+.day-tabs-container {
+  margin-left: calc(-1 * var(--space-4));
+  margin-right: calc(-1 * var(--space-4));
+  padding: 0 var(--space-4);
+  margin-bottom: 0; /* Remove margin to connect with the card */
+  position: relative;
+  z-index: 2;
+}
+
+.day-editor {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-top: -2px; /* Overlap to hide the top border */
+  padding-top: var(--space-8);
+  position: relative;
+  z-index: 1;
+}
+
+.tab-btn {
+  border-bottom: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: var(--color-surface-tertiary);
+  margin-bottom: -1px; /* Overlap the card border */
+  position: relative;
+  top: 1px;
+}
+
+.tab-btn.active {
+  background: var(--gradient-surface);
+  border-color: rgba(255, 255, 255, 0.1);
+  border-bottom-color: transparent; /* Hide bottom border when active */
+}
+
+body[data-theme="light"] .tab-btn.active {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.02));
+  border-color: rgba(0, 0, 0, 0.1);
+  border-bottom-color: transparent;
+}
+
+
+/* SECTION 41: COLLAPSIBLE EXERCISE CARD STYLES */
+.exercise-editor {
+  transition: all 0.3s ease;
+}
+
+.exercise-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+}
+
+body[data-theme="light"] .exercise-summary {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.exercise-summary-info h4 {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.exercise-summary-info p {
+  margin: var(--space-1) 0 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.exercise-editor .exercise-details-wrapper {
+  overflow: hidden;
+  transition: max-height 0.5s ease, opacity 0.5s ease;
+  max-height: 1000px; /* Large enough for content */
+  opacity: 1;
+}
+
+.exercise-editor.collapsed .exercise-details-wrapper {
+  max-height: 0;
+  opacity: 0;
+}
