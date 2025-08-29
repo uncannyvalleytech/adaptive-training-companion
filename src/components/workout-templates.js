@@ -1265,7 +1265,7 @@ SECTION 6: RENDERING LOGIC
             <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate}>+</button>
         </div>
         ${activeDay ? html`
-        <div class="day-editor">
+        <div class="day-editor card">
             <div class="day-header">
                 <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
                 <button class="day-delete-btn" @click=${() => this._requestRemoveDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
@@ -1326,40 +1326,11 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
   static styles = css`
-    .day-tabs {
-      display: flex;
-      gap: var(--space-1);
-      border-bottom: 1px solid var(--border-color);
-      margin: 0 calc(-1 * var(--space-6)) var(--space-4);
-      padding: 0 var(--space-5);
-      align-items: flex-end;
-    }
-    .tab-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      border-bottom: none;
-      color: var(--color-text-secondary);
-      border-radius: var(--radius-md) var(--radius-md) 0 0;
-      padding: var(--space-3) var(--space-4);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      margin-bottom: -1px;
-      font-weight: 500;
-    }
-    .tab-btn.active {
-      background: var(--color-surface-secondary);
-      color: var(--color-accent-primary);
-      border-color: var(--border-color);
-      font-weight: 600;
-    }
-    .add-day-btn {
-      border-radius: var(--radius-md) var(--radius-md) 0 0;
-      margin-bottom: -1px;
-      border: 1px solid var(--border-color);
-      border-bottom: none;
-      background: var(--color-surface-tertiary);
-    }
-    .day-editor { padding: var(--space-4) 0; }
+    .day-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); align-items: center; flex-wrap: wrap; }
+    .tab-btn { background: var(--color-surface-tertiary); border: 1px solid var(--border-color); color: var(--color-text-secondary); border-radius: var(--radius-full); padding: var(--space-2) var(--space-4); cursor: pointer; transition: all 0.3s ease; }
+    .tab-btn.active { background: var(--color-accent-primary); color: var(--color-surface-primary); border-color: var(--color-accent-primary); }
+    .add-day-btn { border-radius: var(--radius-full); width: 36px; height: 36px; }
+    .day-editor { padding: var(--space-4); background: var(--color-surface-secondary); }
     .day-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
     #template-name { border-radius: var(--radius-md); }
@@ -1405,10 +1376,10 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     .delete-exercise-btn, .day-delete-btn {
         width: 40px;
         height: 40px;
-        background: #dc2626;
+        background: rgba(220, 38, 38, 0.2);
         border: none;
         border-radius: 50%;
-        color: white;
+        color: #DC2626;
         cursor: pointer;
         display: flex;
         align-items: center;
@@ -1419,7 +1390,8 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
         z-index: 30 !important;
     }
     .delete-exercise-btn:hover, .day-delete-btn:hover {
-        background: #b91c1c;
+        background: #DC2626;
+        color: white;
         transform: scale(1.1);
     }
   `;
