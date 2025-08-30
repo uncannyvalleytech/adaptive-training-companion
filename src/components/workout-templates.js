@@ -1335,8 +1335,8 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
       align-items: flex-end;
     }
     .tab-btn {
-      background: transparent;
-      border: 1px solid transparent;
+      background: var(--color-surface-tertiary);
+      border: 1px solid var(--border-color);
       border-bottom: none;
       color: var(--color-text-secondary);
       border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -1351,15 +1351,25 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
       color: var(--color-accent-primary);
       border-color: var(--border-color);
       font-weight: 600;
+      border-bottom-color: var(--color-surface-secondary);
     }
     .add-day-btn {
-      border-radius: var(--radius-md) var(--radius-md) 0 0;
-      margin-bottom: -1px;
-      border: 1px solid var(--border-color);
-      border-bottom: none;
+      border-radius: var(--radius-full);
+      margin-bottom: 0;
+      margin-left: auto;
+      border: none;
       background: var(--color-surface-tertiary);
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
     }
-    .day-editor { padding: var(--space-4) 0; }
+    .day-editor { 
+      padding: var(--space-4) 0; 
+      background: var(--color-surface-secondary);
+      margin: -1px calc(-1 * var(--space-6)) 0;
+      padding: var(--space-6);
+      border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+    }
     .day-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
     #template-name { border-radius: var(--radius-md); }
