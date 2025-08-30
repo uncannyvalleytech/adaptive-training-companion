@@ -608,7 +608,7 @@ body[data-theme="light"] .hub-option {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--gradient-primary);
+  background: linear-gradient(45deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1241,7 +1241,7 @@ body[data-theme="light"] .toast-notification {
 
 /* 14.D: Info Toast */
 .toast-notification.info {
- background: var(--gradient-primary);
+ background: linear-gradient(135deg, #00D4FF, #7C3AED);
 }
 
 /* =============================================== */
@@ -3109,6 +3109,7 @@ body[data-theme="light"] .metric-card {
   color: var(--color-state-error);
 }
 
+/* 36.G: Trend Neutral */
 .trend-neutral {
   color: var(--color-text-secondary);
 }
@@ -3340,18 +3341,29 @@ padding: var(--space-3) var(--space-4);
   padding-top: var(--space-5);
 }
 
-/*
-===============================================
-SECTION 40: WORKOUT SESSION UI IMPROVEMENTS
-===============================================
-*/
+/* =============================================== */
+/* 40. WORKOUT SESSION UI IMPROVEMENTS             */
+/* =============================================== */
 
-/* 40.A: Muscle Group Tabs for Workout Session */
+/* 40.A: Workout Session Card */
+.workout-session-card {
+  background: var(--gradient-surface);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  padding: 0;
+  margin-bottom: var(--space-6);
+  position: relative;
+}
+
+/* 40.B: Muscle Group Tabs for Workout Session */
 .workout-group-tabs-container {
-  margin-bottom: var(--space-4);
+  margin-bottom: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none; /* Firefox */
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 var(--space-6);
 }
 
 .workout-group-tabs-container::-webkit-scrollbar {
@@ -3361,34 +3373,39 @@ SECTION 40: WORKOUT SESSION UI IMPROVEMENTS
 .workout-group-tabs {
   display: flex;
   gap: var(--space-2);
-  padding: 0 var(--space-2);
+  padding: 0;
+  padding-top: var(--space-4);
+  position: relative;
+  z-index: 2;
 }
 
-/* 40.B: Muscle Group Tab Button */
+/* 40.C: Muscle Group Tab Button */
 .workout-group-tab-btn {
-  background: var(--color-surface-tertiary);
-  border: 1px solid var(--border-color);
+  background: transparent;
+  border: none;
   color: var(--color-text-secondary);
-  border-radius: var(--radius-lg);
-  padding: var(--space-2) var(--space-4);
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
   text-transform: uppercase;
-  font-weight: 600;
   letter-spacing: 0.5px;
+  padding: var(--space-2) var(--space-4) var(--space-3) var(--space-4);
+  position: relative;
 }
 
 .workout-group-tab-btn.active {
-  background: var(--color-accent-primary);
-  color: var(--color-surface-primary);
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+  color: var(--color-accent-primary);
 }
 
-/* 40.C: Muscle Group Content */
-.workout-group-content {
-  margin-top: var(--space-4);
+.workout-group-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-accent-primary);
 }
 
 /* 40.D: Exercise Tabs */
@@ -3398,7 +3415,8 @@ SECTION 40: WORKOUT SESSION UI IMPROVEMENTS
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   margin-bottom: var(--space-4);
-  padding: 0 var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .exercise-tabs-container::-webkit-scrollbar {
@@ -3407,14 +3425,14 @@ SECTION 40: WORKOUT SESSION UI IMPROVEMENTS
 
 .exercise-tabs {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-wrap: nowrap;
 }
 
 /* 40.E: Exercise Tab Button */
 .exercise-tab-btn-workout {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   background: var(--color-surface-tertiary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
@@ -3437,6 +3455,7 @@ SECTION 40: WORKOUT SESSION UI IMPROVEMENTS
 }
 
 .exercise-tab-btn-workout.completed {
+  background: transparent;
   border-color: var(--color-accent-secondary);
   color: var(--color-accent-secondary);
 }
@@ -3450,8 +3469,8 @@ SECTION 40: WORKOUT SESSION UI IMPROVEMENTS
 /* 40.F: Active Exercise Indicator */
 .active-exercise-indicator {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -6px;
+  right: -6px;
   width: 20px;
   height: 20px;
   background: var(--gradient-energy);
@@ -3461,4 +3480,9 @@ SECTION 40: WORKOUT SESSION UI IMPROVEMENTS
   justify-content: center;
   font-size: 10px;
   color: white;
+}
+
+/* 40.G: Exercise Content Container */
+.exercise-content-container {
+    padding: 0 var(--space-6) var(--space-6);
 }
