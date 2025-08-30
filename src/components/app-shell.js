@@ -3,12 +3,13 @@
 SECTION 1: COMPONENT AND SERVICE IMPORTS
 ===============================================
 */
-
+// 1.A: Import Core Libraries
 import { LitElement, html } from "lit";
+// 1.B: Import Services
 import { WorkoutEngine } from "../services/workout-engine.js";
 import { saveDataLocally, getDataLocally, deleteDataLocally } from "../services/local-storage.js";
 
-// Import all view components
+// 1.C: Import all View Components
 import "./onboarding-flow.js";
 import "./workout-session.js";
 import "./workout-summary.js";
@@ -24,7 +25,7 @@ import "./readiness-modal.js";
 SECTION 2: APP-SHELL COMPONENT DEFINITION
 ===============================================
 */
-
+// 2.A: Properties
 class AppShell extends LitElement {
   static properties = {
     currentView: { type: String },
@@ -37,6 +38,7 @@ class AppShell extends LitElement {
     editingRoutineId: { type: String, state: true },
   };
 
+  // 2.B: Constructor
   constructor() {
     super();
     this.isLoading = true;
@@ -55,7 +57,7 @@ class AppShell extends LitElement {
 SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
 ===============================================
 */
-
+// 3.A: Connected Callback
   connectedCallback() {
     super.connectedCallback();
     this.loadUserData();
@@ -76,6 +78,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
 
   }
 
+// 3.B: Disconnected Callback
   disconnectedCallback() {
     super.disconnectedCallback();
     // Clean up event listeners
@@ -96,6 +99,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
 
   }
 
+// 3.C: Load User Data
   loadUserData() {
     this.isLoading = true;
     try {
@@ -122,7 +126,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
 SECTION 4: EVENT HANDLERS
 ===============================================
 */
-
+// 4.A: Handle Onboarding Complete
   _handleOnboardingComplete(e) {
     const onboardingData = e.detail.userData;
     this.userData = { ...this.userData, ...onboardingData, onboardingComplete: true };
@@ -132,11 +136,13 @@ SECTION 4: EVENT HANDLERS
     this._showToast({ detail: { message: "Profile created! Welcome!", type: "success" }});
   }
 
+// 4.B: Handle Start Workout
   _handleStartWorkoutWithTemplate(e) {
     this.currentWorkout = e.detail.template;
     this.showReadinessModal = true;
   }
   
+// 4.C: Handle Program Selection
   _handleProgramSelected(e) {
     const { program, duration, startWorkoutIndex } = e.detail;
     const newPlan = this.workoutEngine.generateProgramPlan(program, duration, startWorkoutIndex);
@@ -148,6 +154,7 @@ SECTION 4: EVENT HANDLERS
     this.currentView = 'home';
   }
 
+// 4.D: Handle Readiness Submission
   _handleReadinessSubmit(readinessData) {
     this.showReadinessModal = false;
     const recoveryScore = this.workoutEngine.calculateRecoveryScore(readinessData);
@@ -157,11 +164,13 @@ SECTION 4: EVENT HANDLERS
     this._showToast({ detail: { message: adjustedWorkout.adjustmentNote || "Workout Started!", type: 'info' } });
   }
 
+// 4.E: Skip Readiness
   _skipReadiness() {
     this.showReadinessModal = false;
     this.currentView = 'workout';
   }
 
+// 4.F: Handle Workout Completion
   _handleWorkoutCompleted(e) {
     const { workoutData, completedWorkoutDay } = e.detail;
     if (this.userData.activeProgram && completedWorkoutDay) {
@@ -177,6 +186,7 @@ SECTION 4: EVENT HANDLERS
     this.currentView = 'summary';
   }
 
+// 4.G: Handle Summary Continue
   _handleSummaryContinue(e) {
       const { xpGained } = e.detail;
       this.userData.totalXP = (this.userData.totalXP || 0) + xpGained;
@@ -188,33 +198,40 @@ SECTION 4: EVENT HANDLERS
       this.loadUserData();
   }
 
+// 4.H: Handle Workout Cancellation
   _handleWorkoutCancelled() {
     this.currentView = 'home';
     this.currentWorkout = null;
   }
   
+// 4.I: Handle Theme Change
   _handleThemeChange(e) {
     document.body.dataset.theme = e.detail.theme;
   }
   
+// 4.J: Handle Units Change
   _handleUnitsChange(e) {
     console.log(`Units changed to ${e.detail.units}`);
   }
   
+// 4.K: Handle Sign Out
   _handleSignOut() {
     this._handleDeleteData();
   }
   
+// 4.L: Handle Delete Data
   _handleDeleteData() {
     deleteDataLocally();
     window.location.reload();
   }
 
+// 4.M: Handle Edit Routine
   _handleEditRoutine(e) {
     this.editingRoutineId = e.detail.routineId;
     this.currentView = 'templates';
   }
 
+// 4.N: Handle Delete Routine
   _handleDeleteRoutine(e) {
     const { routineId } = e.detail;
     const updatedTemplates = this.userData.templates.filter(t => t.id !== routineId);
@@ -223,23 +240,24 @@ SECTION 4: EVENT HANDLERS
     this._showToast({ detail: { message: "Routine deleted.", type: "success" } });
   }
 
+// 4.O: Handle Routine Saved
   _handleRoutineSaved() {
     this.editingRoutineId = null;
     this.loadUserData();
     this.currentView = 'settings';
   }
 
-
 /*
 ===============================================
 SECTION 5: UI METHODS (NAVIGATION, TOAST, THEME)
 ===============================================
 */
-
+// 5.A: Navigate to View
   _navigateTo(view) {
     this.currentView = view;
   }
 
+// 5.B: Show Toast Notification
   _showToast(e) {
     const { message, type } = e.detail;
     this.toast = { show: true, message, type };
@@ -248,6 +266,7 @@ SECTION 5: UI METHODS (NAVIGATION, TOAST, THEME)
     }, 3000);
   }
 
+// 5.C: Apply Theme
   _applyTheme() {
     const theme = localStorage.getItem('theme') || 'dark';
     document.body.dataset.theme = theme;
@@ -258,7 +277,7 @@ SECTION 5: UI METHODS (NAVIGATION, TOAST, THEME)
 SECTION 6: VIEW RENDERING LOGIC
 ===============================================
 */
-
+// 6.A: Main Render Method
   render() {
     if (this.isLoading) {
       return html`<div></div>`;
@@ -276,6 +295,7 @@ SECTION 6: VIEW RENDERING LOGIC
     `;
   }
 
+// 6.B: Render Current View
   _renderCurrentView() {
     switch (this.currentView) {
       case 'onboarding':
@@ -301,6 +321,7 @@ SECTION 6: VIEW RENDERING LOGIC
     }
   }
 
+// 6.C: Render Home View
   _renderHomeView() {
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -388,6 +409,7 @@ SECTION 6: VIEW RENDERING LOGIC
     `;
   }
 
+// 6.D: Render Navigation Bar
   _renderNavBar() {
     const navItems = [
       { view: 'home', label: 'Home', icon: '🏠' },
@@ -412,6 +434,7 @@ SECTION 6: VIEW RENDERING LOGIC
     `;
   }
   
+// 6.E: Render Readiness Modal
   _renderReadinessModal() {
     return html`
       <readiness-modal
@@ -421,6 +444,7 @@ SECTION 6: VIEW RENDERING LOGIC
     `;
   }
 
+// 6.F: Render Toast Notification
   _renderToast() {
     return html`
       <div class="toast-notification ${this.toast.type}">
@@ -434,11 +458,12 @@ SECTION 6: VIEW RENDERING LOGIC
 SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
-
+// 7.A: Create Render Root
   createRenderRoot() {
     // This component will use the global stylesheet
     return this;
   }
 }
 
+// 7.B: Custom Element Definition
 customElements.define("app-shell", AppShell);
