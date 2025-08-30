@@ -3,8 +3,9 @@
 SECTION 1: COMPONENT AND SERVICE IMPORTS
 ===============================================
 */
-
+// 1.A: Import Core Libraries
 import { LitElement, html, css } from "lit";
+// 1.B: Import Services
 import { sanitizeHTML } from "../services/sanitization.js";
 
 /*
@@ -12,7 +13,7 @@ import { sanitizeHTML } from "../services/sanitization.js";
 SECTION 2: ONBOARDING-FLOW COMPONENT DEFINITION
 ===============================================
 */
-
+// 2.A: Properties
 class OnboardingFlow extends LitElement {
   static properties = {
     step: { type: Number },
@@ -20,6 +21,7 @@ class OnboardingFlow extends LitElement {
     error: { type: String },
   };
 
+// 2.B: Styles
   static styles = css`
     .choice-grid {
       display: grid;
@@ -28,6 +30,7 @@ class OnboardingFlow extends LitElement {
     }
   `;
 
+// 2.C: Constructor
   constructor() {
     super();
     this.step = 0;
@@ -98,7 +101,7 @@ class OnboardingFlow extends LitElement {
 SECTION 3: EVENT HANDLERS AND LOGIC
 ===============================================
 */
-
+// 3.A: Handle Input Change
   _handleInputChange(field, value) {
     // SECTION 3.1: INPUT VALIDATION & SANITIZATION
     // Enforce max value for age and sanitize input.
@@ -113,11 +116,13 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     this.requestUpdate();
   }
   
+// 3.B: Handle Choice Selection
   _handleChoiceSelection(field, value) {
     this.userData = { ...this.userData, [field]: value };
     this.requestUpdate();
   }
 
+// 3.C: Validate Step
   _validateStep() {
     const currentStepData = this.steps[this.step];
     if (currentStepData.type === 'form') {
@@ -137,6 +142,7 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     return true;
   }
 
+// 3.D: Next Step
   _nextStep() {
     if (!this._validateStep()) return;
 
@@ -154,6 +160,7 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     }
   }
 
+// 3.E: Previous Step
   _prevStep() {
     if (this.step > 0) {
       this.step--;
@@ -166,7 +173,7 @@ SECTION 3: EVENT HANDLERS AND LOGIC
 SECTION 4: RENDERING LOGIC
 ===============================================
 */
-
+// 4.A: Main Render Method
   render() {
     const currentStepData = this.steps[this.step];
     const progress = (this.step / (this.steps.length - 2)) * 100;
@@ -200,6 +207,7 @@ SECTION 4: RENDERING LOGIC
     `;
   }
 
+// 4.B: Render Step Content
   _renderStepContent(stepData) {
     switch(stepData.type) {
         case 'intro':
@@ -238,6 +246,7 @@ SECTION 4: RENDERING LOGIC
     }
   }
 
+// 4.C: Render Form
   _renderForm(fields) {
     return html`
       ${fields.map(field => {
@@ -248,9 +257,17 @@ SECTION 4: RENDERING LOGIC
                 <label for=${field.key}>${field.label}</label>
                 <input
                   type="number" id=${field.key} .value=${this.userData[field.key]}
-                  @input=${e => { e.stopPropagation(); this._handleInputChange(field.key, e.target.value); }}
+                  @input=${e => {
+                    e.stopPropagation();
+                    let value = e.target.value;
+                    if (value.length > 3) {
+                      value = value.slice(0, 3);
+                    }
+                    this.userData = { ...this.userData, [field.key]: value };
+                    this.requestUpdate();
+                  }}
                   min=${field.min} max=${field.max} placeholder="Enter ${field.label.toLowerCase()}"
-                  inputmode="numeric" pattern="[0-9]*"
+                  inputmode="numeric" pattern="[0-9]*" maxlength="3"
                 />
               </div>
             `;
@@ -295,10 +312,11 @@ SECTION 4: RENDERING LOGIC
 SECTION 5: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
-
+// 5.A: Create Render Root
   createRenderRoot() {
     return this;
   }
 }
 
+// 5.B: Custom Element Definition
 customElements.define("onboarding-flow", OnboardingFlow);
