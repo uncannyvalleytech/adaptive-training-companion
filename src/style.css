@@ -2122,10 +2122,6 @@ body[data-theme="light"] .toggle-btn.active {
  margin: var(--space-6) 0;
 }
 
-.exercise-editor {
- padding: var(--space-4);
-}
-
 .exercise-editor-header {
  display: flex;
  justify-content: space-between;
@@ -3063,7 +3059,7 @@ readiness-modal .button-group {
 /* =============================================== */
 /* 39. WORKOUT TEMPLATE UI IMPROVEMENTS           */
 /* =============================================== */
-.day-tabs, .exercise-tabs {
+.day-tabs {
   display: flex;
   gap: 0;
   margin-bottom: 0;
@@ -3073,7 +3069,7 @@ readiness-modal .button-group {
   margin-left: -10px;
 }
 
-.tab-btn, .exercise-tab-btn {
+.tab-btn {
   background: var(--color-surface-tertiary);
   border: 1px solid var(--border-color);
   color: var(--color-text-secondary);
@@ -3085,8 +3081,8 @@ readiness-modal .button-group {
   position: relative;
 }
 
-.tab-btn.active, .exercise-tab-btn.active {
-  background: var(--color-surface-secondary);
+.tab-btn.active {
+  background: var(--gradient-surface);
   color: var(--color-text-primary);
   border-bottom-color: transparent;
   z-index: 3;
@@ -3099,26 +3095,57 @@ readiness-modal .button-group {
   margin-left: 15px;
 }
 
-.day-editor, .exercise-editor {
+.day-editor {
+  border-top-left-radius: 0;
+  margin-top: -1px;
+  position: relative;
+  z-index: 1;
+}
+
+.exercise-editor-container {
+  margin-top: var(--space-4);
+}
+
+.exercise-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0;
+  position: relative;
+  z-index: 2;
+  padding-left: var(--space-2);
+}
+
+.exercise-tab-btn {
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: -10px;
+  position: relative;
+}
+
+.exercise-tab-btn.active {
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+  border-bottom-color: transparent;
+  z-index: 3;
+}
+
+.exercise-editor.card {
   border-top-left-radius: 0;
   margin-top: -1px;
   position: relative;
   z-index: 1;
   background: var(--color-surface-secondary);
-}
-
-.exercise-tabs {
-  margin-bottom: var(--space-4);
-}
-
-.exercise-tab-btn {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
+  padding-top: var(--space-4);
 }
 
 .exercise-summary {
