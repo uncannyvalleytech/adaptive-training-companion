@@ -3363,7 +3363,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   position: relative;
   z-index: 2;
   background: var(--gradient-surface);
-  padding-top: 0; /* Changed to remove top space */
+  padding-top: 0;
 }
 
 /* 39.I: Exercise Summary */
@@ -3371,7 +3371,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
  display: none;
 }
 
-/* 39.J: Exercise Details Wrapper - Add padding to restore space inside the editor */
+/* 39.J: Exercise Details Wrapper */
 .exercise-details-wrapper {
   padding-top: var(--space-5);
   padding-bottom: var(--space-5);
@@ -3379,10 +3379,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   padding-left: var(--space-5);
 }
 
-/*
- * Section 39.K delete button styling update
- * Overriding the default white background for the delete button to match the theme.
- */
+/* 39.K: Delete Button Styling */
 .day-delete-btn, .delete-exercise-btn {
   background: rgba(220, 38, 38, 0.2);
   border: none;
@@ -3400,6 +3397,39 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   z-index: 30 !important;
 }
 
+/* 39.L: Day Name Input Styling Fix */
+.day-name-input {
+  flex-grow: 1;
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+body[data-theme="light"] .day-name-input {
+  background: var(--color-surface-secondary);
+  border-color: var(--border-color);
+  color: var(--color-text-primary);
+}
+
+/* 39.M: Template Name Input Consistency */
+#template-name {
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  width: 100%;
+}
+
+body[data-theme="light"] #template-name {
+  background: var(--color-surface-secondary);
+  border-color: var(--border-color);
+  color: var(--color-text-primary);
+}
 /* =============================================== */
 /* 40. WORKOUT SESSION UI IMPROVEMENTS */
 /* =============================================== */
