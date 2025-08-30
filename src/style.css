@@ -107,7 +107,7 @@ body[data-theme="light"] {
 }
 
 /* =============================================== */
-/* 2. ENHANCED GLOBAL STYLES                       */
+/* 2. ENHANCED GLOBAL STYLES */
 /* =============================================== */
 /* 2.A: Universal Box Sizing */
 *, *::before, *::after {
@@ -147,7 +147,7 @@ body[data-theme="light"] {
 }
 
 /* =============================================== */
-/* 3. ENHANCED TYPOGRAPHY                          */
+/* 3. ENHANCED TYPOGRAPHY */
 /* =============================================== */
 /* 3.A: Headings H1-H6 */
 h1, h2, h3, h4, h5, h6 {
@@ -183,7 +183,7 @@ h4 { font-size: var(--font-size-xl); }
 }
 
 /* =============================================== */
-/* 4. BOTTOM NAVIGATION                            */
+/* 4. BOTTOM NAVIGATION */
 /* =============================================== */
 /* 4.A: Main Navigation Bar */
 .bottom-nav {
@@ -235,7 +235,7 @@ body[data-theme="light"] .bottom-nav {
 }
 
 /* =============================================== */
-/* 5. MODERN CARD SYSTEM                           */
+/* 5. MODERN CARD SYSTEM */
 /* =============================================== */
 /* 5.A: Base Card Style */
 .card {
@@ -302,7 +302,7 @@ body[data-theme="light"] .card::before {
 }
 
 /* =============================================== */
-/* 6. ENHANCED BUTTON SYSTEM                       */
+/* 6. ENHANCED BUTTON SYSTEM */
 /* =============================================== */
 /* 6.A: Base Button Style */
 .btn {
@@ -3468,7 +3468,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 1;
+  flex-shrink: 0;
   position: relative;
   z-index: 1;
   backdrop-filter: blur(5px) brightness(0.8);
@@ -3477,7 +3477,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   /* Adjusting styling for the tab look */
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-4) var(--space-3);
-  min-width: 75px;
+  min-width: 44px;
 }
 
 .exercise-tab-btn-workout.active {
