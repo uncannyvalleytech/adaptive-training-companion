@@ -1287,15 +1287,13 @@ SECTION 6: RENDERING LOGIC
                 <button class="day-delete-btn" @click=${() => this._requestRemoveDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
             </div>
             
-            <div class="exercise-tabs-container">
-              <div class="exercise-tabs">
-                  ${activeDay.exercises.map((_, index) => html`
-                      <button class="exercise-tab-btn ${this.activeExerciseIndex === index ? 'active' : ''}" @click=${() => this.activeExerciseIndex = index}>
-                          ${index + 1}
-                      </button>
-                  `)}
-                  <button class="btn-icon add-day-btn" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>+</button>
-              </div>
+            <div class="exercise-tabs">
+                ${activeDay.exercises.map((_, index) => html`
+                    <button class="exercise-tab-btn ${this.activeExerciseIndex === index ? 'active' : ''}" @click=${() => this.activeExerciseIndex = index}>
+                        ${index + 1}
+                    </button>
+                `)}
+                 <button class="btn-icon add-day-btn" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>+</button>
             </div>
 
             ${activeExercise ? html`
