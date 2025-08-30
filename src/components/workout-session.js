@@ -13,6 +13,7 @@ import "./workout-feedback-modal.js";
 SECTION 2: WORKOUT-SESSION COMPONENT DEFINITION
 ===============================================
 */
+// 2.A: Properties
 class WorkoutSession extends LitElement {
   static properties = {
     workout: { type: Object },
@@ -27,6 +28,7 @@ class WorkoutSession extends LitElement {
     feedbackExerciseIndex: { type: Number },
   };
 
+// 2.B: Constructor
   constructor() {
     super();
     this.workout = null;
@@ -46,16 +48,19 @@ class WorkoutSession extends LitElement {
 SECTION 3: LIFECYCLE AND STOPWATCH METHODS
 ===============================================
 */
+// 3.A: Connected Callback
   connectedCallback() {
     super.connectedCallback();
     this.startStopwatch();
   }
 
+// 3.B: Disconnected Callback
   disconnectedCallback() {
     super.disconnectedCallback();
     this.stopStopwatch();
   }
 
+// 3.C: Start Stopwatch
   startStopwatch() {
     this.workoutStartTime = Date.now();
     this.stopwatchInterval = setInterval(() => {
@@ -66,6 +71,7 @@ SECTION 3: LIFECYCLE AND STOPWATCH METHODS
     }, 1000);
   }
 
+// 3.D: Stop Stopwatch
   stopStopwatch() {
     clearInterval(this.stopwatchInterval);
   }
@@ -207,6 +213,7 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
 SECTION 5: HELPER METHODS
 ===============================================
 */
+// 5.A: Get Rep Placeholder
   _getRepPlaceholder(exercise) {
     const reps = exercise.targetReps || '8-12';
     const rir = exercise.targetRir;
@@ -217,6 +224,7 @@ SECTION 5: HELPER METHODS
     return reps;
   }
 
+// 5.B: Get Exercise Category
   _getExerciseCategory(exerciseName) {
     const compoundExercises = [
       'squat', 'deadlift', 'bench press', 'pull-up', 'chin-up', 'row', 'press', 'lunge',
@@ -228,6 +236,7 @@ SECTION 5: HELPER METHODS
     return isCompound ? 'compound' : 'isolation';
   }
 
+// 5.C: Get Exercise Muscle Group
   _getExerciseMuscleGroup(exerciseName) {
     const name = exerciseName.toLowerCase();
     
@@ -244,6 +253,7 @@ SECTION 5: HELPER METHODS
     return 'general';
   }
 
+// 5.D: Get Grouped Exercises
   _getGroupedExercises() {
     if (!this.workout || !this.workout.exercises) {
       return {};
@@ -283,21 +293,25 @@ SECTION 6: RENDERING
           <div class="timer-display">${this.stopwatchDisplay}</div>
         </header>
 
-        <div class="workout-group-tabs-container">
-          <div class="workout-group-tabs">
-            ${groupKeys.map((group, index) => html`
-              <button 
-                class="workout-group-tab-btn ${this.activeGroupIndex === index ? 'active' : ''}" 
-                @click=${() => { this.activeGroupIndex = index; this.activeExerciseIndex = 0; }}
-              >
-                ${group}
-              </button>
-            `)}
+        <div class="workout-session-card">
+          <div class="workout-group-tabs-container">
+            <div class="workout-group-tabs">
+              ${groupKeys.map((group, index) => html`
+                <button 
+                  class="workout-group-tab-btn ${this.activeGroupIndex === index ? 'active' : ''}" 
+                  @click=${() => { this.activeGroupIndex = index; this.activeExerciseIndex = 0; }}
+                >
+                  ${group}
+                </button>
+              `)}
+            </div>
+          </div>
+          
+          <div class="exercise-content-container">
+            ${this._renderGroupContent(groupKeys, groupedExercises)}
           </div>
         </div>
 
-        ${this._renderGroupContent(groupKeys, groupedExercises)}
-        
         <div class="workout-actions">
             <button class="btn btn-secondary" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))}>
                 Cancel Workout
