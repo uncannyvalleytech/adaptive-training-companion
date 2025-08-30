@@ -3311,30 +3311,24 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
 .exercise-tab-btn {
   background: rgba(42, 45, 61, 0.5);
   border: 1px solid var(--border-color);
-  color: var(--color-text-secondary);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  padding: var(--space-3) var(--space-4);
-  width: auto;
-  height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-right: -10px;
-  position: relative;
-  z-index: 1;
-  backdrop-filter: blur(5px) brightness(0.8);
+ color: var(--color-text-secondary);
+ border-radius: var(--radius-md) var(--radius-md) 0 0;
+ padding: var(--space-3) var(--space-4);
+ cursor: pointer;
+ transition: all 0.3s ease;
+ margin-right: -10px;
+ position: relative;
+ z-index: 1;
+ backdrop-filter: blur(5px) brightness(0.8);
 }
 
 .exercise-tab-btn.active {
   background: var(--gradient-surface);
-  color: var(--color-text-primary);
-  border-bottom-color: transparent;
-  z-index: 3;
-  backdrop-filter: blur(20px) brightness(1);
-  margin-bottom: -1px;
+ color: var(--color-text-primary);
+ border-bottom-color: transparent;
+ z-index: 3;
+ backdrop-filter: blur(20px) brightness(1);
+ margin-bottom: -1px;
 }
 
 /* 39.G: Hover Effect for Add Day Button */
