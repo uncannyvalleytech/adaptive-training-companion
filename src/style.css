@@ -3276,43 +3276,42 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
 
 /* 39.E: Exercise Tabs */
 .exercise-tabs {
- display: flex;
- gap: 0;
- margin-bottom: 0;
- position: relative;
- z-index: 2;
- padding-left: var(--space-2);
- margin-top: var(--space-4);
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: 0;
+  position: relative;
+  z-index: 2;
+  padding-left: var(--space-2);
+  margin-top: 0; /* Changed to remove top space */
 }
 
 /* 39.F: Exercise Tab Button */
 .exercise-tab-btn {
- background: rgba(42, 45, 61, 0.5);
- border: 1px solid var(--border-color);
- color: var(--color-text-secondary);
- border-radius: var(--radius-md) var(--radius-md) 0 0;
-padding: var(--space-3) var(--space-4);
- width: 40px;
- height: 36px;
- display: flex;
- align-items: center;
- justify-content: center;
- font-weight: 600;
- cursor: pointer;
- transition: all 0.3s ease;
- margin-right: -10px;
- position: relative;
- z-index: 1;
- backdrop-filter: blur(5px) brightness(0.8);
+  background: rgba(42, 45, 61, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: -1px; /* Adjusted to make them touch */
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(5px) brightness(0.8);
 }
 
 .exercise-tab-btn.active {
- background: var(--gradient-surface);
- color: var(--color-text-primary);
- border-bottom-color: transparent;
- z-index: 3;
- backdrop-filter: blur(20px) brightness(1);
- margin-bottom: -1px;
+  background: var(--gradient-surface);
+  color: var(--color-text-primary);
+  border-bottom-color: transparent;
+  z-index: 3;
+  backdrop-filter: blur(20px) brightness(1);
+  margin-bottom: -1px;
 }
 
 /* 39.G: Hover Effect for Add Day Button */
@@ -3322,12 +3321,12 @@ padding: var(--space-3) var(--space-4);
 
 /* 39.H: Exercise Editor */
 .exercise-editor {
- border-top-left-radius: var(--radius-lg);
- margin-top: -1px;
- position: relative;
- z-index: 2;
- background: var(--gradient-surface);
- padding-top: 0; /* Changed to remove top space */
+  border-top-left-radius: 0; /* Ensures the top-left corner is not rounded for the content area */
+  margin-top: -1px;
+  position: relative;
+  z-index: 2;
+  background: var(--gradient-surface);
+  padding-top: var(--space-4);
 }
 
 /* 39.I: Exercise Summary */
@@ -3337,5 +3336,5 @@ padding: var(--space-3) var(--space-4);
 
 /* 39.J: Exercise Details Wrapper - Add padding to restore space inside the editor */
 .exercise-details-wrapper {
-  padding-top: var(--space-5);
+  padding-top: 0;
 }
