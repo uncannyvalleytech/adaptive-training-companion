@@ -1,4 +1,3 @@
-
 /* =============================================== */
 /* 1. DESIGN TOKENS - ENHANCED                     */
 /* =============================================== */
@@ -3083,9 +3082,9 @@ readiness-modal .button-group {
 }
 
 .tab-btn.active {
-  background: var(--gradient-surface);
+  background: var(--color-surface-secondary);
   color: var(--color-text-primary);
-  border-bottom-color: transparent;
+  border-bottom-color: var(--color-surface-secondary);
   z-index: 3;
 }
 
@@ -3103,17 +3102,14 @@ readiness-modal .button-group {
   z-index: 1;
 }
 
-.exercise-editor-container {
-  margin-top: var(--space-4);
-}
-
 .exercise-tabs {
   display: flex;
   gap: 0;
-  margin-bottom: 0;
+  margin-bottom: -1px; /* Overlap the card below */
   position: relative;
   z-index: 2;
   padding-left: var(--space-2);
+  margin-top: var(--space-4); /* Added spacing */
 }
 
 .exercise-tab-btn {
@@ -3136,11 +3132,11 @@ readiness-modal .button-group {
 .exercise-tab-btn.active {
   background: var(--color-surface-secondary);
   color: var(--color-text-primary);
-  border-bottom-color: transparent;
+  border-bottom-color: var(--color-surface-secondary);
   z-index: 3;
 }
 
-.exercise-editor.card {
+.exercise-editor {
   border-top-left-radius: 0;
   margin-top: -1px;
   position: relative;
