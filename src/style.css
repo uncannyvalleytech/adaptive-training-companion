@@ -1897,58 +1897,72 @@ body[data-theme="light"] .input-group input[type="range"]::-webkit-slider-thumb:
  box-shadow: 0 0 0 4px rgba(30, 113, 255, 0.5);
 }
 
-/* 22.F: Choice Group */
-.choice-group {
- display: flex;
- flex-direction: column;
+/* 24.F: Day Header - Fixed Layout */
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
-.button-options {
- display: flex;
- gap: var(--space-3);
+/* 24.F: Day Name Input - Lighter Color */
+.day-name-input {
+  flex: 1;
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
 
-.choice-btn {
- background: rgba(255, 255, 255, 0.1);
- border: 1px solid rgba(255, 255, 255, 0.2);
- color: var(--color-text-secondary);
- border-radius: var(--radius-lg);
- padding: var(--space-3) var(--space-6);
- font-weight: 600;
- cursor: pointer;
- transition: all 0.3s ease;
- pointer-events: auto !important;
- position: relative;
- z-index: 10 !important;
+body[data-theme="light"] .day-name-input {
+  background: var(--color-surface-tertiary);
+  border-color: var(--border-color);
+  color: var(--color-text-primary);
 }
 
-body[data-theme="light"] .choice-btn {
- background: rgba(0, 0, 0, 0.1);
- border-color: rgba(0, 0, 0, 0.2);
+/* 24.F: Template Name Input - Width and Color Fix */
+.input-group {
+  margin-bottom: var(--space-4);
+  max-width: 300px;
 }
 
-.choice-btn.selected {
- background: var(--gradient-primary);
- color: white;
- border-color: var(--color-accent-primary);
- box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
- transform: translateY(-2px);
+#template-name {
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  width: 100%;
 }
 
-body[data-theme="light"] .choice-btn.selected {
- border-color: var(--color-accent-primary);
- box-shadow: 0 0 15px rgba(30, 113, 255, 0.4);
+body[data-theme="light"] #template-name {
+  background: var(--color-surface-tertiary);
+  border-color: var(--border-color);
+  color: var(--color-text-primary);
 }
 
-/* 22.G: Card Group */
-.card-group {
- display: flex;
- flex-direction: column;
- gap: var(--space-4);
-}
-
-.card-group.vertical .goal-card {
- width: 100%;
+/* 24.G: Delete Button - Fixed Positioning */
+.day-delete-btn, .delete-exercise-btn {
+  background: rgba(220, 38, 38, 0.2);
+  border: none;
+  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  color: #DC2626;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  pointer-events: auto !important;
+  z-index: 30 !important;
+  flex-shrink: 0;
 }
 
 /* 22.H: Goal Card */
