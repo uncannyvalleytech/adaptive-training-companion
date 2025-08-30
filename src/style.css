@@ -3082,9 +3082,9 @@ readiness-modal .button-group {
 }
 
 .tab-btn.active {
-  background: var(--color-surface-secondary);
+  background: var(--gradient-surface);
   color: var(--color-text-primary);
-  border-bottom-color: var(--color-surface-secondary);
+  border-bottom-color: transparent;
   z-index: 3;
 }
 
@@ -3100,6 +3100,7 @@ readiness-modal .button-group {
   margin-top: -1px;
   position: relative;
   z-index: 1;
+  background: var(--gradient-surface);
 }
 
 .exercise-tabs {
@@ -3130,9 +3131,9 @@ readiness-modal .button-group {
 }
 
 .exercise-tab-btn.active {
-  background: var(--color-surface-secondary);
+  background: var(--gradient-surface);
   color: var(--color-text-primary);
-  border-bottom-color: var(--color-surface-secondary);
+  border-bottom-color: transparent;
   z-index: 3;
 }
 
@@ -3141,7 +3142,7 @@ readiness-modal .button-group {
   margin-top: -1px;
   position: relative;
   z-index: 1;
-  background: var(--color-surface-secondary);
+  background: var(--gradient-surface);
   padding-top: var(--space-4);
 }
 
