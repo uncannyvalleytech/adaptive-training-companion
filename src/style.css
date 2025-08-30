@@ -1906,9 +1906,9 @@ body[data-theme="light"] .input-group input[type="range"]::-webkit-slider-thumb:
   margin-bottom: var(--space-4);
 }
 
-/* 24.F: Day Name Input - Lighter Color */
+/* 24.F: Day Name Input - Fixed Width */
 .day-name-input {
-  flex: 1;
+  max-width: 200px;
   background: var(--color-surface-tertiary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
