@@ -614,7 +614,7 @@ body[data-theme="light"] .hub-option {
 }
 
 .hub-option:hover::before {
-  opacity: 0.1;
+  opacity: 1;
 }
 
 .hub-option:hover {
@@ -1817,6 +1817,7 @@ body[data-theme="light"] .set-row.completed {
   min-height: 100vh;
   padding: var(--space-4);
   text-align: center;
+  padding-bottom: calc(var(--space-10) + 60px);
 }
 
 /* 22.B: Onboarding Wizard */
@@ -2065,6 +2066,32 @@ body[data-theme="light"] .loader {
  border-bottom-color: var(--color-accent-primary);
 }
 
+/* 22.M: Fixed Navigation Bar */
+.onboarding-fixed-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(60px + env(safe-area-inset-bottom));
+  background: rgba(31, 34, 51, 0.8);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-4) env(safe-area-inset-bottom);
+  border-top: 1px solid var(--border-color);
+  z-index: 100;
+  gap: var(--space-4);
+}
+
+.onboarding-fixed-nav .btn {
+  flex: 1;
+}
+
+body[data-theme="light"] .onboarding-fixed-nav {
+  background: rgba(241, 245, 249, 0.8);
+}
+
 /* =============================================== */
 /* 23. SETTINGS VIEW STYLES                        */
 /* =============================================== */
@@ -2240,12 +2267,6 @@ body[data-theme="light"] .toggle-btn.active {
  margin: 0 0 var(--space-1) 0;
  font-size: var(--font-size-lg);
  font-weight: 600;
-}
-
-.template-info p {
- margin: 0;
- color: var(--color-text-secondary);
- font-size: var(--font-size-sm);
 }
 
 /* 24.D: New Template Form */
