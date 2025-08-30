@@ -3079,13 +3079,14 @@ readiness-modal .button-group {
   transition: all 0.3s ease;
   margin-right: -10px;
   position: relative;
+  z-index: 1; /* Default z-index */
 }
 
 .tab-btn.active {
   background: var(--gradient-surface);
   color: var(--color-text-primary);
   border-bottom-color: transparent;
-  z-index: 3;
+  z-index: 3; /* Active tab is on top */
 }
 
 .add-day-btn {
@@ -3099,7 +3100,7 @@ readiness-modal .button-group {
   border-top-left-radius: 0;
   margin-top: -1px;
   position: relative;
-  z-index: 1;
+  z-index: 2; /* Day editor card is above inactive tabs */
   background: var(--gradient-surface);
 }
 
@@ -3128,20 +3129,21 @@ readiness-modal .button-group {
   transition: all 0.3s ease;
   margin-right: -10px;
   position: relative;
+  z-index: 1; /* Default z-index */
 }
 
 .exercise-tab-btn.active {
   background: var(--gradient-surface);
   color: var(--color-text-primary);
   border-bottom-color: transparent;
-  z-index: 3;
+  z-index: 3; /* Active tab is on top */
 }
 
 .exercise-editor {
   border-top-left-radius: 0;
   margin-top: -1px;
   position: relative;
-  z-index: 1;
+  z-index: 2; /* Exercise editor card is above inactive tabs */
   background: var(--gradient-surface);
   padding-top: var(--space-4);
 }
