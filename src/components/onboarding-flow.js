@@ -183,7 +183,7 @@ SECTION 4: RENDERING LOGIC
         <div class="onboarding-wizard">
           ${currentStepData.type !== 'intro' && currentStepData.type !== 'loading' ? html`
             <div class="progress-bar">
-              <div class="progress" style="width: ${progress}%"></div>
+              <div class="progress-fill" style="width: ${progress}%"></div>
             </div>
           ` : ''}
 
@@ -196,7 +196,7 @@ SECTION 4: RENDERING LOGIC
             ${this._renderStepContent(currentStepData)}
 
             ${currentStepData.type === 'form' || currentStepData.type === 'choice' || currentStepData.type === 'choice-grid' ? html`
-              <div class="button-group">
+              <div class="onboarding-fixed-nav">
                 <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>Back</button>
                 <button class="btn btn-primary cta-button" @click=${this._nextStep}>Next</button>
               </div>
