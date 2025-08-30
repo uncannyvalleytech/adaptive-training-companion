@@ -85,18 +85,22 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
   _handleSetInput(exerciseIndex, setIndex, field, value) {
     const exercise = this.workout.exercises[exerciseIndex];
     if (exercise && exercise.sets[setIndex]) {
-      // SECTION 4.1: INPUT VALIDATION
-      // Enforce max values for weight and reps.
+      // SECTION 4.1: CORRECTED INPUT VALIDATION
+      // Clamp the input value to the allowed maximums to prevent unintended data.
       let processedValue = value;
-      if (field === 'weight' && Number(value) > 1000) {
-        processedValue = '1000';
-      }
-      if (field === 'reps' && Number(value) > 100) {
-        processedValue = '100';
+      if (field === 'weight') {
+        const numValue = parseFloat(value);
+        if (numValue > 1000) {
+            processedValue = '1000';
+        }
+      } else if (field === 'reps') {
+        const numValue = parseInt(value, 10);
+        if (numValue > 100) {
+            processedValue = '100';
+        }
       }
       
       exercise.sets[setIndex][field] = processedValue;
-      // Force a re-render to update the input field value if it was capped
       this.requestUpdate();
     }
   }
