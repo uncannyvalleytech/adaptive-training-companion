@@ -3065,131 +3065,70 @@ readiness-modal .button-group {
 /* =============================================== */
 .day-tabs {
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
-  align-items: center;
-  flex-wrap: nowrap; /* Prevent wrapping to force scrolling */
-  overflow-x: auto; /* Enable horizontal scrolling */
-  position: relative; /* Needed for the pseudo-element */
-  padding-right: var(--space-8); /* Space for the fade effect */
-  /* Hide scrollbar for a cleaner look */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  gap: 0; /* Remove gap for overlapping effect */
+  margin-bottom: 0; /* Connects to the card */
+  padding-left: var(--space-4);
+  position: relative;
+  z-index: 2; /* Ensure tabs are above the card */
+  margin-left: -10px; /* Allow first tab to align left */
 }
-
-.day-tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-
-.day-tabs::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 40px;
-    background: linear-gradient(to left, var(--color-surface-secondary), transparent);
-    pointer-events: none;
-    z-index: 2;
-}
-
-body[data-theme="light"] .day-tabs::after {
-    background: linear-gradient(to left, var(--color-surface-secondary), transparent);
-}
-
 
 .tab-btn {
   background: var(--color-surface-tertiary);
   border: 1px solid var(--border-color);
   color: var(--color-text-secondary);
-  border-radius: var(--radius-full);
-  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-3) var(--space-4);
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-right: -10px; /* Create overlap */
+  position: relative;
 }
 
 .tab-btn.active {
-  background: var(--color-accent-primary);
-  color: var(--color-surface-primary);
-  border-color: var(--color-accent-primary);
+  background: var(--gradient-surface);
+  color: var(--color-text-primary);
+  border-bottom-color: transparent;
+  z-index: 3; /* Bring active tab to the front */
 }
 
 .add-day-btn {
   border-radius: var(--radius-full);
   width: 36px;
   height: 36px;
+  margin-left: 15px; /* Space after overlapping tabs */
 }
 
-.day-header {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-4);
-    padding-right: var(--space-8);
+.day-editor {
+  border-top-left-radius: 0;
+  margin-top: -1px; /* Align with the bottom of the tabs */
+  position: relative;
+  z-index: 1; /* Below the tabs */
 }
 
-.new-template-form input[type="text"],
-.new-template-form input[type="number"] {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-full);
-  padding: var(--space-3) var(--space-4);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-md);
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+/* New styles for exercise tabs */
+.exercise-tabs {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
-body[data-theme="light"] .new-template-form input[type="text"],
-body[data-theme="light"] .new-template-form input[type="number"] {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.1);
-  color: var(--color-text-primary);
+.exercise-tab-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-tertiary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--border-color);
+  font-weight: 600;
 }
 
+.exercise-tab-btn.active {
+  background: var(--color-accent-primary);
+  color: var(--color-surface-primary);
+  border-color: var(--color-accent-primary);
+}
 
-.delete-exercise-btn {
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 71, 87, 0.4);
-    border: none;
-    border-radius: 50%;
-    color: #ff4757;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    transition: all 0.3s ease;
-    pointer-events: auto !important;
-    z-index: 30 !important;
-}
-.delete-exercise-btn:hover {
-    background: #ff4757;
-    color: white;
-    transform: scale(1.1);
-}
-.day-delete-btn {
-    width: 36px;
-    height: 36px;
-    background: rgba(255, 71, 87, 0.4);
-    border: none;
-    border-radius: 50%;
-    color: #ff4757;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    transition: all 0.3s ease;
-    pointer-events: auto !important;
-    z-index: 30 !important;
-}
-.day-delete-btn:hover {
-    background: #ff4757;
-    color: white;
-    transform: scale(1.1);
+.exercise-summary {
+  display: none; /* Hide summary view, as we now use tabs */
 }
