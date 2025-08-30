@@ -3104,6 +3104,7 @@ readiness-modal .button-group {
  position: relative;
  z-index: 1;
  margin-left: 15px;
+ margin-bottom: -1px;
 }
 
 .day-editor {
@@ -3149,6 +3150,10 @@ readiness-modal .button-group {
  border-bottom-color: transparent;
  z-index: 3;
  backdrop-filter: blur(20px) brightness(1);
+ margin-bottom: -1px;
+}
+
+.add-day-btn:hover {
  margin-bottom: -1px;
 }
 
