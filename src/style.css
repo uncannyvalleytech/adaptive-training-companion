@@ -3291,6 +3291,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
  border: 1px solid var(--border-color);
  color: var(--color-text-secondary);
  border-radius: var(--radius-md) var(--radius-md) 0 0;
+padding: var(--space-3) var(--space-4);
  width: 40px;
  height: 36px;
  display: flex;
