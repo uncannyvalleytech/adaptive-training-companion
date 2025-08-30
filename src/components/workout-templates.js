@@ -1276,7 +1276,7 @@ SECTION 6: RENDERING LOGIC
               ${this.newTemplateDays.map((day, index) => html`
                   <button class="tab-btn ${this.activeDayIndex === index ? 'active' : ''}" @click=${() => { this.activeDayIndex = index; this.activeExerciseIndex = 0; }}>${day.name}</button>
               `)}
-              <button class="add-day-btn" @click=${this._addDayToTemplate} ?disabled=${this.newTemplateDays.length >= 7}>+</button>
+              <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate} ?disabled=${this.newTemplateDays.length >= 7}>+</button>
           </div>
         </div>
 
@@ -1287,15 +1287,13 @@ SECTION 6: RENDERING LOGIC
                 <button class="day-delete-btn" @click=${() => this._requestRemoveDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
             </div>
             
-            <div class="exercise-tabs-container">
-              <div class="exercise-tabs">
-                  ${activeDay.exercises.map((_, index) => html`
-                      <button class="exercise-tab-btn ${this.activeExerciseIndex === index ? 'active' : ''}" @click=${() => this.activeExerciseIndex = index}>
-                          ${index + 1}
-                      </button>
-                  `)}
-                  <button class="add-exercise-btn" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>+</button>
-              </div>
+            <div class="exercise-tabs">
+                ${activeDay.exercises.map((_, index) => html`
+                    <button class="exercise-tab-btn ${this.activeExerciseIndex === index ? 'active' : ''}" @click=${() => this.activeExerciseIndex = index}>
+                        ${index + 1}
+                    </button>
+                `)}
+                 <button class="btn-icon add-day-btn" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>+</button>
             </div>
 
             ${activeExercise ? html`
@@ -1344,6 +1342,8 @@ SECTION 6: RENDERING LOGIC
       </div>
     `;
   }
+
+/*
 ===============================================
 SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
