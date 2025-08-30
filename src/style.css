@@ -1926,7 +1926,7 @@ body[data-theme="light"] .day-name-input {
 /* 24.F: Template Name Input - Width and Color Fix */
 .input-group {
   margin-bottom: var(--space-4);
-  max-width: 300px;
+  max-width: 150px;
 }
 
 #template-name {
