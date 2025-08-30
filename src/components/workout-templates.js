@@ -538,7 +538,7 @@ class WorkoutTemplates extends LitElement {
             { name: "Romanian Deadlift", sets: [{}, {}, {}, {}], targetReps: "10-12" },
             { name: "Bulgarian Split Squat", sets: [{}, {}, {}], targetReps: "10-12 per leg" },
             { name: "Leg Extension", sets: [{}, {}, {}], targetReps: "12-15" },
-            { name: "Lying Leg Curl", sets: [{}, {}, {}], targetReps: "12-15" },
+            { name: "Lying Leg Curl", sets: [{}, {}, {}, {}], targetReps: "12-15" },
             { name: "Standing Calf Raise", sets: [{}, {}, {}, {}], targetReps: "15-20" }
         ]
     },
@@ -1201,7 +1201,7 @@ SECTION 6: RENDERING LOGIC
                   <p>${template.workouts?.length || 0} days</p>
                 </div>
                 <button class="btn-icon" aria-label="Load template">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
               </div>
             `)}
@@ -1345,15 +1345,15 @@ SECTION 6: RENDERING LOGIC
                         <div class="exercise-details">
                             <div class="detail-item">
                                 <label for=${`sets-${this.activeExerciseIndex}`}>Sets</label>
-                                <input id=${`sets-${this.activeExerciseIndex}`} type="number" min="1" .value=${activeExercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'sets', e.target.value)}>
+                                <input id=${`sets-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'sets', e.target.value)}>
                             </div>
                             <div class="detail-item">
                                 <label for=${`reps-${this.activeExerciseIndex}`}>Reps</label>
-                                <input id=${`reps-${this.activeExerciseIndex}`} type="number" min="1" .value=${activeExercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'reps', e.target.value)}>
+                                <input id=${`reps-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'reps', e.target.value)}>
                             </div>
                             <div class="detail-item">
                                 <label for=${`rir-${this.activeExerciseIndex}`}>RIR</label>
-                                <input id=${`rir-${this.activeExerciseIndex}`} type="number" min="0" .value=${activeExercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'rir', e.target.value)}>
+                                <input id=${`rir-${this.activeExerciseIndex}`} type="number" min="0" maxlength="3" .value=${activeExercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'rir', e.target.value)}>
                             </div>
                         </div>
                     </div>
