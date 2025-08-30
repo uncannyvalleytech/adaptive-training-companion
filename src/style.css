@@ -3344,7 +3344,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
 
 /* 39.H: Exercise Editor */
 .exercise-editor {
-  border-top-left-radius: 0; /* Remove top-left radius */
+  border-top-left-radius: 0;
   border-top-right-radius: var(--radius-lg);
   margin-top: -1px;
   position: relative;
