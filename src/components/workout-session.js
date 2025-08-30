@@ -86,20 +86,12 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
     const exercise = this.workout.exercises[exerciseIndex];
     if (exercise && exercise.sets[setIndex]) {
       // SECTION 4.1: CORRECTED INPUT VALIDATION
-      // Clamp the input value to the allowed maximums to prevent unintended data.
+      // Ensure the input field value is limited to 3 digits.
       let processedValue = value;
-      if (field === 'weight') {
-        const numValue = parseFloat(value);
-        if (numValue > 1000) {
-            processedValue = '1000';
-        }
-      } else if (field === 'reps') {
-        const numValue = parseInt(value, 10);
-        if (numValue > 100) {
-            processedValue = '100';
-        }
+      if (processedValue.length > 3) {
+        processedValue = processedValue.slice(0, 3);
       }
-      
+
       exercise.sets[setIndex][field] = processedValue;
       this.requestUpdate();
     }
@@ -391,7 +383,7 @@ SECTION 6: RENDERING
                   type="tel"
                   inputmode="decimal"
                   pattern="[0-9]*"
-                  max="1000"
+                  maxlength="3"
                   class="set-input-log" 
                   placeholder="-" 
                   .value=${set.weight || ''} 
@@ -401,7 +393,7 @@ SECTION 6: RENDERING
                   type="tel"
                   inputmode="numeric"
                   pattern="[0-9]*"
-                  max="100"
+                  maxlength="3"
                   class="set-input-log" 
                   placeholder="${this._getRepPlaceholder(exercise)}" 
                   .value=${set.reps || ''} 
