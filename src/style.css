@@ -3414,15 +3414,22 @@ body[data-theme="light"] .day-name-input {
   color: var(--color-text-primary);
 }
 
-/* 39.M: Template Name Input Consistency */
+/* 39.M: Template Name Input Consistency - Fixed Sizing */
 #template-name {
   background: var(--color-surface-secondary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
-  padding: var(--space-4);
+  padding: var(--space-2) var(--space-3);
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
+  font-weight: 600;
   width: 100%;
+}
+
+body[data-theme="light"] #template-name {
+  background: var(--color-surface-secondary);
+  border-color: var(--border-color);
+  color: var(--color-text-primary);
 }
 
 body[data-theme="light"] #template-name {
