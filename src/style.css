@@ -3214,120 +3214,122 @@ body[data-theme="light"] .metric-card {
 /* =============================================== */
 /* 39.A: Day Tabs */
 .day-tabs {
- display: flex;
- gap: 0;
- margin-bottom: 0;
- padding-left: var(--space-4);
- position: relative;
- z-index: 2;
- margin-left: -10px;
+  display: flex;
+  gap: var(--space-1); /* Adjusted for a small gap */
+  margin-bottom: 0;
+  padding: 0 var(--space-2);
+  position: relative;
+  z-index: 2;
+  margin-left: 0; /* Removed negative margin */
 }
 
 /* 39.B: Tab Button */
 .tab-btn {
- background: rgba(42, 45, 61, 0.5);
- border: 1px solid var(--border-color);
- color: var(--color-text-secondary);
- border-radius: var(--radius-md) var(--radius-md) 0 0;
- padding: var(--space-3) var(--space-4);
- cursor: pointer;
- transition: all 0.3s ease;
- margin-right: -10px;
- position: relative;
- z-index: 1;
- backdrop-filter: blur(5px) brightness(0.8);
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 0; /* Removed negative margin */
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(5px) brightness(0.8);
 }
 
 .tab-btn.active {
- background: var(--gradient-surface);
- color: var(--color-text-primary);
- border-bottom-color: transparent;
- z-index: 3;
- backdrop-filter: blur(20px) brightness(1);
- margin-bottom: -1px;
+  background: var(--gradient-surface);
+  color: var(--color-text-primary);
+  border-bottom-color: transparent;
+  z-index: 3;
+  backdrop-filter: blur(20px) brightness(1);
+  margin-bottom: -1px;
 }
 
 /* 39.C: Add Day Button */
 .add-day-btn {
- background: var(--color-surface-tertiary);
- border: 1px solid var(--border-color);
- color: var(--color-text-secondary);
- border-radius: var(--radius-md) var(--radius-md) 0 0;
- padding: var(--space-3) var(--space-4);
- cursor: pointer;
- transition: all 0.3s ease;
- margin-right: -10px;
- position: relative;
- z-index: 1;
- margin-left: 15px;
- margin-bottom: -1px;
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 0; /* Removed negative margin */
+  position: relative;
+  z-index: 1;
+  margin-left: var(--space-3); /* Adjusted for a proper gap */
+  margin-bottom: -1px;
 }
 
 /* 39.D: Day Editor */
 .day-editor {
- border-top-left-radius: var(--radius-lg);
- margin-top: -1px;
- position: relative;
- z-index: 2;
- background: var(--gradient-surface);
+  border-top-left-radius: 0; /* Adjusted to be flush with the tab */
+  border-top-right-radius: var(--radius-lg);
+  margin-top: -1px;
+  position: relative;
+  z-index: 2;
+  background: var(--gradient-surface);
 }
 
 /* 39.E: Exercise Tabs */
 .exercise-tabs {
- display: flex;
- gap: 0;
- margin-bottom: 0;
- position: relative;
- z-index: 2;
- padding-left: var(--space-2);
- margin-top: var(--space-4);
+  display: flex;
+  gap: var(--space-1); /* Adjusted for a small gap */
+  margin-bottom: 0;
+  padding: 0 var(--space-2);
+  position: relative;
+  z-index: 2;
+  margin-top: var(--space-4);
 }
 
 /* 39.F: Exercise Tab Button */
 .exercise-tab-btn {
- background: rgba(42, 45, 61, 0.5);
- border: 1px solid var(--border-color);
- color: var(--color-text-secondary);
- border-radius: var(--radius-md) var(--radius-md) 0 0;
- width: 40px;
- height: 36px;
- display: flex;
- align-items: center;
- justify-content: center;
- font-weight: 600;
- cursor: pointer;
- transition: all 0.3s ease;
- margin-right: -10px;
- position: relative;
- z-index: 1;
- backdrop-filter: blur(5px) brightness(0.8);
+  background: rgba(42, 45, 61, 0.5);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  width: 40px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 0; /* Removed negative margin */
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(5px) brightness(0.8);
 }
 
 .exercise-tab-btn.active {
- background: var(--gradient-surface);
- color: var(--color-text-primary);
- border-bottom-color: transparent;
- z-index: 3;
- backdrop-filter: blur(20px) brightness(1);
- margin-bottom: -1px;
+  background: var(--gradient-surface);
+  color: var(--color-text-primary);
+  border-bottom-color: transparent;
+  z-index: 3;
+  backdrop-filter: blur(20px) brightness(1);
+  margin-bottom: -1px;
 }
 
 /* 39.G: Hover Effect for Add Day Button */
 .add-day-btn:hover {
- margin-bottom: -1px;
+  margin-bottom: -1px;
 }
 
 /* 39.H: Exercise Editor */
 .exercise-editor {
- border-top-left-radius: var(--radius-lg);
- margin-top: -1px;
- position: relative;
- z-index: 2;
- background: var(--gradient-surface);
- padding-top: var(--space-4);
+  border-top-left-radius: 0; /* Adjusted to be flush with the tab */
+  border-top-right-radius: var(--radius-lg);
+  margin-top: -1px;
+  position: relative;
+  z-index: 2;
+  background: var(--gradient-surface);
+  padding-top: var(--space-4);
 }
 
 /* 39.I: Exercise Summary */
 .exercise-summary {
- display: none;
+  display: none;
 }
