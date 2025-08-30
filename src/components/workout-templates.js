@@ -1375,13 +1375,16 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
       border-bottom-color: transparent;
     }
     .add-day-btn {
-      border-radius: var(--radius-lg);
+      border-radius: var(--radius-full);
+      margin-left: var(--space-2);
       border: none;
       background: var(--color-surface-tertiary);
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
     }
     .day-editor-container {
       border-top-left-radius: 0;
-      border-top-right-radius: 0;
       position: relative;
       z-index: 1;
     }
