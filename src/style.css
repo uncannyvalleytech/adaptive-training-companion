@@ -3070,7 +3070,7 @@ readiness-modal .button-group {
 }
 
 .tab-btn {
-  background: var(--color-surface-tertiary);
+  background: rgba(42, 45, 61, 0.5);
   border: 1px solid var(--border-color);
   color: var(--color-text-secondary);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -3080,6 +3080,7 @@ readiness-modal .button-group {
   margin-right: -10px;
   position: relative;
   z-index: 1; /* Default z-index */
+  backdrop-filter: blur(5px) brightness(0.8);
 }
 
 .tab-btn.active {
@@ -3087,12 +3088,20 @@ readiness-modal .button-group {
   color: var(--color-text-primary);
   border-bottom-color: transparent;
   z-index: 3; /* Active tab is on top */
+  backdrop-filter: blur(20px) brightness(1);
 }
 
 .add-day-btn {
-  border-radius: var(--radius-full);
-  width: 36px;
-  height: 36px;
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: -10px;
+  position: relative;
+  z-index: 1;
   margin-left: 15px;
 }
 
@@ -3115,7 +3124,7 @@ readiness-modal .button-group {
 }
 
 .exercise-tab-btn {
-  background: var(--color-surface-tertiary);
+  background: rgba(42, 45, 61, 0.5);
   border: 1px solid var(--border-color);
   color: var(--color-text-secondary);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -3130,6 +3139,7 @@ readiness-modal .button-group {
   margin-right: -10px;
   position: relative;
   z-index: 1; /* Default z-index */
+  backdrop-filter: blur(5px) brightness(0.8);
 }
 
 .exercise-tab-btn.active {
@@ -3137,11 +3147,12 @@ readiness-modal .button-group {
   color: var(--color-text-primary);
   border-bottom-color: transparent;
   z-index: 3; /* Active tab is on top */
+  backdrop-filter: blur(20px) brightness(1);
 }
 
 .exercise-editor {
   border-top-left-radius: 0;
-  margin-top: -1px;
+  margin-top: 0; /* Align perfectly with tabs */
   position: relative;
   z-index: 2; /* Exercise editor card is above inactive tabs */
   background: var(--gradient-surface);
