@@ -3414,7 +3414,12 @@ body[data-theme="light"] .day-name-input {
   color: var(--color-text-primary);
 }
 
-/* 39.M: Template Name Input Consistency - Fixed Sizing */
+/* 39.M: Template Name Input Consistency - Fixed Width */
+.input-group {
+  margin-bottom: var(--space-4);
+  max-width: 300px; /* Limit the container width */
+}
+
 #template-name {
   background: var(--color-surface-secondary);
   border: 1px solid var(--border-color);
@@ -3424,12 +3429,7 @@ body[data-theme="light"] .day-name-input {
   font-size: var(--font-size-md);
   font-weight: 600;
   width: 100%;
-}
-
-body[data-theme="light"] #template-name {
-  background: var(--color-surface-secondary);
-  border-color: var(--border-color);
-  color: var(--color-text-primary);
+  max-width: none; /* Let it fill the container */
 }
 
 body[data-theme="light"] #template-name {
