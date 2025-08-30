@@ -3477,7 +3477,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   /* Adjusting styling for the tab look */
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   padding: var(--space-2) var(--space-4) var(--space-3);
-  min-width: 44px;
+  min-width: 75px;
 }
 
 .exercise-tab-btn-workout.active {
