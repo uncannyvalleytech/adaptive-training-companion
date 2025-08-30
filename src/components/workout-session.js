@@ -6,6 +6,7 @@ SECTION 1: COMPONENT AND SERVICE IMPORTS
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
 import "./motivational-elements.js";
+import "./workout-feedback-modal.js";
 
 /*
 ===============================================
@@ -20,7 +21,10 @@ class WorkoutSession extends LitElement {
     workoutStartTime: { type: Number },
     stopwatchInterval: { type: Object },
     stopwatchDisplay: { type: String },
-    expandedGroups: { type: Object },
+    activeGroupIndex: { type: Number },
+    activeExerciseIndex: { type: Number },
+    showFeedbackModal: { type: Boolean },
+    feedbackExerciseIndex: { type: Number },
   };
 
   constructor() {
@@ -31,7 +35,10 @@ class WorkoutSession extends LitElement {
     this.workoutStartTime = Date.now();
     this.stopwatchInterval = null;
     this.stopwatchDisplay = "00:00";
-    this.expandedGroups = {};
+    this.activeGroupIndex = 0;
+    this.activeExerciseIndex = 0;
+    this.showFeedbackModal = false;
+    this.feedbackExerciseIndex = null;
   }
 
 /*
@@ -42,14 +49,6 @@ SECTION 3: LIFECYCLE AND STOPWATCH METHODS
   connectedCallback() {
     super.connectedCallback();
     this.startStopwatch();
-    // Pre-expand all muscle groups by default
-    if (this.workout && this.workout.exercises) {
-      const allGroups = this._getGroupedExercises();
-      Object.keys(allGroups).forEach(group => {
-        this.expandedGroups[group] = true;
-      });
-      this.requestUpdate();
-    }
   }
 
   disconnectedCallback() {
@@ -76,6 +75,7 @@ SECTION 3: LIFECYCLE AND STOPWATCH METHODS
 SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
 ===============================================
 */
+// 4.A: Handle Set Input
   _handleSetInput(exerciseIndex, setIndex, field, value) {
     const exercise = this.workout.exercises[exerciseIndex];
     if (exercise && exercise.sets[setIndex]) {
@@ -95,15 +95,43 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
     }
   }
 
+// 4.B: Toggle Set Complete
   _toggleSetComplete(exerciseIndex, setIndex) {
     const exercise = this.workout.exercises[exerciseIndex];
     if (exercise && exercise.sets[setIndex]) {
       const set = exercise.sets[setIndex];
+      const isLastSet = setIndex === (exercise.sets.length - 1);
+      
       set.completed = !set.completed;
       this.requestUpdate();
+      
+      if (set.completed && isLastSet) {
+          const confirmation = confirm("Are you done with this exercise? Tap OK to move to the next exercise or Cancel to stay here.");
+          if (confirmation) {
+              this._advanceExercise();
+          }
+      }
     }
   }
 
+// 4.C: Advance to Next Exercise or Group
+  _advanceExercise() {
+      const groupedExercises = this._getGroupedExercises();
+      const groupKeys = Object.keys(groupedExercises);
+      const currentGroup = groupedExercises[groupKeys[this.activeGroupIndex]];
+      
+      if (this.activeExerciseIndex < currentGroup.length - 1) {
+          this.activeExerciseIndex++;
+      } else if (this.activeGroupIndex < groupKeys.length - 1) {
+          this.activeGroupIndex++;
+          this.activeExerciseIndex = 0;
+      } else {
+          this.activeGroupIndex = 0;
+          this.activeExerciseIndex = 0;
+      }
+  }
+
+// 4.D: Complete Workout
   async _completeWorkout() {
     this.isSaving = true;
     try {
@@ -230,24 +258,19 @@ SECTION 5: HELPER METHODS
     }, {});
   }
 
-  _toggleGroup(groupName) {
-    this.expandedGroups = {
-      ...this.expandedGroups,
-      [groupName]: !this.expandedGroups[groupName]
-    };
-  }
-
 /*
 ===============================================
 SECTION 6: RENDERING
 ===============================================
 */
+// 6.A: Main Render Method
   render() {
     if (!this.workout || !this.workout.exercises) {
       return html`<div class="container"><div class="skeleton skeleton-text">Loading workout...</div></div>`;
     }
 
     const groupedExercises = this._getGroupedExercises();
+    const groupKeys = Object.keys(groupedExercises);
     const workoutDate = new Date().toLocaleDateString('en-US', { weekday: 'long' });
 
     return html`
@@ -259,75 +282,22 @@ SECTION 6: RENDERING
           </div>
           <div class="timer-display">${this.stopwatchDisplay}</div>
         </header>
-        
-        <div class="workout-log-container">
-          ${Object.entries(groupedExercises).map(([groupName, exercises]) => html`
-            <div class="muscle-group-container">
-              <button class="muscle-group-header" @click=${() => this._toggleGroup(groupName)}>
-                <h2 class="muscle-group-title">${groupName}</h2>
-                <span class="chevron ${this.expandedGroups[groupName] ? 'expanded' : ''}">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
+
+        <div class="workout-group-tabs-container">
+          <div class="workout-group-tabs">
+            ${groupKeys.map((group, index) => html`
+              <button 
+                class="workout-group-tab-btn ${this.activeGroupIndex === index ? 'active' : ''}" 
+                @click=${() => { this.activeGroupIndex = index; this.activeExerciseIndex = 0; }}
+              >
+                ${group}
               </button>
-              
-              <div class="exercise-list-container ${this.expandedGroups[groupName] ? 'expanded' : ''}">
-                ${exercises.map(exercise => html`
-                  <div class="exercise-log-card">
-                    <div class="exercise-log-header">
-                      <div class="exercise-log-name">
-                        <h3>${exercise.name}</h3>
-                        <p>${exercise.targetReps || '8-12'} reps</p> 
-                      </div>
-                      <div class="exercise-log-actions">
-                        <button class="btn-icon-sm" aria-label="Exercise Info">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="log-table-header">
-                      <span>SET</span>
-                      <span>WEIGHT (${this.units})</span>
-                      <span>REPS</span>
-                      <span>LOG</span>
-                    </div>
-                    ${(exercise.sets || []).map((set, setIndex) => html`
-                      <div class="set-row-log ${set.completed ? 'completed' : ''}">
-                        <span class="set-number">${setIndex + 1}</span>
-                        <input 
-                          type="tel"
-                          inputmode="decimal"
-                          pattern="[0-9]*"
-                          max="1000"
-                          class="set-input-log" 
-                          placeholder="-" 
-                          .value=${set.weight || ''} 
-                          @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'weight', e.target.value)}
-                        >
-                        <input 
-                          type="tel"
-                          inputmode="numeric"
-                          pattern="[0-9]*"
-                          max="100"
-                          class="set-input-log" 
-                          placeholder="${this._getRepPlaceholder(exercise)}" 
-                          .value=${set.reps || ''} 
-                          @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'reps', e.target.value)}
-                        >
-                        <button 
-                          class="set-log-checkbox" 
-                          @click=${() => this._toggleSetComplete(exercise.originalIndex, setIndex)} 
-                          aria-label="Log Set ${setIndex + 1}"
-                        >
-                          ${set.completed ? html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
-                        </button>
-                      </div>
-                    `)}
-                  </div>
-                `)}
-              </div>
-            </div>
-          `)}
+            `)}
+          </div>
         </div>
+
+        ${this._renderGroupContent(groupKeys, groupedExercises)}
+        
         <div class="workout-actions">
             <button class="btn btn-secondary" @click=${() => this.dispatchEvent(new CustomEvent('workout-cancelled', { bubbles: true, composed: true }))}>
                 Cancel Workout
@@ -339,7 +309,105 @@ SECTION 6: RENDERING
       </div>
     `;
   }
+  
+// 6.B: Render Group Content
+  _renderGroupContent(groupKeys, groupedExercises) {
+    if (groupKeys.length === 0) return html`<p>No exercises in this workout.</p>`;
+    
+    const activeGroup = groupedExercises[groupKeys[this.activeGroupIndex]];
+    
+    return html`
+        <div class="workout-group-content">
+            <div class="exercise-tabs-container">
+                <div class="exercise-tabs">
+                    ${activeGroup.map((exercise, index) => {
+                        const isCompleted = exercise.sets.every(set => set.completed);
+                        const isActive = this.activeExerciseIndex === index;
+                        return html`
+                            <button 
+                                class="exercise-tab-btn-workout ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" 
+                                @click=${() => this.activeExerciseIndex = index}
+                            >
+                                ${index + 1}
+                                ${isActive ? html`<div class="active-exercise-indicator">🔥</div>` : ''}
+                            </button>
+                        `;
+                    })}
+                </div>
+            </div>
+            ${this._renderExerciseContent(activeGroup)}
+        </div>
+    `;
+  }
 
+// 6.C: Render Exercise Content
+  _renderExerciseContent(activeGroup) {
+      if (activeGroup.length === 0) return html``;
+      
+      const exercise = activeGroup[this.activeExerciseIndex];
+      if (!exercise) return html``;
+
+      return html`
+        <div class="exercise-log-card">
+            <div class="exercise-log-header">
+              <div class="exercise-log-name">
+                <h3>${exercise.name}</h3>
+                <p>${exercise.targetReps || '8-12'} reps</p> 
+              </div>
+              <div class="exercise-log-actions">
+                <button class="btn-icon-sm" aria-label="Exercise Info">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </button>
+              </div>
+            </div>
+            <div class="log-table-header">
+              <span>SET</span>
+              <span>WEIGHT (${this.units})</span>
+              <span>REPS</span>
+              <span>LOG</span>
+            </div>
+            ${(exercise.sets || []).map((set, setIndex) => html`
+              <div class="set-row-log ${set.completed ? 'completed' : ''}">
+                <span class="set-number">${setIndex + 1}</span>
+                <input 
+                  type="tel"
+                  inputmode="decimal"
+                  pattern="[0-9]*"
+                  max="1000"
+                  class="set-input-log" 
+                  placeholder="-" 
+                  .value=${set.weight || ''} 
+                  @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'weight', e.target.value)}
+                >
+                <input 
+                  type="tel"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  max="100"
+                  class="set-input-log" 
+                  placeholder="${this._getRepPlaceholder(exercise)}" 
+                  .value=${set.reps || ''} 
+                  @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'reps', e.target.value)}
+                >
+                <button 
+                  class="set-log-checkbox" 
+                  @click=${() => this._toggleSetComplete(exercise.originalIndex, setIndex)} 
+                  aria-label="Log Set ${setIndex + 1}"
+                >
+                  ${set.completed ? html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>` : ''}
+                </button>
+              </div>
+            `)}
+        </div>
+      `;
+  }
+
+/*
+===============================================
+SECTION 7: STYLES AND ELEMENT DEFINITION
+===============================================
+*/
+// 7.A: Create Render Root
   createRenderRoot() {
     return this;
   }
