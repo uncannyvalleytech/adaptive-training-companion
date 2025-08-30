@@ -1,5 +1,5 @@
 /* =============================================== */
-/* 1. DESIGN TOKENS - ENHANCED                     */
+/* 1. DESIGN TOKENS - ENHANCED */
 /* =============================================== */
 /* 1.A: Font Imports */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap');
@@ -439,7 +439,7 @@ body[data-theme="light"] .btn-ghost {
 }
 
 /* =============================================== */
-/* 7. GAMIFICATION ELEMENTS                        */
+/* 7. GAMIFICATION ELEMENTS */
 /* =============================================== */
 /* 7.A: Level System Card */
 .level-system {
@@ -553,7 +553,7 @@ body[data-theme="light"] .progress-fill::after {
 }
 
 /* =============================================== */
-/* 8. HOME SCREEN ENHANCEMENTS                     */
+/* 8. HOME SCREEN ENHANCEMENTS */
 /* =============================================== */
 /* 8.A: Home Screen Layout */
 #home-screen {
@@ -648,7 +648,7 @@ body[data-theme="light"] .hub-option {
 }
 
 /* =============================================== */
-/* 9. WORKOUT SESSION ENHANCEMENTS                 */
+/* 9. WORKOUT SESSION ENHANCEMENTS */
 /* =============================================== */
 /* 9.A: Log Container */
 .workout-log-container {
@@ -986,7 +986,7 @@ body[data-theme="light"] .set-log-checkbox:hover {
 }
 
 /* =============================================== */
-/* 10. ENHANCED ANIMATIONS                          */
+/* 10. ENHANCED ANIMATIONS */
 /* =============================================== */
 /* 10.A: Shimmer Effect */
 @keyframes shimmer {
@@ -1062,7 +1062,7 @@ body[data-theme="light"] .set-log-checkbox:hover {
 }
 
 /* =============================================== */
-/* 11. LOADING STATES & SKELETONS                  */
+/* 11. LOADING STATES & SKELETONS */
 /* =============================================== */
 /* 11.A: Skeleton Loading */
 .skeleton {
@@ -1124,7 +1124,7 @@ body[data-theme="light"] .skeleton {
 }
 
 /* =============================================== */
-/* 12. PROGRESS RING COMPONENT                     */
+/* 12. PROGRESS RING COMPONENT */
 /* =============================================== */
 /* 12.A: Progress Ring Base */
 .progress-ring {
@@ -1140,7 +1140,7 @@ body[data-theme="light"] .skeleton {
 }
 
 /* =============================================== */
-/* 13. MODAL SYSTEM                                */
+/* 13. MODAL SYSTEM */
 /* =============================================== */
 /* 13.A: Modal Overlay */
 .modal-overlay {
@@ -1205,7 +1205,7 @@ body[data-theme="light"] .close-button:hover {
 }
 
 /* =============================================== */
-/* 14. TOAST NOTIFICATIONS                         */
+/* 14. TOAST NOTIFICATIONS */
 /* =============================================== */
 /* 14.A: Toast Base */
 .toast-notification {
@@ -1245,7 +1245,7 @@ body[data-theme="light"] .toast-notification {
 }
 
 /* =============================================== */
-/* 15. RESPONSIVE DESIGN                           */
+/* 15. RESPONSIVE DESIGN */
 /* =============================================== */
 /* 15.A: Mobile Layout */
 @media (max-width: 480px) {
@@ -1271,7 +1271,7 @@ body[data-theme="light"] .toast-notification {
 }
 
 /* =============================================== */
-/* 16. UTILITY CLASSES                             */
+/* 16. UTILITY CLASSES */
 /* =============================================== */
 /* 16.A: Text Alignment */
 .text-center { text-align: center; }
@@ -1354,7 +1354,7 @@ body[data-theme="light"] .toast-notification {
 }
 
 /* =============================================== */
-/* 17. GAMIFICATION COMPONENT STYLES               */
+/* 17. GAMIFICATION COMPONENT STYLES */
 /* =============================================== */
 /* 17.A: Challenge Cards */
 .challenge-card {
@@ -1601,7 +1601,7 @@ body[data-theme="light"] .motivational-message {
 }
 
 /* =============================================== */
-/* 18. ENHANCED WORKOUT SESSION STYLES             */
+/* 18. ENHANCED WORKOUT SESSION STYLES */
 /* =============================================== */
 /* 18.A: Subtitle */
 .workout-subtitle {
@@ -1663,7 +1663,7 @@ body[data-theme="light"] .set-row.completed {
 }
 
 /* =============================================== */
-/* 19. HOME SCREEN ENHANCEMENTS                     */
+/* 19. HOME SCREEN ENHANCEMENTS */
 /* =============================================== */
 /* 19.A: Home Header */
 .home-header {
@@ -1716,7 +1716,7 @@ body[data-theme="light"] .set-row.completed {
 }
 
 /* =============================================== */
-/* 20. RESPONSIVE ENHANCEMENTS                     */
+/* 20. RESPONSIVE ENHANCEMENTS */
 /* =============================================== */
 /* 20.A: Mobile Layout for various components */
 @media (max-width: 480px) {
@@ -1759,7 +1759,7 @@ body[data-theme="light"] .set-row.completed {
 }
 
 /* =============================================== */
-/* 21. ADDITIONAL UTILITY CLASSES                  */
+/* 21. ADDITIONAL UTILITY CLASSES */
 /* =============================================== */
 /* 21.A: Fade-in */
 .fade-in {
@@ -1806,7 +1806,7 @@ body[data-theme="light"] .set-row.completed {
 }
 
 /* =============================================== */
-/* 22. ONBOARDING & READINESS STYLES               */
+/* 22. ONBOARDING & READINESS STYLES */
 /* =============================================== */
 /* 22.A: Onboarding Container */
 .onboarding-container {
@@ -2093,7 +2093,7 @@ body[data-theme="light"] .onboarding-fixed-nav {
 }
 
 /* =============================================== */
-/* 23. SETTINGS VIEW STYLES                        */
+/* 23. SETTINGS VIEW STYLES */
 /* =============================================== */
 /* 23.A: Settings Container */
 .settings-container {
@@ -2233,7 +2233,7 @@ body[data-theme="light"] .toggle-btn.active {
 }
 
 /* =============================================== */
-/* 24. TEMPLATE STYLES                             */
+/* 24. TEMPLATE STYLES */
 /* =============================================== */
 /* 24.A: Templates List */
 .templates-list {
@@ -2364,7 +2364,7 @@ body[data-theme="light"] .exercise-details input {
 }
 
 /* =============================================== */
-/* 25. HISTORY VIEW STYLES                         */
+/* 25. HISTORY VIEW STYLES */
 /* =============================================== */
 /* 25.A: History List */
 .history-list {
@@ -2613,7 +2613,7 @@ body[data-theme="light"] .icon-btn:hover {
 }
 
 /* =============================================== */
-/* 26. APP HEADER STYLES                           */
+/* 26. APP HEADER STYLES */
 /* =============================================== */
 /* 26.A: App Header */
 .app-header {
@@ -2634,7 +2634,7 @@ body[data-theme="light"] .icon-btn:hover {
 }
 
 /* =============================================== */
-/* 27. MODAL ENHANCEMENTS                          */
+/* 27. MODAL ENHANCEMENTS */
 /* =============================================== */
 /* 27.A: Modal Subtitle */
 .modal-subtitle {
@@ -2667,7 +2667,7 @@ body[data-theme="light"] .icon-btn:hover {
 }
 
 /* =============================================== */
-/* 28. TIMER SECTION STYLES                        */
+/* 28. TIMER SECTION STYLES */
 /* =============================================== */
 /* 28.A: Timer Section */
 .timer-section {
@@ -2685,7 +2685,7 @@ body[data-theme="light"] .icon-btn:hover {
 }
 
 /* =============================================== */
-/* 29. FEEDBACK MODAL STYLES                       */
+/* 29. FEEDBACK MODAL STYLES */
 /* =============================================== */
 /* 29.A: Question Group */
 .question-group {
@@ -2788,7 +2788,7 @@ body[data-theme="light"] .answer-option label:hover {
 }
 
 /* =============================================== */
-/* 30. LINK CARD STYLES                            */
+/* 30. LINK CARD STYLES */
 /* =============================================== */
 /* 30.A: Link Card Base */
 .link-card {
@@ -2804,7 +2804,7 @@ body[data-theme="light"] .answer-option label:hover {
 }
 
 /* =============================================== */
-/* 31. ERROR CONTAINER STYLES                      */
+/* 31. ERROR CONTAINER STYLES */
 /* =============================================== */
 /* 31.A: Error Container */
 .error-container {
@@ -2819,7 +2819,7 @@ body[data-theme="light"] .answer-option label:hover {
 }
 
 /* =============================================== */
-/* 32. SKELETON ENHANCEMENTS                       */
+/* 32. SKELETON ENHANCEMENTS */
 /* =============================================== */
 /* 32.A: Skeleton Card Title */
 .skeleton-card-title {
@@ -2843,7 +2843,7 @@ body[data-theme="light"] .answer-option label:hover {
 }
 
 /* =============================================== */
-/* 33. FINAL INTERACTIVE FIXES                     */
+/* 33. FINAL INTERACTIVE FIXES */
 /* =============================================== */
 /* 33.A: Corrected Goal Card Syntax */
 .goal-card {
@@ -2929,7 +2929,7 @@ textarea,
 }
 
 /* =============================================== */
-/* 34. TEMPLATE AND WORKOUT SPECIFIC STYLES        */
+/* 34. TEMPLATE AND WORKOUT SPECIFIC STYLES */
 /* =============================================== */
 /* 34.A: Exercise Selectors */
 .exercise-selectors {
@@ -3002,7 +3002,7 @@ body[data-theme="light"] .exercise-select:focus {
 }
 
 /* =============================================== */
-/* 35. ENHANCED FILTER CONTROLS                    */
+/* 35. ENHANCED FILTER CONTROLS */
 /* =============================================== */
 /* 35.A: Filter Card */
 .filter-card {
@@ -3071,7 +3071,7 @@ body[data-theme="light"] .filter-checkbox input[type="checkbox"] {
 }
 
 /* =============================================== */
-/* 36. PROGRESS AND ANALYTICS ENHANCEMENTS         */
+/* 36. PROGRESS AND ANALYTICS ENHANCEMENTS */
 /* =============================================== */
 /* 36.A: Progress Metrics Grid */
 .progress-metrics {
@@ -3136,7 +3136,7 @@ body[data-theme="light"] .metric-card {
 }
 
 /* =============================================== */
-/* 37. WORKOUT SUMMARY STYLES                      */
+/* 37. WORKOUT SUMMARY STYLES */
 /* =============================================== */
 /* 37.A: Summary Container */
 .workout-summary-container {
@@ -3207,7 +3207,7 @@ body[data-theme="light"] .metric-card {
 }
 
 /* =============================================== */
-/* 38. GOALS VIEW STYLES                           */
+/* 38. GOALS VIEW STYLES */
 /* =============================================== */
 /* 38.A: Goals List */
 .goals-list {
@@ -3367,7 +3367,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
 }
 
 /* =============================================== */
-/* 40. WORKOUT SESSION UI IMPROVEMENTS             */
+/* 40. WORKOUT SESSION UI IMPROVEMENTS */
 /* =============================================== */
 
 /* 40.A: Workout Session Card */
@@ -3439,9 +3439,9 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  margin-bottom: var(--space-4);
-  padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0;
+  padding: var(--space-4) var(--space-6) 0;
+  /* Removed border-bottom so it connects to the card below */
 }
 
 .exercise-tabs-container::-webkit-scrollbar {
@@ -3450,17 +3450,17 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
 
 .exercise-tabs {
   display: flex;
-  gap: var(--space-3);
+  gap: 0;
   flex-wrap: nowrap;
+  position: relative;
+  z-index: 2;
+  margin-left: -10px;
 }
 
 /* 40.E: Exercise Tab Button */
 .exercise-tab-btn-workout {
-  width: 44px;
-  height: 44px;
-  background: var(--color-surface-tertiary);
+  background: rgba(42, 45, 61, 0.5);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
   color: var(--color-text-secondary);
   font-weight: 600;
   cursor: pointer;
@@ -3470,13 +3470,23 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   justify-content: center;
   flex-shrink: 0;
   position: relative;
+  z-index: 1;
+  backdrop-filter: blur(5px) brightness(0.8);
+  /* Added overlap */
+  margin-right: -10px;
+  /* Adjusting styling for the tab look */
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: var(--space-2) var(--space-4) var(--space-3);
+  min-width: 44px;
 }
 
 .exercise-tab-btn-workout.active {
-  background: var(--color-accent-primary);
-  color: var(--color-surface-primary);
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+  background: var(--gradient-surface);
+  color: var(--color-text-primary);
+  border-bottom-color: transparent;
+  z-index: 3;
+  backdrop-filter: blur(20px) brightness(1);
+  margin-bottom: -1px;
 }
 
 .exercise-tab-btn-workout.completed {
