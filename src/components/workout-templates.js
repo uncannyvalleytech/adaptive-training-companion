@@ -1,4 +1,3 @@
-
 /*
 ===============================================
 SECTION 1: COMPONENT AND SERVICE IMPORTS
@@ -30,6 +29,7 @@ class WorkoutTemplates extends LitElement {
     selectedStartWorkout: { type: Number },
     showDeleteConfirmation: { type: Boolean },
     dayToDeleteIndex: { type: Number },
+    // New property to track collapsed exercises
     collapsedExercises: { type: Object },
   };
 
@@ -926,20 +926,19 @@ SECTION 4: WORKOUT GROUPING
 SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
 ===============================================
 */
-  _addExerciseToTemplate(dayIndex) {
+_addExerciseToTemplate(dayIndex) {
     const updatedDays = [...this.newTemplateDays];
     const currentExercises = updatedDays[dayIndex].exercises;
 
-    // Collapse the last exercise if it exists
-    if (currentExercises.length > 0) {
-      const lastExerciseIndex = currentExercises.length - 1;
-      this.collapsedExercises = { ...this.collapsedExercises, [`${dayIndex}-${lastExerciseIndex}`]: true };
-    }
+    // Collapse all existing exercises
+    currentExercises.forEach((_, index) => {
+        this.collapsedExercises = { ...this.collapsedExercises, [`${dayIndex}-${index}`]: true };
+    });
 
     // Add the new exercise (which will be expanded by default)
     currentExercises.push({ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 });
     this.newTemplateDays = updatedDays;
-  }
+}
 
   _handleExerciseInput(dayIndex, exerciseIndex, field, value) {
     const updatedDays = [...this.newTemplateDays];
@@ -961,6 +960,10 @@ SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
   }
 
   _addDayToTemplate() {
+    if (this.newTemplateDays.length >= 7) {
+        this._showToast("Maximum of 7 days per routine.", 'error');
+        return;
+    }
     this.newTemplateDays = [
         ...this.newTemplateDays,
         { name: `Day ${this.newTemplateDays.length + 1}`, exercises: [{ muscleGroup: '', name: "", sets: 3, reps: 10, rir: 2 }] }
@@ -1284,7 +1287,7 @@ SECTION 6: RENDERING LOGIC
               ${this.newTemplateDays.map((day, index) => html`
                   <button class="tab-btn ${this.activeDayIndex === index ? 'active' : ''}" @click=${() => this.activeDayIndex = index}>${day.name}</button>
               `)}
-              <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate}>+</button>
+              <button class="btn-icon add-day-btn" @click=${this._addDayToTemplate} ?disabled=${this.newTemplateDays.length >= 7}>+</button>
           </div>
         </div>
 
@@ -1297,7 +1300,7 @@ SECTION 6: RENDERING LOGIC
             <button class="btn btn-secondary" @click=${() => this._addExerciseToTemplate(this.activeDayIndex)}>Add Exercise to ${activeDay.name}</button>
             <div class="exercise-list">
             ${activeDay.exercises.map((exercise, index) => {
-                const isCollapsed = this.collapsedExercises[`${this.activeDayIndex}-${index}`] && index < activeDay.exercises.length -1;
+                const isCollapsed = this.collapsedExercises[`${this.activeDayIndex}-${index}`];
                 return html`
                 <div class="exercise-editor card ${isCollapsed ? 'collapsed' : ''}">
                     ${isCollapsed
