@@ -12,6 +12,7 @@ import { sanitizeHTML } from "../services/sanitization.js";
 SECTION 2: WORKOUT-TEMPLATES COMPONENT DEFINITION
 ===============================================
 */
+// 2.A: Properties
 class WorkoutTemplates extends LitElement {
   static properties = {
     templates: { type: Array },
@@ -32,6 +33,7 @@ class WorkoutTemplates extends LitElement {
     dayToDeleteIndex: { type: Number },
   };
 
+  // 2.B: Constructor
   constructor() {
     super();
     this.templates = [];
@@ -855,18 +857,20 @@ class WorkoutTemplates extends LitElement {
 SECTION 3: LIFECYCLE AND DATA HANDLING
 ===============================================
 */
-
+// 3.A: Connected Callback
   connectedCallback() {
     super.connectedCallback();
     this._fetchTemplates();
   }
 
+// 3.B: Will Update
   willUpdate(changedProperties) {
     if (changedProperties.has('editingRoutineId') && this.editingRoutineId) {
       this._loadRoutineForEditing();
     }
   }
 
+// 3.C: Load Routine For Editing
   _loadRoutineForEditing() {
     const data = getDataLocally();
     const routineToEdit = data.templates.find(t => t.id === this.editingRoutineId);
@@ -886,6 +890,7 @@ SECTION 3: LIFECYCLE AND DATA HANDLING
     }
   }
 
+// 3.D: Fetch Templates
   async _fetchTemplates() {
     this.isLoading = true;
     try {
@@ -904,6 +909,7 @@ SECTION 3: LIFECYCLE AND DATA HANDLING
 SECTION 4: WORKOUT GROUPING
 ===============================================
 */
+// 4.A: Group Workouts
   _groupWorkouts(workouts) {
     const grouped = workouts.reduce((acc, workout) => {
         const baseName = workout.name.split(' - ')[0];
@@ -925,6 +931,7 @@ SECTION 4: WORKOUT GROUPING
 SECTION 5: EVENT HANDLERS AND WORKOUT LOGIC
 ===============================================
 */
+// 5.A: Add Exercise to Template
 _addExerciseToTemplate(dayIndex) {
     const updatedDays = [...this.newTemplateDays];
     const currentExercises = updatedDays[dayIndex].exercises;
@@ -933,12 +940,14 @@ _addExerciseToTemplate(dayIndex) {
     this.activeExerciseIndex = currentExercises.length - 1;
 }
 
+// 5.B: Handle Exercise Input
   _handleExerciseInput(dayIndex, exerciseIndex, field, value) {
     const updatedDays = [...this.newTemplateDays];
     updatedDays[dayIndex].exercises[exerciseIndex][field] = sanitizeHTML(value);
     this.newTemplateDays = updatedDays;
   }
 
+// 5.C: Handle Muscle Group Change
   _handleMuscleGroupChange(dayIndex, exerciseIndex, value) {
     const updatedDays = [...this.newTemplateDays];
     updatedDays[dayIndex].exercises[exerciseIndex].muscleGroup = value;
@@ -946,6 +955,7 @@ _addExerciseToTemplate(dayIndex) {
     this.newTemplateDays = updatedDays;
   }
 
+// 5.D: Remove Exercise
   _removeExercise(dayIndex, exerciseIndex) {
     const updatedDays = [...this.newTemplateDays];
     updatedDays[dayIndex].exercises = updatedDays[dayIndex].exercises.filter((_, i) => i !== exerciseIndex);
@@ -955,6 +965,7 @@ _addExerciseToTemplate(dayIndex) {
     this.newTemplateDays = updatedDays;
   }
 
+// 5.E: Add Day to Template
   _addDayToTemplate() {
     if (this.newTemplateDays.length >= 7) {
         this._showToast("Maximum of 7 days per routine.", 'error');
@@ -968,6 +979,7 @@ _addExerciseToTemplate(dayIndex) {
     this.activeDayIndex = this.newTemplateDays.length - 1;
   }
 
+// 5.F: Request Remove Day
   _requestRemoveDay(dayIndex) {
     if (this.newTemplateDays.length <= 1) {
         this._showToast("You must have at least one day in your template.", 'error');
@@ -977,6 +989,7 @@ _addExerciseToTemplate(dayIndex) {
     this.showDeleteConfirmation = true;
   }
 
+// 5.G: Confirm Remove Day
   _confirmRemoveDay() {
     if (this.dayToDeleteIndex === null) return;
     this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== this.dayToDeleteIndex);
@@ -987,11 +1000,13 @@ _addExerciseToTemplate(dayIndex) {
     this._cancelRemoveDay(); // Hide modal and reset index
   }
   
+// 5.H: Cancel Remove Day
   _cancelRemoveDay() {
       this.showDeleteConfirmation = false;
       this.dayToDeleteIndex = null;
   }
   
+// 5.I: Renumber Days
   _renumberDays() {
       this.newTemplateDays = this.newTemplateDays.map((day, index) => ({
           ...day,
@@ -999,12 +1014,14 @@ _addExerciseToTemplate(dayIndex) {
       }));
   }
 
+// 5.J: Handle Day Name Change
   _handleDayNameChange(dayIndex, newName) {
     const updatedDays = [...this.newTemplateDays];
     updatedDays[dayIndex].name = sanitizeHTML(newName);
     this.newTemplateDays = updatedDays;
   }
 
+// 5.K: Handle Cancel
   _handleCancel() {
     if (this.editingRoutineId) {
       this.dispatchEvent(new CustomEvent('routine-saved', { bubbles: true, composed: true }));
@@ -1013,6 +1030,7 @@ _addExerciseToTemplate(dayIndex) {
     }
   }
 
+// 5.L: Show Toast
   _showToast(message, type) {
     this.dispatchEvent(new CustomEvent('show-toast', { 
         detail: { message, type }, 
@@ -1021,6 +1039,7 @@ _addExerciseToTemplate(dayIndex) {
     }));
   }
 
+// 5.M: Save Template
   async _saveTemplate() {
     this.isSaving = true;
     try {
@@ -1082,11 +1101,13 @@ _addExerciseToTemplate(dayIndex) {
     }
   }
   
+// 5.N: Load Template
   _loadTemplate(program) {
     this.selectedProgram = program;
     this.currentRoutineView = 'premade';
   }
   
+// 5.O: Get Filtered Mesocycles
   _getFilteredMesocycles() {
     const customTemplates = this.templates.filter(t => t.primaryFocus === "custom");
     return [...this.premadeMesocycles, ...customTemplates];
@@ -1097,7 +1118,7 @@ _addExerciseToTemplate(dayIndex) {
 SECTION 6: RENDERING LOGIC
 ===============================================
 */
-
+// 6.A: Main Render Method
   render() {
     if (this.isLoading) return html`<p>Loading...</p>`;
     if (this.errorMessage) return html`<p class="error-message">${this.errorMessage}</p>`;
@@ -1138,6 +1159,7 @@ SECTION 6: RENDERING LOGIC
     `;
   }
   
+// 6.B: Render Delete Confirmation Modal
   _renderDeleteConfirmationModal() {
     const dayName = this.newTemplateDays[this.dayToDeleteIndex]?.name || 'this day';
     return html`
@@ -1154,6 +1176,7 @@ SECTION 6: RENDERING LOGIC
     `;
   }
 
+// 6.C: Render Routine Menu
   _renderRoutineMenu() {
     const customTemplates = this.templates.filter(t => t.primaryFocus === "custom");
       return html`
@@ -1187,6 +1210,7 @@ SECTION 6: RENDERING LOGIC
       `;
   }
   
+// 6.D: Render Mesocycle List
   _renderMesocycleList() {
     const filteredMesocycles = this._getFilteredMesocycles();
     return html`
@@ -1206,6 +1230,7 @@ SECTION 6: RENDERING LOGIC
     `;
   }
   
+// 6.E: Render Program Detail View
   _renderProgramDetailView() {
       if (!this.selectedProgram) return html``;
       
@@ -1241,6 +1266,7 @@ SECTION 6: RENDERING LOGIC
       `;
   }
 
+// 6.F: Start Program
   _startProgram() {
       this.dispatchEvent(new CustomEvent('program-selected', {
           detail: {
@@ -1252,11 +1278,13 @@ SECTION 6: RENDERING LOGIC
       }));
   }
 
+// 6.G: Get Exercises For Group
   _getExercisesForGroup(groupName) {
     const normalizedGroup = groupName.toLowerCase();
     return this.exerciseDatabase[normalizedGroup] || [];
   }
 
+// 6.H: Render New Template Form
   _renderNewTemplateForm() {
     const muscleGroups = Object.keys(this.exerciseDatabase);
     const activeDay = this.newTemplateDays[this.activeDayIndex];
@@ -1348,6 +1376,7 @@ SECTION 6: RENDERING LOGIC
 SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
+// 7.A: Component Styles
   static styles = css`
     .day-tabs { display: flex; gap: var(--space-2); margin-bottom: var(--space-4); align-items: center; flex-wrap: wrap; }
     .tab-btn { background: var(--color-surface-tertiary); border: 1px solid var(--border-color); color: var(--color-text-secondary); border-radius: var(--radius-full); padding: var(--space-2) var(--space-4); cursor: pointer; transition: all 0.3s ease; }
@@ -1419,9 +1448,11 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     }
   `;
 
+// 7.B: Create Render Root
   createRenderRoot() {
     return this;
   }
 }
 
+// 7.C: Custom Element Definition
 customElements.define("workout-templates", WorkoutTemplates);
