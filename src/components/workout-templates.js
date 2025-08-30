@@ -29,6 +29,8 @@ class WorkoutTemplates extends LitElement {
     selectedStartWorkout: { type: Number },
     showDeleteConfirmation: { type: Boolean },
     dayToDeleteIndex: { type: Number },
+    // New property to track collapsed exercises
+    collapsedExercises: { type: Object },
   };
 
   constructor() {
@@ -50,6 +52,7 @@ class WorkoutTemplates extends LitElement {
     this.selectedStartWorkout = 0;
     this.showDeleteConfirmation = false;
     this.dayToDeleteIndex = null;
+    this.collapsedExercises = {};
 
     this.exerciseDatabase = {
         'chest': [
@@ -1368,60 +1371,40 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
   static styles = css`
-    .new-template-form .card {
-      border-radius: var(--radius-xl);
-    }
-    .form-header {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-      margin-bottom: 0;
-    }
-    .day-tabs-container {
-      padding: 0 var(--space-4);
-      margin-bottom: -1px; 
-      position: relative;
-      z-index: 2;
-    }
     .day-tabs {
       display: flex;
-      gap: var(--space-2);
-      overflow-x: auto;
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
-    .day-tabs::-webkit-scrollbar {
-      display: none;
+      gap: var(--space-1);
+      border-bottom: 1px solid var(--border-color);
+      margin: 0 calc(-1 * var(--space-6)) var(--space-4);
+      padding: 0 var(--space-5);
+      align-items: flex-end;
     }
     .tab-btn {
-      background: var(--color-surface-tertiary);
-      border: 1px solid var(--border-color);
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
       color: var(--color-text-secondary);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
       padding: var(--space-3) var(--space-4);
       cursor: pointer;
       transition: all 0.3s ease;
-      font-weight: 600;
-      white-space: nowrap;
+      margin-bottom: -1px;
+      font-weight: 500;
     }
     .tab-btn.active {
       background: var(--color-surface-secondary);
-      color: var(--color-text-primary);
-      border-bottom-color: transparent;
+      color: var(--color-accent-primary);
+      border-color: var(--border-color);
+      font-weight: 600;
     }
     .add-day-btn {
-      border-radius: var(--radius-full);
-      margin-left: var(--space-2);
-      border: none;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      margin-bottom: -1px;
+      border: 1px solid var(--border-color);
+      border-bottom: none;
       background: var(--color-surface-tertiary);
-      width: 40px;
-      height: 40px;
-      min-width: 40px;
     }
-    .day-editor-container {
-      border-top-left-radius: 0;
-      position: relative;
-      z-index: 1;
-    }
+    .day-editor { padding: var(--space-4) 0; }
     .day-header { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4); }
     .day-name-input { flex-grow: 1; background: var(--color-surface-tertiary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); color: var(--color-text-primary); font-weight: 600; }
     #template-name { border-radius: var(--radius-md); }
@@ -1429,6 +1412,7 @@ SECTION 7: STYLES AND ELEMENT DEFINITION
     
     .exercise-editor {
         position: relative;
+        padding-top: var(--space-5);
     }
     .exercise-editor-header {
         display: flex;
