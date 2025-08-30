@@ -3282,7 +3282,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   position: relative;
   z-index: 2;
   padding-left: var(--space-2);
-  margin-top: 0; /* Changed to remove top space */
+  margin-top: -1px; /* The correct fix to pull the tabs up */
 }
 
 /* 39.F: Exercise Tab Button */
@@ -3322,7 +3322,7 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
 /* 39.H: Exercise Editor */
 .exercise-editor {
   border-top-left-radius: 0; /* Ensures the top-left corner is not rounded for the content area */
-  margin-top: -1px;
+  margin-top: 0; /* Resetting the margin here */
   position: relative;
   z-index: 2;
   background: var(--gradient-surface);
