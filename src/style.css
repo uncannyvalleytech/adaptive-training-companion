@@ -3088,7 +3088,7 @@ readiness-modal .button-group {
   color: var(--color-text-primary);
   border-bottom-color: transparent;
   z-index: 3; /* Active tab is on top */
-  backdrop-filter: blur(20px) brightness(1.2);
+  backdrop-filter: blur(20px) brightness(1);
 }
 
 .add-day-btn {
@@ -3103,11 +3103,6 @@ readiness-modal .button-group {
   position: relative;
   z-index: 1;
   margin-left: 15px;
-  width: 48px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .day-editor {
@@ -3152,14 +3147,14 @@ readiness-modal .button-group {
   color: var(--color-text-primary);
   border-bottom-color: transparent;
   z-index: 3; /* Active tab is on top */
-  backdrop-filter: blur(20px) brightness(1.2);
+  backdrop-filter: blur(20px) brightness(1);
 }
 
 .exercise-editor {
   border-top-left-radius: 0;
-  margin-top: -1px;
+  margin-top: 0; /* Align perfectly with tabs */
   position: relative;
-  z-index: 1; /* Sits behind the tabs */
+  z-index: 2; /* Exercise editor card is above inactive tabs */
   background: var(--gradient-surface);
   padding-top: var(--space-4);
 }
