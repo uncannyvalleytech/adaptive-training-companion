@@ -70,8 +70,8 @@ class OnboardingFlow extends LitElement {
         text: "Your recovery is influenced by sleep and stress.",
         type: "form",
         fields: [
-          { key: "sleep_hours", label: "Average Sleep (Hours per night)", type: "slider", min: 4, max: 12, step: 0.5 },
-          { key: "stress_level", label: "Average Daily Stress (1-10)", type: "slider", min: 1, max: 10, step: 1 },
+          { key: "sleep_hours", label: "Average Sleep (Hours per night)", type: "number", min: 4, max: 12, step: 0.5 },
+          { key: "stress_level", label: "Average Daily Stress (1-10)", type: "number", min: 1, max: 10, step: 1 },
         ],
       },
       {
