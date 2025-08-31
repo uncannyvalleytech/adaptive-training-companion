@@ -250,7 +250,6 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
       this.error = "";
     }
   }
-/*
 ===============================================
 SECTION 4:A RENDERING LOGIC
 ===============================================
