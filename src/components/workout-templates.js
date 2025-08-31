@@ -912,7 +912,8 @@ SECTION 4: WORKOUT GROUPING
 // 4.A: Group Workouts
   _groupWorkouts(workouts) {
     const grouped = workouts.reduce((acc, workout) => {
-        const baseName = workout.name.split(' - ')[0];
+        const separatorIndex = workout.name.indexOf(' - ');
+        const baseName = separatorIndex !== -1 ? workout.name.substring(0, separatorIndex) : workout.name;
         if (!acc[baseName]) {
             acc[baseName] = {
                 ...workout,
@@ -995,7 +996,7 @@ _addExerciseToTemplate(dayIndex) {
     this.newTemplateDays = this.newTemplateDays.filter((_, i) => i !== this.dayToDeleteIndex);
     this._renumberDays();
     if (this.activeDayIndex >= this.newTemplateDays.length) {
-        this.activeDayIndex = this.newTemplateDays.length - 1;
+        this.activeDayIndex = Math.max(0, this.newTemplateDays.length - 1);
     }
     this._cancelRemoveDay(); // Hide modal and reset index
   }
@@ -1243,12 +1244,22 @@ SECTION 6: RENDERING LOGIC
           <div class="card">
             <h3>Program Duration</h3>
             <div class="button-toggle-group">
-                <button class="toggle-btn ${this.selectedDurationType === 'weeks' ? 'active' : ''}" @click=${() => this.selectedDurationType = 'weeks'}>Weeks</button>
-                <button class="toggle-btn ${this.selectedDurationType === 'days' ? 'active' : ''}" @click=${() => this.selectedDurationType = 'days'}>Days</button>
+                <button class="toggle-btn ${this.selectedDurationType === 'weeks' ? 'active' : ''}" @click=${() => { this.selectedDurationType = 'weeks'; this.selectedDuration = 4; }}>Weeks</button>
+                <button class="toggle-btn ${this.selectedDurationType === 'days' ? 'active' : ''}" @click=${() => { this.selectedDurationType = 'days'; this.selectedDuration = 30; }}>Days</button>
             </div>
-            <div class="input-group slider-group">
+            <div class="input-group">
               <label for="duration">Duration: <strong>${this.selectedDuration} ${this.selectedDurationType}</strong></label>
-              <input type="range" id="duration" .value=${this.selectedDuration} @input=${(e) => this.selectedDuration = Number(e.target.value)} min="${durationOptions[0]}" max="${durationOptions[durationOptions.length - 1]}" step="1"/>
+              <input
+                type="number"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                id="duration"
+                .value=${this.selectedDuration}
+                @input=${(e) => this.selectedDuration = Number(e.target.value)}
+                min="${durationOptions[0]}"
+                max="${durationOptions[durationOptions.length - 1]}"
+                step="1"
+              />
             </div>
           </div>
           <div class="card">
@@ -1345,15 +1356,15 @@ SECTION 6: RENDERING LOGIC
                         <div class="exercise-details">
                             <div class="detail-item">
                                 <label for=${`sets-${this.activeExerciseIndex}`}>Sets</label>
-                                <input id=${`sets-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'sets', e.target.value.slice(0, 3))}>
+                                <input id=${`sets-${this.activeExerciseIndex}`} type="number" inputmode="numeric" pattern="[0-9]*" min="1" .value=${activeExercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'sets', e.target.value)}>
                             </div>
                             <div class="detail-item">
                                 <label for=${`reps-${this.activeExerciseIndex}`}>Reps</label>
-                                <input id=${`reps-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'reps', e.target.value.slice(0, 3))}>
+                                <input id=${`reps-${this.activeExerciseIndex}`} type="number" inputmode="numeric" pattern="[0-9]*" min="1" .value=${activeExercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'reps', e.target.value)}>
                             </div>
                             <div class="detail-item">
                                 <label for=${`rir-${this.activeExerciseIndex}`}>RIR</label>
-                                <input id=${`rir-${this.activeExerciseIndex}`} type="number" min="0" maxlength="3" .value=${activeExercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'rir', e.target.value.slice(0, 3))}>
+                                <input id=${`rir-${this.activeExerciseIndex}`} type="number" inputmode="numeric" pattern="[0-9]*" min="0" .value=${activeExercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'rir', e.target.value)}>
                             </div>
                         </div>
                     </div>
