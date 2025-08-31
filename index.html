@@ -1,168 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Progression - Adaptive Training Companion</title>
-    <meta name="description" content="Your intelligent workout partner that adapts to you in real-time. Track progress, unlock achievements, and reach new fitness levels." />
-    
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.skypack.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;">
-    
-    <meta name="theme-color" content="#1A1A2E" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Progression" />
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.skypack.dev">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231A1A2E'/><text y='.9em' x='.1em' font-size='80'>🏋️</text></svg>" />
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Progression - Adaptive Training Companion</title>
+   <meta name="description" content="Your intelligent workout partner that adapts to you in real-time. Track progress, unlock achievements, and reach new fitness levels." />
+   
+   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.skypack.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self';">
+   
+   <meta name="theme-color" content="#1A1A2E" />
+   <meta name="apple-mobile-web-app-capable" content="yes" />
+   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+   <meta name="apple-mobile-web-app-title" content="Progression" />
+   
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link rel="preconnect" href="https://cdn.skypack.dev">
+   
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+   
+   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏋️</text></svg>" />
+   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%231A1A2E'/><text y='.9em' x='.1em' font-size='80'>🏋️</text></svg>" />
 
-    <link rel="stylesheet" href="./src/style.css" />
-    
-    <script type="importmap">
-      {
-        "imports": {
-          "lit": "https://cdn.skypack.dev/lit@3",
-          "lit/": "https://cdn.skypack.dev/lit@3/",
-          "@simplewebauthn/browser": "https://cdn.skypack.dev/@simplewebauthn/browser",
-          "canvas-confetti": "https://cdn.skypack.dev/canvas-confetti"
-        }
-      }
-    </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-    
-    <style>
-      /* Critical CSS for faster initial load */
-      body {
-        margin: 0;
-        padding: 0;
-        font-family: 'Inter', system-ui, sans-serif;
-        background: linear-gradient(135deg, #1A1A2E 0%, #16213e 50%, #0f1419 100%);
-        color: white;
-        min-height: 100vh;
-        overflow-x: hidden;
-      }
-      
-      /* Enhanced Loading animation */
-      .app-loading {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, #1A1A2E 0%, #16213e 50%, #0f1419 100%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        transition: opacity 0.5s ease, visibility 0.5s ease;
-      }
-      
-      .app-loading.hidden {
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-      }
-      
-      .loading-text {
-        font-family: 'Sora', system-ui;
-        font-size: 2rem;
-        font-weight: 800;
-        background: linear-gradient(135deg, #00D4FF, #00FF88);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 1rem;
-      }
-      
-      .loading-subtitle {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 1rem;
-        margin-bottom: 2rem;
-        text-align: center;
-        max-width: 300px;
-      }
-      
-      .loading-spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: #00D4FF;
-        animation: spin 1s ease-in-out infinite;
-      }
-      
-      .loading-status {
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.9rem;
-        margin-top: 1rem;
-        text-align: center;
-      }
-      
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-      
-      /* Safe area for notched devices */
-      .safe-area {
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-        padding-left: env(safe-area-inset-left);
-        padding-right: env(safe-area-inset-right);
-      }
-    </style>
-  </head>
-  <body class="safe-area">
-    <div class="app-loading" id="app-loading">
-      <div class="loading-text">PROGRESSION</div>
-      <div class="loading-subtitle">Adaptive Training Companion</div>
-      <div class="loading-spinner"></div>
-      <div class="loading-status" id="loading-status">Initializing...</div>
-    </div>
+   <link rel="stylesheet" href="./src/style.css" />
+   
+   <script type="importmap">
+     {
+       "imports": {
+         "lit": "https://cdn.skypack.dev/lit@3",
+         "lit/": "https://cdn.skypack.dev/lit@3/",
+         "@simplewebauthn/browser": "https://cdn.skypack.dev/@simplewebauthn/browser",
+         "canvas-confetti": "https://cdn.skypack.dev/canvas-confetti"
+       }
+     }
+   </script>
+   
+   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+   
+   <style>
+     /* Critical CSS for faster initial load */
+     body {
+       margin: 0;
+       padding: 0;
+       font-family: 'Inter', system-ui, sans-serif;
+       background: linear-gradient(135deg, #1A1A2E 0%, #16213e 50%, #0f1419 100%);
+       color: white;
+       min-height: 100vh;
+       overflow-x: hidden;
+     }
+     
+     /* Enhanced Loading animation */
+     .app-loading {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background: linear-gradient(135deg, #1A1A2E 0%, #16213e 50%, #0f1419 100%);
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       justify-content: center;
+       z-index: 9999;
+       transition: opacity 0.5s ease, visibility 0.5s ease;
+     }
+     
+     .app-loading.hidden {
+       opacity: 0;
+       visibility: hidden;
+       pointer-events: none;
+     }
+     
+     .loading-text {
+       font-family: 'Sora', system-ui;
+       font-size: 2rem;
+       font-weight: 800;
+       background: linear-gradient(135deg, #00D4FF, #00FF88);
+       -webkit-background-clip: text;
+       -webkit-text-fill-color: transparent;
+       background-clip: text;
+       margin-bottom: 1rem;
+     }
+     
+     .loading-subtitle {
+       color: rgba(255, 255, 255, 0.7);
+       font-size: 1rem;
+       margin-bottom: 2rem;
+       text-align: center;
+       max-width: 300px;
+     }
+     
+     .loading-spinner {
+       width: 40px;
+       height: 40px;
+       border: 3px solid rgba(255, 255, 255, 0.3);
+       border-radius: 50%;
+       border-top-color: #00D4FF;
+       animation: spin 1s ease-in-out infinite;
+     }
+     
+     .loading-status {
+       color: rgba(255, 255, 255, 0.6);
+       font-size: 0.9rem;
+       margin-top: 1rem;
+       text-align: center;
+     }
+     
+     @keyframes spin {
+       to { transform: rotate(360deg); }
+     }
+     
+     /* Safe area for notched devices */
+     .safe-area {
+       padding-top: env(safe-area-inset-top);
+       padding-bottom: env(safe-area-inset-bottom);
+       padding-left: env(safe-area-inset-left);
+       padding-right: env(safe-area-inset-right);
+     }
+   </style>
+ </head>
+ <body class="safe-area">
+   <div class="app-loading" id="app-loading">
+     <div class="loading-text">PROGRESSION</div>
+     <div class="loading-subtitle">Adaptive Training Companion</div>
+     <div class="loading-spinner"></div>
+     <div class="loading-status" id="loading-status">Initializing...</div>
+   </div>
 
-    <main>
-      <app-shell></app-shell>
-    </main>
+   <main>
+     <app-shell></app-shell>
+   </main>
 
-    <script>
-      function hideLoadingScreen() {
-        const loadingScreen = document.getElementById('app-loading');
-        if (loadingScreen) {
-          loadingScreen.classList.add('hidden');
-          // We can remove it from the DOM after the transition for cleanliness
-          setTimeout(() => {
-            if (loadingScreen.parentElement) {
-              loadingScreen.parentElement.removeChild(loadingScreen);
-            }
-          }, 500);
-        }
-      }
+   <script>
+     function hideLoadingScreen() {
+       const loadingScreen = document.getElementById('app-loading');
+       if (loadingScreen) {
+         loadingScreen.classList.add('hidden');
+         // We can remove it from the DOM after the transition for cleanliness
+         setTimeout(() => {
+           if (loadingScreen.parentElement) {
+             loadingScreen.parentElement.removeChild(loadingScreen);
+           }
+         }, 500);
+       }
+     }
 
-      // Listen for the app to signal it's ready
-      window.addEventListener('app-ready', hideLoadingScreen);
+     // Listen for the app to signal it's ready
+     window.addEventListener('app-ready', hideLoadingScreen);
 
-      // Set a foolproof fallback timeout to hide the loader
-      // This ensures the UI is usable even if a JS error occurs during init
-      setTimeout(hideLoadingScreen, 8000); 
-    </script>
-    
-    <script type="module" src="./src/main.js"></script>
-    
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./service-worker.js')
-            .then(reg => console.log('Service worker registered.', reg))
-            .catch(err => console.log('Service worker registration failed:', err));
-        });
-      }
-    </script>
-  </body>
+     // Set a foolproof fallback timeout to hide the loader
+     // This ensures the UI is usable even if a JS error occurs during init
+     setTimeout(hideLoadingScreen, 8000); 
+   </script>
+   
+   <script type="module" src="./src/main.js"></script>
+   
+   <script>
+     if ('serviceWorker' in navigator) {
+       window.addEventListener('load', () => {
+         navigator.serviceWorker.register('./service-worker.js')
+           .then(reg => console.log('Service worker registered.', reg))
+           .catch(err => console.log('Service worker registration failed:', err));
+       });
+     }
+   </script>
+ </body>
 </html>
