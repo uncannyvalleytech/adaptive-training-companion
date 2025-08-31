@@ -1,3 +1,4 @@
+
 /*
 ===============================================
 SECTION 1: COMPONENT AND SERVICE IMPORTS
@@ -41,7 +42,6 @@ class SetGoalModal extends LitElement {
 ===============================================
 SECTION 3: EVENT HANDLERS
 ===============================================
-*/
 // 3.A: Handle Input
   _handleInput(field, value) {
     // SECTION 3.1: CORRECTED INPUT VALIDATION
