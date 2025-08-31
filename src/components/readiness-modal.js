@@ -190,3 +190,10 @@ class ReadinessModal extends LitElement {
       </div>
     `;
   }
+
+  createRenderRoot() {
+    return this;
+  }
+}
+
+customElements.define("readiness-modal", ReadinessModal);
