@@ -62,10 +62,11 @@ class ReadinessModal extends LitElement {
   }
   
   // SECTION 2: EVENT HANDLERS
-  _handleSliderInput(e) {
+  _handleNumberInput(e) {
     const { field } = e.target.dataset;
     const value = e.target.value;
-    this.readinessData = { ...this.readinessData, [field]: Number(value) };
+    const sanitizedValue = Math.max(1, Math.min(10, Number(value)));
+    this.readinessData = { ...this.readinessData, [field]: sanitizedValue };
     this.requestUpdate();
   }
 
@@ -99,48 +100,56 @@ class ReadinessModal extends LitElement {
           <p class="modal-subtitle">How are you feeling today? This helps us adjust your workout for the best results.</p>
           
           <div class="form-inputs">
-            <div class="input-group slider-group">
-              <label for="sleep_quality">Sleep Quality: <strong>${this.readinessData.sleep_quality}</strong></label>
+            <div class="input-group">
+              <label for="sleep_quality">Sleep Quality (1-10)</label>
               <input
-                type="range"
+                type="number"
+                inputmode="numeric"
+                pattern="[1-9]|10"
                 id="sleep_quality"
                 .value=${this.readinessData.sleep_quality}
                 data-field="sleep_quality"
-                @input=${this._handleSliderInput}
-                min="1" max="10" step="1"
+                @input=${this._handleNumberInput}
+                min="1" max="10"
               />
             </div>
-            <div class="input-group slider-group">
-              <label for="energy_level">Energy Level: <strong>${this.readinessData.energy_level}</strong></label>
+            <div class="input-group">
+              <label for="energy_level">Energy Level (1-10)</label>
               <input
-                type="range"
+                type="number"
+                inputmode="numeric"
+                pattern="[1-9]|10"
                 id="energy_level"
                 .value=${this.readinessData.energy_level}
                 data-field="energy_level"
-                @input=${this._handleSliderInput}
-                min="1" max="10" step="1"
+                @input=${this._handleNumberInput}
+                min="1" max="10"
               />
             </div>
-            <div class="input-group slider-group">
-              <label for="motivation">Motivation: <strong>${this.readinessData.motivation}</strong></label>
+            <div class="input-group">
+              <label for="motivation">Motivation (1-10)</label>
               <input
-                type="range"
+                type="number"
+                inputmode="numeric"
+                pattern="[1-9]|10"
                 id="motivation"
                 .value=${this.readinessData.motivation}
                 data-field="motivation"
-                @input=${this._handleSliderInput}
-                min="1" max="10" step="1"
+                @input=${this._handleNumberInput}
+                min="1" max="10"
               />
             </div>
-            <div class="input-group slider-group">
-              <label for="muscle_soreness">Muscle Soreness: <strong>${this.readinessData.muscle_soreness}</strong></label>
+            <div class="input-group">
+              <label for="muscle_soreness">Muscle Soreness (1-10)</label>
               <input
-                type="range"
+                type="number"
+                inputmode="numeric"
+                pattern="[1-9]|10"
                 id="muscle_soreness"
                 .value=${this.readinessData.muscle_soreness}
                 data-field="muscle_soreness"
-                @input=${this._handleSliderInput}
-                min="1" max="10" step="1"
+                @input=${this._handleNumberInput}
+                min="1" max="10"
               />
             </div>
           </div>
