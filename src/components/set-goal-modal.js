@@ -1,4 +1,3 @@
-
 /*
 ===============================================
 SECTION 1: COMPONENT AND SERVICE IMPORTS
@@ -42,13 +41,21 @@ class SetGoalModal extends LitElement {
 ===============================================
 SECTION 3: EVENT HANDLERS
 ===============================================
+*/
 // 3.A: Handle Input
   _handleInput(field, value) {
     // SECTION 3.1: CORRECTED INPUT VALIDATION
-    // Ensure the input value is limited to 3 digits.
+    // Ensure the input value is a valid number and handle max length.
     let processedValue = value;
-    if (processedValue.length > 3) {
-      processedValue = processedValue.slice(0, 3);
+    if (field === 'targetWeight' || field === 'targetReps') {
+        const numValue = parseInt(value, 10);
+        if (isNaN(numValue)) {
+            processedValue = '';
+        } else if (value.length > 3) {
+            processedValue = value.slice(0, 3);
+        } else {
+            processedValue = numValue;
+        }
     }
     
     this.goalData = { ...this.goalData, [field]: processedValue };
@@ -114,7 +121,8 @@ SECTION 4: RENDERING LOGIC
               <input
                 id="goal-weight"
                 type="number"
-                maxlength="3"
+                inputmode="decimal"
+                pattern="[0-9]*"
                 .value=${this.goalData.targetWeight}
                 @input=${(e) => this._handleInput('targetWeight', e.target.value)}
                 placeholder="e.g., 225"
@@ -126,7 +134,8 @@ SECTION 4: RENDERING LOGIC
               <input
                 id="goal-reps"
                 type="number"
-                maxlength="3"
+                inputmode="numeric"
+                pattern="[0-9]*"
                 .value=${this.goalData.targetReps}
                 @input=${(e) => this._handleInput('targetReps', e.target.value)}
                 placeholder="e.g., 5"
