@@ -52,10 +52,16 @@ class OnboardingFlow extends LitElement {
       },
       {
         title: "About You",
-        text: "This information helps us calculate your baseline recovery capacity.",
+        text: "Tell us about your biological sex. This helps us tailor recovery and volume recommendations.",
+        type: "choice-grid",
+        field: "sex",
+        options: [{ value: "male", text: "Male" }, { value: "female", text: "Female" }],
+      },
+      {
+        title: "How old are you?",
+        text: "Your age is a factor in recovery and programming.",
         type: "form",
         fields: [
-          { key: "sex", label: "Biological Sex", type: "choice", options: [{ value: "male", text: "Male" }, { value: "female", text: "Female" }] },
           { key: "age", label: "Age", type: "number", min: 13, max: 99 },
         ],
       },
@@ -84,7 +90,7 @@ class OnboardingFlow extends LitElement {
       {
         title: "What is your primary fitness goal?",
         text: "This helps us tailor your training focus.",
-        type: "choice",
+        type: "choice-grid",
         field: "goal",
         options: [{ value: "hypertrophy", text: "Build Muscle" }, { value: "strength", text: "Get Stronger" }, { value: "fatLoss", text: "Fat Loss" }],
       },
