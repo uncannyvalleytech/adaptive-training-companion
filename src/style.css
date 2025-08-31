@@ -2671,12 +2671,12 @@ body[data-theme="light"] .icon-btn:hover {
  line-height: 1.5;
 }
 
-/* 27.B: Slider Group */
-.slider-group {
+/* 27.B: Rating Group in Modal */
+.modal-content .rating-group {
  margin-bottom: var(--space-5);
 }
 
-.slider-group label {
+.modal-content .rating-group label {
  display: flex;
  justify-content: space-between;
  align-items: center;
@@ -2685,14 +2685,19 @@ body[data-theme="light"] .icon-btn:hover {
  font-weight: 500;
 }
 
-.slider-group input[type="range"] {
- width: 100%;
+.modal-content .rating-buttons {
+ display: grid;
+ grid-template-columns: repeat(5, 1fr);
+ gap: var(--space-2);
  margin-top: var(--space-2);
- pointer-events: auto !important;
- position: relative;
- z-index: 10 !important;
 }
 
+.modal-content .rating-btn {
+ aspect-ratio: 1;
+ min-height: 44px;
+ font-size: var(--font-size-xs);
+ padding: var(--space-2);
+}
 /* =============================================== */
 /* 28. TIMER SECTION STYLES */
 /* =============================================== */
