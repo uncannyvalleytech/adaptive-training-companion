@@ -1,3 +1,4 @@
+
 /* =============================================== */
 /* 1. DESIGN TOKENS - ENHANCED */
 /* =============================================== */
@@ -1863,18 +1864,20 @@ body[data-theme="light"] .set-row.completed {
   display: block;
 }
 
-/* 22.F: Updated Input Styling */
+/*
+ * Section 22.E input, select styling update
+ * Overriding the default white background for form elements to match the theme.
+ */
 .input-group input[type="number"],
 .input-group select,
 .input-group input[type="text"] {
   width: 100%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-lg);
+  background: var(--color-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
   padding: var(--space-4);
   color: var(--color-text-primary);
   font-size: var(--font-size-md);
-  transition: all 0.3s ease;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -1883,93 +1886,87 @@ body[data-theme="light"] .set-row.completed {
 body[data-theme="light"] .input-group input[type="number"],
 body[data-theme="light"] .input-group select,
 body[data-theme="light"] .input-group input[type="text"] {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.15);
+  background: var(--color-surface-secondary);
+  border-color: var(--border-color);
 }
 
-.input-group input[type="number"]:focus,
-.input-group select:focus,
-.input-group input[type="text"]:focus {
-  outline: none;
-  border-color: var(--color-accent-primary);
-  background: rgba(0, 212, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+.input-group input[type="range"]::-webkit-slider-thumb:hover {
+ box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.5);
 }
 
-body[data-theme="light"] .input-group input[type="number"]:focus,
-body[data-theme="light"] .input-group select:focus,
-body[data-theme="light"] .input-group input[type="text"]:focus {
-  background: rgba(30, 113, 255, 0.1);
-  box-shadow: 0 0 0 3px rgba(30, 113, 255, 0.2);
+body[data-theme="light"] .input-group input[type="range"]::-webkit-slider-thumb:hover {
+ box-shadow: 0 0 0 4px rgba(30, 113, 255, 0.5);
 }
 
-/* 22.G: Rating Button System */
-.rating-group {
-  margin-bottom: var(--space-5);
-}
-
-.rating-buttons {
+/* 24.F: Day Header - Fixed Layout */
+.day-header {
   display: flex;
   justify-content: space-between;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
-.rating-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--radius-lg);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: 600;
-  padding: var(--space-3) var(--space-2);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex: 1;
-  min-height: 48px;
-  display: flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  pointer-events: auto;
-  position: relative;
-  z-index: 10;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
-body[data-theme="light"] .rating-btn {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.15);
+/* 24.F: Day Name Input - Fixed Width */
+.day-name-input {
+  max-width: 200px;
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  font-weight: 600;
 }
 
-.rating-btn:hover {
-  background: rgba(0, 212, 255, 0.15);
-  border-color: rgba(0, 212, 255, 0.3);
+body[data-theme="light"] .day-name-input {
+  background: var(--color-surface-tertiary);
+  border-color: var(--border-color);
   color: var(--color-text-primary);
 }
 
-body[data-theme="light"] .rating-btn:hover {
-  background: rgba(30, 113, 255, 0.15);
-  border-color: rgba(30, 113, 255, 0.3);
+/* 24.F: Template Name Input - Width and Color Fix */
+.input-group {
+  margin-bottom: var(--space-4);
+  max-width: 150px;
 }
 
-.rating-btn.selected {
-  background: var(--gradient-success);
-  border-color: var(--color-accent-primary);
-  color: var(--color-surface-primary);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
-  transform: scale(1.05);
+#template-name {
+  background: var(--color-surface-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  width: 100%;
 }
 
-/* 22.H: Rating Labels */
-.rating-labels {
+body[data-theme="light"] #template-name {
+  background: var(--color-surface-tertiary);
+  border-color: var(--border-color);
+  color: var(--color-text-primary);
+}
+
+/* 24.G: Delete Button - Fixed Positioning */
+.day-delete-btn, .delete-exercise-btn {
+  background: rgba(220, 38, 38, 0.2);
+  border: none;
+  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  color: #DC2626;
+  cursor: pointer;
   display: flex;
-  justify-content: space-between;
-  margin-top: var(--space-2);
-  font-size: var(--font-size-xs);
-  color: var(--color-text-tertiary);
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+  pointer-events: auto !important;
+  z-index: 30 !important;
+  flex-shrink: 0;
 }
 
-/* 22.I: Goal Card */
+/* 22.H: Goal Card */
 .goal-card {
   background: var(--gradient-surface);
   backdrop-filter: blur(20px);
@@ -2017,7 +2014,7 @@ body[data-theme="light"] .goal-card.selected {
  margin-bottom: 0;
 }
 
-/* 22.J: Button Group */
+/* 22.I: Button Group */
 .button-group {
  display: flex;
  justify-content: space-between;
@@ -2030,7 +2027,7 @@ body[data-theme="light"] .goal-card.selected {
  flex: 1;
 }
 
-/* 22.K: Secondary Button (Form Specific) */
+/* 22.J: Secondary Button (Form Specific) */
 .secondary-button {
  background: rgba(255, 255, 255, 0.1);
  backdrop-filter: blur(20px);
@@ -2065,14 +2062,14 @@ body[data-theme="light"] .secondary-button:hover {
  background: rgba(0, 0, 0, 0.15);
 }
 
-/* 22.L: Error Message */
+/* 22.K: Error Message */
 .error-message {
  color: var(--color-state-error);
  font-size: var(--font-size-sm);
  margin-bottom: var(--space-4);
 }
 
-/* 22.M: Loader */
+/* 22.L: Loader */
 .loader {
  width: 48px;
  height: 48px;
@@ -2090,7 +2087,7 @@ body[data-theme="light"] .loader {
  border-bottom-color: var(--color-accent-primary);
 }
 
-/* 22.N: Fixed Navigation Bar */
+/* 22.M: Fixed Navigation Bar */
 .onboarding-fixed-nav {
   position: fixed;
   bottom: 0;
@@ -2115,6 +2112,7 @@ body[data-theme="light"] .loader {
 body[data-theme="light"] .onboarding-fixed-nav {
   background: rgba(241, 245, 249, 0.8);
 }
+
 /* =============================================== */
 /* 23. SETTINGS VIEW STYLES */
 /* =============================================== */
@@ -2671,12 +2669,12 @@ body[data-theme="light"] .icon-btn:hover {
  line-height: 1.5;
 }
 
-/* 27.B: Rating Group in Modal */
-.modal-content .rating-group {
+/* 27.B: Slider Group */
+.slider-group {
  margin-bottom: var(--space-5);
 }
 
-.modal-content .rating-group label {
+.slider-group label {
  display: flex;
  justify-content: space-between;
  align-items: center;
@@ -2685,19 +2683,14 @@ body[data-theme="light"] .icon-btn:hover {
  font-weight: 500;
 }
 
-.modal-content .rating-buttons {
- display: grid;
- grid-template-columns: repeat(5, 1fr);
- gap: var(--space-2);
+.slider-group input[type="range"] {
+ width: 100%;
  margin-top: var(--space-2);
+ pointer-events: auto !important;
+ position: relative;
+ z-index: 10 !important;
 }
 
-.modal-content .rating-btn {
- aspect-ratio: 1;
- min-height: 44px;
- font-size: var(--font-size-xs);
- padding: var(--space-2);
-}
 /* =============================================== */
 /* 28. TIMER SECTION STYLES */
 /* =============================================== */
