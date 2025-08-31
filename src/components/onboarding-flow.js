@@ -1,3 +1,4 @@
+
 /*
 ===============================================
 SECTION 1: COMPONENT AND SERVICE IMPORTS
@@ -52,16 +53,10 @@ class OnboardingFlow extends LitElement {
       },
       {
         title: "About You",
-        text: "Tell us about your biological sex. This helps us tailor recovery and volume recommendations.",
-        type: "choice-grid",
-        field: "sex",
-        options: [{ value: "male", text: "Male" }, { value: "female", text: "Female" }],
-      },
-      {
-        title: "How old are you?",
-        text: "Your age is a factor in recovery and programming.",
+        text: "This information helps us calculate your baseline recovery capacity.",
         type: "form",
         fields: [
+          { key: "sex", label: "Biological Sex", type: "choice", options: [{ value: "male", text: "Male" }, { value: "female", text: "Female" }] },
           { key: "age", label: "Age", type: "number", min: 13, max: 99 },
         ],
       },
@@ -76,8 +71,8 @@ class OnboardingFlow extends LitElement {
         text: "Your recovery is influenced by sleep and stress.",
         type: "form",
         fields: [
-          { key: "sleep_hours", label: "Average Sleep (Hours per night)", type: "rating", min: 4, max: 12, minLabel: "4h", maxLabel: "12h" },
-          { key: "stress_level", label: "Average Daily Stress", type: "rating", min: 1, max: 10, minLabel: "Low", maxLabel: "High" },
+          { key: "sleep_hours", label: "Average Sleep (Hours per night)", type: "slider", min: 4, max: 12, step: 0.5 },
+          { key: "stress_level", label: "Average Daily Stress (1-10)", type: "slider", min: 1, max: 10, step: 1 },
         ],
       },
       {
@@ -90,7 +85,7 @@ class OnboardingFlow extends LitElement {
       {
         title: "What is your primary fitness goal?",
         text: "This helps us tailor your training focus.",
-        type: "choice-grid",
+        type: "choice",
         field: "goal",
         options: [{ value: "hypertrophy", text: "Build Muscle" }, { value: "strength", text: "Get Stronger" }, { value: "fatLoss", text: "Fat Loss" }],
       },
@@ -121,21 +116,14 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     this.error = "";
     this.requestUpdate();
   }
-
-// 3.B: Handle Rating Change
-  _handleRatingChange(field, value) {
-    this.userData = { ...this.userData, [field]: Number(value) };
-    this.error = "";
-    this.requestUpdate();
-  }
   
-// 3.C: Handle Choice Selection
+// 3.B: Handle Choice Selection
   _handleChoiceSelection(field, value) {
     this.userData = { ...this.userData, [field]: value };
     this.requestUpdate();
   }
 
-// 3.D: Validate Step
+// 3.C: Validate Step
   _validateStep() {
     const currentStepData = this.steps[this.step];
     if (currentStepData.type === 'form') {
@@ -155,7 +143,7 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     return true;
   }
 
-// 3.E: Next Step
+// 3.D: Next Step
   _nextStep() {
     if (!this._validateStep()) return;
 
@@ -173,7 +161,7 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     }
   }
 
-// 3.F: Previous Step
+// 3.E: Previous Step
   _prevStep() {
     if (this.step > 0) {
       this.step--;
@@ -194,27 +182,28 @@ SECTION 4: RENDERING LOGIC
     return html`
       <div class="onboarding-container">
         <div class="onboarding-wizard">
+          ${currentStepData.type !== 'intro' && currentStepData.type !== 'loading' ? html`
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${progress}%"></div>
+            </div>
+          ` : ''}
+
           <div class="step active">
             <h2>${currentStepData.title}</h2>
             <p>${currentStepData.text}</p>
-            ${this.error ? html`<div class="error-message">${this.error}</div>` : ''}
+            
+            ${this.error ? html`<p class="error-message">${this.error}</p>` : ''}
+
             ${this._renderStepContent(currentStepData)}
+
+            ${currentStepData.type === 'form' || currentStepData.type === 'choice' || currentStepData.type === 'choice-grid' ? html`
+              <div class="onboarding-fixed-nav">
+                <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>Back</button>
+                <button class="btn btn-primary cta-button" @click=${this._nextStep}>Next</button>
+              </div>
+            ` : ''}
           </div>
         </div>
-
-        ${currentStepData.type !== 'intro' && currentStepData.type !== 'loading' ? html`
-          <div class="onboarding-fixed-nav">
-            <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>
-              Back
-            </button>
-            <div class="progress-bar" style="flex-grow: 1;">
-              <div class="progress-fill" style="width: ${progress}%"></div>
-            </div>
-            <button class="btn btn-primary" @click=${this._nextStep}>
-              ${this.step === this.steps.length - 2 ? 'Finish' : 'Next'}
-            </button>
-          </div>
-        ` : ''}
       </div>
     `;
   }
@@ -283,27 +272,19 @@ SECTION 4: RENDERING LOGIC
                 />
               </div>
             `;
-          case 'rating':
+          case 'slider':
             return html`
-              <div class="rating-group">
-                <label for=${field.key}>${field.label}</label>
-                <div class="rating-buttons">
-                  ${Array.from({length: field.max - field.min + 1}, (_, i) => {
-                    const value = field.min + i;
-                    return html`
-                      <button 
-                        class="rating-btn ${this.userData[field.key] === value ? 'selected' : ''}"
-                        @click=${() => this._handleRatingChange(field.key, value)}
-                      >
-                        ${value}
-                      </button>
-                    `;
-                  })}
-                </div>
-                <div class="rating-labels">
-                  <span>${field.minLabel || 'Low'}</span>
-                  <span>${field.maxLabel || 'High'}</span>
-                </div>
+              <div class="input-group slider-group">
+                <label for=${field.key}>${field.label}: <strong>${this.userData[field.key]}</strong></label>
+                <input
+                  type="range"
+                  id=${field.key}
+                  .value=${this.userData[field.key]}
+                  @input=${e => { e.stopPropagation(); this._handleInputChange(field.key, Number(e.target.value)); }}
+                  min=${field.min}
+                  max=${field.max}
+                  step=${field.step}
+                />
               </div>
             `;
           case 'choice':
@@ -326,7 +307,7 @@ SECTION 4: RENDERING LOGIC
       })}
     `;
   }
-  
+
 /*
 ===============================================
 SECTION 5: STYLES AND ELEMENT DEFINITION
