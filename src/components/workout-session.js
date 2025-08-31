@@ -381,7 +381,7 @@ SECTION 6: RENDERING
               <div class="set-row-log ${set.completed ? 'completed' : ''}">
                 <span class="set-number">${setIndex + 1}</span>
                 <input 
-                  type="tel"
+                  type="number"
                   inputmode="decimal"
                   pattern="[0-9]*"
                   maxlength="3"
@@ -391,7 +391,7 @@ SECTION 6: RENDERING
                   @input=${(e) => this._handleSetInput(exercise.originalIndex, setIndex, 'weight', e.target.value)}
                 >
                 <input 
-                  type="tel"
+                  type="number"
                   inputmode="numeric"
                   pattern="[0-9]*"
                   maxlength="3"
