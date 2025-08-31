@@ -76,8 +76,8 @@ class OnboardingFlow extends LitElement {
         text: "Your recovery is influenced by sleep and stress.",
         type: "form",
         fields: [
-          { key: "sleep_hours", label: "Average Sleep (Hours per night)", type: "slider", min: 4, max: 12, step: 0.5 },
-          { key: "stress_level", label: "Average Daily Stress (1-10)", type: "slider", min: 1, max: 10, step: 1 },
+          { key: "sleep_hours", label: "Average Sleep (Hours per night)", type: "rating", min: 4, max: 12, minLabel: "4h", maxLabel: "12h" },
+          { key: "stress_level", label: "Average Daily Stress", type: "rating", min: 1, max: 10, minLabel: "Low", maxLabel: "High" },
         ],
       },
       {
@@ -101,8 +101,6 @@ class OnboardingFlow extends LitElement {
       },
     ];
   }
-
-/*
 ===============================================
 SECTION 3: EVENT HANDLERS AND LOGIC
 ===============================================
@@ -176,44 +174,88 @@ SECTION 3: EVENT HANDLERS AND LOGIC
 
 /*
 ===============================================
-SECTION 4: RENDERING LOGIC
+SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
 ===============================================
 */
-// 4.A: Main Render Method
-  render() {
-    const currentStepData = this.steps[this.step];
-    const progress = (this.step / (this.steps.length - 2)) * 100;
-
-    return html`
-      <div class="onboarding-container">
-        <div class="onboarding-wizard">
-          ${currentStepData.type !== 'intro' && currentStepData.type !== 'loading' ? html`
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${progress}%"></div>
-            </div>
-          ` : ''}
-
-          <div class="step active">
-            <h2>${currentStepData.title}</h2>
-            <p>${currentStepData.text}</p>
-            
-            ${this.error ? html`<p class="error-message">${this.error}</p>` : ''}
-
-            ${this._renderStepContent(currentStepData)}
-
-            ${currentStepData.type === 'form' || currentStepData.type === 'choice' || currentStepData.type === 'choice-grid' ? html`
-              <div class="onboarding-fixed-nav">
-                <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>Back</button>
-                <button class="btn btn-primary cta-button" @click=${this._nextStep}>Next</button>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      </div>
-    `;
+// 4.A: Handle Input Change
+  _handleInputChange(field, value) {
+    // SECTION 4.1: INPUT VALIDATION & SANITIZATION
+    // Enforce max value for age and sanitize input.
+    let processedValue = sanitizeHTML(value);
+    if (field === 'age') {
+        if (Number(processedValue) > 99) {
+            processedValue = 99;
+        }
+    }
+    this.userData = { ...this.userData, [field]: processedValue };
+    this.error = "";
+    this.requestUpdate();
   }
 
-// 4.B: Render Step Content
+// 4.B: Handle Rating Change
+  _handleRatingChange(field, value) {
+    this.userData = { ...this.userData, [field]: Number(value) };
+    this.error = "";
+    this.requestUpdate();
+  }
+  
+// 4.C: Handle Choice Selection
+  _handleChoiceSelection(field, value) {
+    this.userData = { ...this.userData, [field]: value };
+    this.requestUpdate();
+  }
+
+// 4.D: Validate Step
+  _validateStep() {
+    const currentStepData = this.steps[this.step];
+    if (currentStepData.type === 'form') {
+        for (const field of currentStepData.fields) {
+            const value = this.userData[field.key];
+            if (value === undefined || value === null || value === '') {
+                this.error = `Please fill out the ${field.label}.`;
+                return false;
+            }
+            if (field.type === 'number' && (value < field.min || value > field.max)) {
+                this.error = `${field.label} must be between ${field.min} and ${field.max}.`;
+                return false;
+            }
+        }
+    }
+    this.error = "";
+    return true;
+  }
+
+// 4.E: Next Step
+  _nextStep() {
+    if (!this._validateStep()) return;
+
+    if (this.step < this.steps.length - 1) {
+      this.step++;
+      if (this.steps[this.step].type === 'loading') {
+        setTimeout(() => {
+          this.dispatchEvent(new CustomEvent('onboarding-complete', {
+            detail: { userData: this.userData },
+            bubbles: true,
+            composed: true
+          }));
+        }, 2500);
+      }
+    }
+  }
+
+// 4.F: Previous Step
+  _prevStep() {
+    if (this.step > 0) {
+      this.step--;
+      this.error = "";
+    }
+  }
+/*
+===============================================
+SECTION 4:A RENDERING LOGIC
+===============================================
+*/
+// 4.G: Render Step Content
   _renderStepContent(stepData) {
     switch(stepData.type) {
         case 'intro':
@@ -252,7 +294,7 @@ SECTION 4: RENDERING LOGIC
     }
   }
 
-// 4.C: Render Form
+// 4.H: Render Form
   _renderForm(fields) {
     return html`
       ${fields.map(field => {
@@ -277,19 +319,27 @@ SECTION 4: RENDERING LOGIC
                 />
               </div>
             `;
-          case 'slider':
+          case 'rating':
             return html`
-              <div class="input-group slider-group">
-                <label for=${field.key}>${field.label}: <strong>${this.userData[field.key]}</strong></label>
-                <input
-                  type="range"
-                  id=${field.key}
-                  .value=${this.userData[field.key]}
-                  @input=${e => { e.stopPropagation(); this._handleInputChange(field.key, Number(e.target.value)); }}
-                  min=${field.min}
-                  max=${field.max}
-                  step=${field.step}
-                />
+              <div class="rating-group">
+                <label for=${field.key}>${field.label}</label>
+                <div class="rating-buttons">
+                  ${Array.from({length: field.max - field.min + 1}, (_, i) => {
+                    const value = field.min + i;
+                    return html`
+                      <button 
+                        class="rating-btn ${this.userData[field.key] === value ? 'selected' : ''}"
+                        @click=${() => this._handleRatingChange(field.key, value)}
+                      >
+                        ${value}
+                      </button>
+                    `;
+                  })}
+                </div>
+                <div class="rating-labels">
+                  <span>${field.minLabel || 'Low'}</span>
+                  <span>${field.maxLabel || 'High'}</span>
+                </div>
               </div>
             `;
           case 'choice':
@@ -312,8 +362,6 @@ SECTION 4: RENDERING LOGIC
       })}
     `;
   }
-
-/*
 ===============================================
 SECTION 5: STYLES AND ELEMENT DEFINITION
 ===============================================
