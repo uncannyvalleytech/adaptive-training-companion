@@ -101,6 +101,8 @@ class OnboardingFlow extends LitElement {
       },
     ];
   }
+
+/*
 ===============================================
 SECTION 3: EVENT HANDLERS AND LOGIC
 ===============================================
@@ -119,14 +121,21 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     this.error = "";
     this.requestUpdate();
   }
+
+// 3.B: Handle Rating Change
+  _handleRatingChange(field, value) {
+    this.userData = { ...this.userData, [field]: Number(value) };
+    this.error = "";
+    this.requestUpdate();
+  }
   
-// 3.B: Handle Choice Selection
+// 3.C: Handle Choice Selection
   _handleChoiceSelection(field, value) {
     this.userData = { ...this.userData, [field]: value };
     this.requestUpdate();
   }
 
-// 3.C: Validate Step
+// 3.D: Validate Step
   _validateStep() {
     const currentStepData = this.steps[this.step];
     if (currentStepData.type === 'form') {
@@ -146,7 +155,7 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     return true;
   }
 
-// 3.D: Next Step
+// 3.E: Next Step
   _nextStep() {
     if (!this._validateStep()) return;
 
@@ -164,7 +173,7 @@ SECTION 3: EVENT HANDLERS AND LOGIC
     }
   }
 
-// 3.E: Previous Step
+// 3.F: Previous Step
   _prevStep() {
     if (this.step > 0) {
       this.step--;
@@ -174,87 +183,43 @@ SECTION 3: EVENT HANDLERS AND LOGIC
 
 /*
 ===============================================
-SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
+SECTION 4: RENDERING LOGIC
 ===============================================
 */
-// 4.A: Handle Input Change
-  _handleInputChange(field, value) {
-    // SECTION 4.1: INPUT VALIDATION & SANITIZATION
-    // Enforce max value for age and sanitize input.
-    let processedValue = sanitizeHTML(value);
-    if (field === 'age') {
-        if (Number(processedValue) > 99) {
-            processedValue = 99;
-        }
-    }
-    this.userData = { ...this.userData, [field]: processedValue };
-    this.error = "";
-    this.requestUpdate();
-  }
-
-// 4.B: Handle Rating Change
-  _handleRatingChange(field, value) {
-    this.userData = { ...this.userData, [field]: Number(value) };
-    this.error = "";
-    this.requestUpdate();
-  }
-  
-// 4.C: Handle Choice Selection
-  _handleChoiceSelection(field, value) {
-    this.userData = { ...this.userData, [field]: value };
-    this.requestUpdate();
-  }
-
-// 4.D: Validate Step
-  _validateStep() {
+// 4.A: Main Render Method
+  render() {
     const currentStepData = this.steps[this.step];
-    if (currentStepData.type === 'form') {
-        for (const field of currentStepData.fields) {
-            const value = this.userData[field.key];
-            if (value === undefined || value === null || value === '') {
-                this.error = `Please fill out the ${field.label}.`;
-                return false;
-            }
-            if (field.type === 'number' && (value < field.min || value > field.max)) {
-                this.error = `${field.label} must be between ${field.min} and ${field.max}.`;
-                return false;
-            }
-        }
-    }
-    this.error = "";
-    return true;
+    const progress = (this.step / (this.steps.length - 2)) * 100;
+
+    return html`
+      <div class="onboarding-container">
+        <div class="onboarding-wizard">
+          <div class="step active">
+            <h2>${currentStepData.title}</h2>
+            <p>${currentStepData.text}</p>
+            ${this.error ? html`<div class="error-message">${this.error}</div>` : ''}
+            ${this._renderStepContent(currentStepData)}
+          </div>
+        </div>
+
+        ${currentStepData.type !== 'intro' && currentStepData.type !== 'loading' ? html`
+          <div class="onboarding-fixed-nav">
+            <button class="btn btn-secondary" @click=${this._prevStep} ?disabled=${this.step === 0}>
+              Back
+            </button>
+            <div class="progress-bar" style="flex-grow: 1;">
+              <div class="progress-fill" style="width: ${progress}%"></div>
+            </div>
+            <button class="btn btn-primary" @click=${this._nextStep}>
+              ${this.step === this.steps.length - 2 ? 'Finish' : 'Next'}
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `;
   }
 
-// 4.E: Next Step
-  _nextStep() {
-    if (!this._validateStep()) return;
-
-    if (this.step < this.steps.length - 1) {
-      this.step++;
-      if (this.steps[this.step].type === 'loading') {
-        setTimeout(() => {
-          this.dispatchEvent(new CustomEvent('onboarding-complete', {
-            detail: { userData: this.userData },
-            bubbles: true,
-            composed: true
-          }));
-        }, 2500);
-      }
-    }
-  }
-
-// 4.F: Previous Step
-  _prevStep() {
-    if (this.step > 0) {
-      this.step--;
-      this.error = "";
-    }
-  }
-===============================================
-SECTION 4:A RENDERING LOGIC
-===============================================
-*/
-// 4.G: Render Step Content
+// 4.B: Render Step Content
   _renderStepContent(stepData) {
     switch(stepData.type) {
         case 'intro':
@@ -293,7 +258,7 @@ SECTION 4:A RENDERING LOGIC
     }
   }
 
-// 4.H: Render Form
+// 4.C: Render Form
   _renderForm(fields) {
     return html`
       ${fields.map(field => {
@@ -361,6 +326,8 @@ SECTION 4:A RENDERING LOGIC
       })}
     `;
   }
+  
+/*
 ===============================================
 SECTION 5: STYLES AND ELEMENT DEFINITION
 ===============================================
