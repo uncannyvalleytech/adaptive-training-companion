@@ -1201,7 +1201,7 @@ SECTION 6: RENDERING LOGIC
                   <p>${template.workouts?.length || 0} days</p>
                 </div>
                 <button class="btn-icon" aria-label="Load template">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </button>
               </div>
             `)}
@@ -1296,7 +1296,7 @@ SECTION 6: RENDERING LOGIC
         <h3>${formTitle}</h3>
         <div class="input-group">
           <label for="template-name">Routine Name:</label>
-          <input id="template-name" type="text" .value=${this.newTemplateName} @input=${(e) => this.newTemplateName = e.target.value} />
+          <input id="template-name" type="text" .value=${this.newTemplateName} @input=${(e) => this.newTemplateName = e.target.value.slice(0, 20)} />
         </div>
         
         <div class="day-tabs-container">
@@ -1311,7 +1311,7 @@ SECTION 6: RENDERING LOGIC
         ${activeDay ? html`
         <div class="day-editor card">
             <div class="day-header">
-                <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value)} class="day-name-input"/>
+                <input type="text" .value=${activeDay.name} @input=${e => this._handleDayNameChange(this.activeDayIndex, e.target.value.slice(0, 20))} class="day-name-input"/>
                 <button class="day-delete-btn" @click=${() => this._requestRemoveDay(this.activeDayIndex)} aria-label="Delete ${activeDay.name}">🗑️</button>
             </div>
             
@@ -1345,15 +1345,15 @@ SECTION 6: RENDERING LOGIC
                         <div class="exercise-details">
                             <div class="detail-item">
                                 <label for=${`sets-${this.activeExerciseIndex}`}>Sets</label>
-                                <input id=${`sets-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'sets', e.target.value)}>
+                                <input id=${`sets-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.sets} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'sets', e.target.value.slice(0, 3))}>
                             </div>
                             <div class="detail-item">
                                 <label for=${`reps-${this.activeExerciseIndex}`}>Reps</label>
-                                <input id=${`reps-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'reps', e.target.value)}>
+                                <input id=${`reps-${this.activeExerciseIndex}`} type="number" min="1" maxlength="3" .value=${activeExercise.reps} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'reps', e.target.value.slice(0, 3))}>
                             </div>
                             <div class="detail-item">
                                 <label for=${`rir-${this.activeExerciseIndex}`}>RIR</label>
-                                <input id=${`rir-${this.activeExerciseIndex}`} type="number" min="0" maxlength="3" .value=${activeExercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'rir', e.target.value)}>
+                                <input id=${`rir-${this.activeExerciseIndex}`} type="number" min="0" maxlength="3" .value=${activeExercise.rir} @input=${(e) => this._handleExerciseInput(this.activeDayIndex, this.activeExerciseIndex, 'rir', e.target.value.slice(0, 3))}>
                             </div>
                         </div>
                     </div>
