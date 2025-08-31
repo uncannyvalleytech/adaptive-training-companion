@@ -61,8 +61,10 @@ class ReadinessModal extends LitElement {
     };
   }
   
- // SECTION 2: EVENT HANDLERS
-  _handleRatingInput(field, value) {
+  // SECTION 2: EVENT HANDLERS
+  _handleSliderInput(e) {
+    const { field } = e.target.dataset;
+    const value = e.target.value;
     this.readinessData = { ...this.readinessData, [field]: Number(value) };
     this.requestUpdate();
   }
@@ -97,88 +99,49 @@ class ReadinessModal extends LitElement {
           <p class="modal-subtitle">How are you feeling today? This helps us adjust your workout for the best results.</p>
           
           <div class="form-inputs">
-            <div class="rating-group">
+            <div class="input-group slider-group">
               <label for="sleep_quality">Sleep Quality: <strong>${this.readinessData.sleep_quality}</strong></label>
-              <div class="rating-buttons">
-                ${Array.from({length: 10}, (_, i) => {
-                  const value = i + 1;
-                  return html`
-                    <button 
-                      class="rating-btn ${this.readinessData.sleep_quality === value ? 'selected' : ''}"
-                      @click=${() => this._handleRatingInput('sleep_quality', value)}
-                    >
-                      ${value}
-                    </button>
-                  `;
-                })}
-              </div>
-              <div class="rating-labels">
-                <span>Poor</span>
-                <span>Excellent</span>
-              </div>
+              <input
+                type="range"
+                id="sleep_quality"
+                .value=${this.readinessData.sleep_quality}
+                data-field="sleep_quality"
+                @input=${this._handleSliderInput}
+                min="1" max="10" step="1"
+              />
             </div>
-
-            <div class="rating-group">
+            <div class="input-group slider-group">
               <label for="energy_level">Energy Level: <strong>${this.readinessData.energy_level}</strong></label>
-              <div class="rating-buttons">
-                ${Array.from({length: 10}, (_, i) => {
-                  const value = i + 1;
-                  return html`
-                    <button 
-                      class="rating-btn ${this.readinessData.energy_level === value ? 'selected' : ''}"
-                      @click=${() => this._handleRatingInput('energy_level', value)}
-                    >
-                      ${value}
-                    </button>
-                  `;
-                })}
-              </div>
-              <div class="rating-labels">
-                <span>Exhausted</span>
-                <span>Energized</span>
-              </div>
+              <input
+                type="range"
+                id="energy_level"
+                .value=${this.readinessData.energy_level}
+                data-field="energy_level"
+                @input=${this._handleSliderInput}
+                min="1" max="10" step="1"
+              />
             </div>
-
-            <div class="rating-group">
+            <div class="input-group slider-group">
               <label for="motivation">Motivation: <strong>${this.readinessData.motivation}</strong></label>
-              <div class="rating-buttons">
-                ${Array.from({length: 10}, (_, i) => {
-                  const value = i + 1;
-                  return html`
-                    <button 
-                      class="rating-btn ${this.readinessData.motivation === value ? 'selected' : ''}"
-                      @click=${() => this._handleRatingInput('motivation', value)}
-                    >
-                      ${value}
-                    </button>
-                  `;
-                })}
-              </div>
-              <div class="rating-labels">
-                <span>None</span>
-                <span>Very High</span>
-              </div>
+              <input
+                type="range"
+                id="motivation"
+                .value=${this.readinessData.motivation}
+                data-field="motivation"
+                @input=${this._handleSliderInput}
+                min="1" max="10" step="1"
+              />
             </div>
-
-            <div class="rating-group">
+            <div class="input-group slider-group">
               <label for="muscle_soreness">Muscle Soreness: <strong>${this.readinessData.muscle_soreness}</strong></label>
-              <div class="rating-buttons">
-                ${Array.from({length: 10}, (_, i) => {
-                  const value = i + 1;
-                  return html`
-                    <button 
-                      class="rating-btn ${this.readinessData.muscle_soreness === value ? 'selected' : ''}"
-                      @click=${() => this._handleRatingInput('muscle_soreness', value)}
-                    >
-                      ${value}
-                    </button>
-                  `;
-                })}
-              </div>
-              <div class="rating-labels">
-                <span>None</span>
-                <span>Very Sore</span>
-              </div>
+              <input
+                type="range"
+                id="muscle_soreness"
+                .value=${this.readinessData.muscle_soreness}
+                data-field="muscle_soreness"
+                @input=${this._handleSliderInput}
+                min="1" max="10" step="1"
+              />
             </div>
           </div>
 
