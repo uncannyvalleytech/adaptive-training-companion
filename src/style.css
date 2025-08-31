@@ -1871,7 +1871,7 @@ body[data-theme="light"] .set-row.completed {
 .input-group select,
 .input-group input[type="text"] {
   width: 100%;
-  background: var(--color-surface-secondary);
+  background: var(--color-surface-tertiary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: var(--space-4);
@@ -2360,7 +2360,7 @@ body[data-theme="light"] .toggle-btn.active {
  */
 .exercise-editor-header input {
  flex: 1;
- background: var(--color-surface-secondary);
+ background: var(--color-surface-tertiary);
  border: 1px solid var(--border-color);
  border-radius: var(--radius-md);
  padding: var(--space-3);
@@ -2394,7 +2394,7 @@ body[data-theme="light"] .exercise-editor-header input {
 }
 
 .exercise-details input {
- background: var(--color-surface-secondary);
+ background: var(--color-surface-tertiary);
  border: 1px solid var(--border-color);
  border-radius: var(--radius-sm);
  padding: var(--space-2);
@@ -3475,7 +3475,7 @@ body[data-theme="light"] .day-name-input {
 }
 
 #template-name {
-  background: var(--color-surface-secondary);
+  background: var(--color-surface-tertiary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-3);
