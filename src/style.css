@@ -3382,8 +3382,14 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
  margin-bottom: 0;
  position: relative;
  z-index: 2;
- padding-left: var(--space-2);
- margin-top: var(--space-4);
+ padding: var(--space-4) var(--space-6) 0;
+ overflow-x: auto;
+ -webkit-overflow-scrolling: touch;
+ scrollbar-width: none;
+}
+
+.exercise-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 /* 39.F: Exercise Tab Button */
@@ -3391,19 +3397,17 @@ SECTION 39: WORKOUT TEMPLATE UI IMPROVEMENTS
   background: rgba(42, 45, 61, 0.5);
   border: 1px solid var(--border-color);
   color: var(--color-text-secondary);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
-  width: auto;
-  height: auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex-shrink: 0;
   position: relative;
   z-index: 1;
   backdrop-filter: blur(5px) brightness(0.8);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  min-width: 60px;
+  text-align: center;
 }
 
 .exercise-tab-btn.active {
@@ -3577,6 +3581,7 @@ body[data-theme="light"] #template-name {
   scrollbar-width: none;
   margin-bottom: 0;
   padding: var(--space-4) var(--space-6) 0;
+  /* Removed border-bottom so it connects to the card below */
 }
 
 .exercise-tabs-container::-webkit-scrollbar {
@@ -3608,12 +3613,11 @@ body[data-theme="light"] #template-name {
   position: relative;
   z-index: 1;
   backdrop-filter: blur(5px) brightness(0.8);
-  /* Added overlap */
-  margin-right: -10px;
   /* Adjusted for a more distinct, pill-like shape */
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   padding: var(--space-2) var(--space-4);
-  min-width: 48px;
+  min-width: 60px;
+  text-align: center;
 }
 
 .exercise-tab-btn-workout.active {
