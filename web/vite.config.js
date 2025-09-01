@@ -11,7 +11,7 @@ export default defineConfig({
   
   // Set the correct base path for GitHub Pages
   // Change this to "/" if deploying to a custom domain
-  base: "/adaptive-training-companion/",
+  base: "/./",
 
   build: {
     outDir: "dist",
