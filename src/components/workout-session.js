@@ -540,4 +540,3 @@ SECTION 8: STYLES AND ELEMENT DEFINITION
   }
 }
 customElements.define("workout-session", WorkoutSession);
-
