@@ -3590,11 +3590,12 @@ body[data-theme="light"] #template-name {
 
 .exercise-tabs {
   display: flex;
-  gap: 0;
+  gap: var(--space-1);
   flex-wrap: nowrap;
   position: relative;
   z-index: 2;
-  margin-left: -10px;
+  /* Adjusted margin for aesthetic alignment */
+  margin-left: var(--space-4);
 }
 
 /* 40.E: Exercise Tab Button */
@@ -3614,9 +3615,9 @@ body[data-theme="light"] #template-name {
   backdrop-filter: blur(5px) brightness(0.8);
   /* Added overlap */
   margin-right: -10px;
-  /* Adjusting styling for the tab look */
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
-  padding: var(--space-2) var(--space-4) var(--space-3);
+  /* Adjusted for a more distinct, pill-like shape */
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
   min-width: 44px;
 }
 
@@ -3626,7 +3627,7 @@ body[data-theme="light"] #template-name {
   border-bottom-color: transparent;
   z-index: 3;
   backdrop-filter: blur(20px) brightness(1);
-  margin-bottom: -1px;
+  margin-bottom: 0;
 }
 
 .exercise-tab-btn-workout.completed {
