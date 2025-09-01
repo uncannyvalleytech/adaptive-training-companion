@@ -495,7 +495,7 @@ SECTION 10: EXERCISE SUBSTITUTION ENGINE
 */
   getExerciseSubstitutions(originalExercise, availableEquipment) {
     const allExercises = Object.values(this.exerciseDatabase).flat();
-    const maxScore = 17; // The max possible score (10+5+2)
+    const maxScore = 25; 
 
     const potentialSubstitutions = allExercises.filter(ex => {
       if (ex.name === originalExercise.name) return false;
@@ -504,11 +504,39 @@ SECTION 10: EXERCISE SUBSTITUTION ENGINE
     
     const rankedSubstitutions = potentialSubstitutions.map(sub => {
       let score = 0;
-      if (sub.movementPattern === originalExercise.movementPattern) score += 10;
-      if (sub.muscleGroup === originalExercise.muscleGroup) score += 5;
-      if (sub.type === originalExercise.type) score += 2;
+      // Movement Pattern Scoring (Max 10)
+      if (sub.movementPattern === originalExercise.movementPattern) {
+        score += 10;
+      } else if (this._isSimilarMovement(sub.movementPattern, originalExercise.movementPattern)) {
+        score += 6;
+      }
       
-      // Convert the score to a percentage
+      // Muscle Group Scoring (Max 7)
+      if (sub.muscleGroup === originalExercise.muscleGroup) {
+        score += 7;
+      } else if (this._hasSecondaryOverlap(sub.muscleGroup, originalExercise.muscleGroup)) {
+        score += 3;
+      }
+
+      // Exercise Type Scoring (Max 3)
+      if (sub.type === originalExercise.type) {
+        score += 3;
+      }
+
+      // Equipment Scoring (Max 3)
+      if (JSON.stringify(sub.equipment.sort()) === JSON.stringify(originalExercise.equipment.sort())) {
+        score += 3;
+      } else if (sub.equipment.some(e => originalExercise.equipment.includes(e))) {
+        score += 1;
+      }
+
+      // Recovery Cost Scoring (Max 2)
+      if (sub.recoveryCost === originalExercise.recoveryCost) {
+        score += 2;
+      } else if (this._isOneLevelOff(sub.recoveryCost, originalExercise.recoveryCost)) {
+        score += 1;
+      }
+      
       const matchPercentage = (score / maxScore) * 100;
       
       return { ...sub, matchPercentage };
@@ -516,5 +544,30 @@ SECTION 10: EXERCISE SUBSTITUTION ENGINE
 
     return rankedSubstitutions.sort((a, b) => b.matchPercentage - a.matchPercentage).slice(0, 5);
   }
-}
 
+  _isSimilarMovement(pattern1, pattern2) {
+      const similarPatterns = [
+          ['horizontal_press', 'incline_press'],
+          ['vertical_press', 'incline_press'],
+          ['squat', 'lunge'],
+          ['hinge', 'bridge']
+      ];
+      return similarPatterns.some(pair => pair.includes(pattern1) && pair.includes(pattern2));
+  }
+
+  _hasSecondaryOverlap(group1, group2) {
+      const overlapMap = {
+          'chest': ['shoulders', 'triceps'],
+          'back': ['biceps', 'shoulders'],
+          'quads': ['glutes'],
+          'hamstrings': ['glutes'],
+          'shoulders': ['chest', 'triceps']
+      };
+      return (overlapMap[group1] && overlapMap[group1].includes(group2)) || (overlapMap[group2] && overlapMap[group2].includes(group1));
+  }
+
+  _isOneLevelOff(cost1, cost2) {
+      const costLevels = { 'low': 1, 'medium': 2, 'high': 3 };
+      return Math.abs(costLevels[cost1] - costLevels[cost2]) === 1;
+  }
+}
