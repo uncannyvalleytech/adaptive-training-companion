@@ -322,7 +322,78 @@ SECTION 7: WORKOUT SPLIT AND MESOCYCLE LOGIC
   }
 
   generateMesocycle(daysPerWeek, mesocycleLength = 4) {
-    // ... (rest of the function remains the same)
+    const mesocycle = { weeks: [] };
+    const workoutSplit = this.getWorkoutSplit(daysPerWeek);
+    const userGender = this.userProfile.sex;
+
+    for (let week = 1; week <= mesocycleLength; week++) {
+      const weeklyPlan = { week: week, days: [] };
+      
+      for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
+        const splitDay = workoutSplit[dayIndex % workoutSplit.length];
+        const dayPlan = { 
+          name: splitDay.name,
+          muscleGroups: splitDay.groups, 
+          exercises: [] 
+        };
+        
+        for (const muscle of splitDay.groups) {
+          const landmarks = this.getVolumeLandmarks(muscle, Math.ceil(daysPerWeek / workoutSplit.length));
+          const startingVolume = landmarks.mev * 1.1;
+          const { targetVolume } = this.calculateWeeklyVolume(startingVolume, week, landmarks.mav);
+          
+          const numExercises = targetVolume > 12 ? 3 : 2;
+          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+
+          let setsRemaining = targetVolume;
+          const exercisesWithSets = selectedExercises.map((ex, index) => {
+              const setsForThisEx = Math.round(setsRemaining / (selectedExercises.length - index));
+              setsRemaining -= setsForThisEx;
+              return {
+                  name: ex.name,
+                  sets: Array(Math.max(1, setsForThisEx)).fill({}),
+                  targetReps: ex.type === 'compound' ? (userGender === 'male' ? "6-8" : "8-10") : "10-12",
+                  muscleGroup: muscle,
+                  category: ex.type || 'strength',
+                  type: ex.type
+              };
+          });
+          dayPlan.exercises.push(...exercisesWithSets);
+        }
+        weeklyPlan.days.push(dayPlan);
+      }
+      mesocycle.weeks.push(weeklyPlan);
+    }
+    
+    // Add a deload week
+    const deloadWeek = { week: mesocycleLength + 1, isDeload: true, days: [] };
+    for (let dayIndex = 0; dayIndex < daysPerWeek; dayIndex++) {
+      const splitDay = workoutSplit[dayIndex % workoutSplit.length];
+      const deloadDayPlan = { 
+        name: `${splitDay.name} (Deload)`,
+        muscleGroups: splitDay.groups, 
+        exercises: [] 
+      };
+      for (const muscle of splitDay.groups) {
+          const landmarks = this.getVolumeLandmarks(muscle);
+          const deloadVolume = Math.round(landmarks.mev * 0.6);
+          const numExercises = deloadVolume > 8 ? 2 : 1;
+          const selectedExercises = this.selectExercisesForMuscle(muscle, numExercises, { gender: userGender });
+          const exercisesWithSets = selectedExercises.map(ex => ({
+              name: ex.name,
+              sets: Array(Math.max(1, Math.round(deloadVolume / numExercises))).fill({}),
+              targetReps: ex.type === 'compound' ? "6-8" : "10-12",
+              muscleGroup: muscle,
+              category: ex.type || 'strength',
+              type: ex.type
+          }));
+          deloadDayPlan.exercises.push(...exercisesWithSets);
+      }
+      deloadWeek.days.push(deloadDayPlan);
+    }
+    mesocycle.weeks.push(deloadWeek);
+    
+    return mesocycle;
   }
 
 /*
@@ -331,7 +402,34 @@ SECTION 8: PROGRAM PLAN GENERATION
 ===============================================
 */
   generateProgramPlan(program, duration, startWorkoutIndex) {
-    // ... (rest of the function remains the same)
+    const { workouts, daysPerWeek } = program;
+    let totalWorkouts;
+
+    if (duration.type === 'weeks') {
+        totalWorkouts = duration.value * daysPerWeek;
+    } else {
+        totalWorkouts = duration.value;
+    }
+
+    const rotatedWorkouts = [...workouts.slice(startWorkoutIndex), ...workouts.slice(0, startWorkoutIndex)];
+    
+    const plan = {
+        name: program.name,
+        duration: duration,
+        startDate: new Date().toISOString(),
+        workouts: [],
+    };
+
+    for (let i = 0; i < totalWorkouts; i++) {
+        const workoutTemplate = rotatedWorkouts[i % rotatedWorkouts.length];
+        plan.workouts.push({
+            day: i + 1,
+            ...workoutTemplate,
+            completed: false,
+        });
+    }
+    
+    return plan;
   }
 
 /*
@@ -341,11 +439,55 @@ SECTION 9: LONG-TERM PROGRESSION AND WORKOUT GENERATION
 */
 
   adaptVolumeLandmarks() {
-    // ... (rest of the function remains the same)
+    const taf = this.calculateTAF();
+    let adaptationRate = 0.01; 
+    if (taf < 1.5) adaptationRate = 0.05; 
+    else if (taf < 2.5) adaptationRate = 0.025; 
+
+    const currentBaseMEV = this.userProfile.baseMEV || this.baseMEV;
+    const newBaseMEV = {};
+
+    for (const muscle in currentBaseMEV) {
+      newBaseMEV[muscle] = Math.round(currentBaseMEV[muscle] * (1 + adaptationRate));
+    }
+    
+    return newBaseMEV;
   }
 
   generateDailyWorkout(muscleGroupsForDay) {
-    // ... (rest of the function remains the same)
+    let exercises = [];
+    const userGender = this.userProfile.sex;
+    const selectionContext = { weakMuscles: ['shoulders'], recentExercises: [], gender: userGender }; 
+    for (const muscle of muscleGroupsForDay) {
+        const landmarks = this.getVolumeLandmarks(muscle);
+        const targetVolume = landmarks.mev;
+        const numExercises = targetVolume > 12 ? 3 : 2;
+        const selected = this.selectExercisesForMuscle(muscle, numExercises, selectionContext);
+        let setsRemaining = targetVolume;
+        const exercisesWithSets = selected.map((ex, index) => {
+            const setsForThisEx = Math.round(setsRemaining / (selected.length - index));
+            setsRemaining -= setsForThisEx;
+            
+            const targetReps = ex.type === 'compound' 
+                ? (userGender === 'male' ? "6-8" : "8-10")
+                : "10-15";
+            
+            // ** THE FIX IS HERE **
+            // Ensure every generated exercise has a 'sets' array.
+            return {
+                ...ex,
+                sets: Array(Math.max(1, setsForThisEx)).fill({}), // Default sets
+                targetReps: targetReps,
+                muscleGroup: muscle,
+                category: ex.type || 'strength',
+            };
+        });
+        exercises.push(...exercisesWithSets);
+    }
+    return {
+        name: `Dynamic Workout - ${muscleGroupsForDay.join(', ')}`,
+        exercises: exercises,
+    };
   }
   
 /*
