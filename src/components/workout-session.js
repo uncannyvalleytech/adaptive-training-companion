@@ -38,7 +38,7 @@ class WorkoutSession extends LitElement {
   constructor() {
     super();
     this.workout = null;
-    this.userData = null;
+    this.userData = getDataLocally(); // Load user data in constructor
     this.isSaving = false;
     this.units = localStorage.getItem('units') || 'lbs';
     this.workoutStartTime = Date.now();
@@ -51,7 +51,7 @@ class WorkoutSession extends LitElement {
     this.showSubstitutionModal = false;
     this.substitutions = [];
     this.exerciseToSubstitute = null;
-    this.workoutEngine = new WorkoutEngine(getDataLocally());
+    this.workoutEngine = new WorkoutEngine(this.userData); // Initialize engine with data
   }
 
 /*
@@ -63,7 +63,9 @@ SECTION 3: LIFECYCLE AND STOPWATCH METHODS
   connectedCallback() {
     super.connectedCallback();
     this.startStopwatch();
-    if (this.userData) {
+    // Re-initialize engine in case user data was not available in constructor
+    if (!this.workoutEngine || !this.userData) {
+      this.userData = getDataLocally();
       this.workoutEngine = new WorkoutEngine(this.userData);
     }
   }
@@ -140,6 +142,8 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
           this.activeGroupIndex++;
           this.activeExerciseIndex = 0;
       } else {
+          // Optional: Announce workout is complete or reset to the beginning
+          // For now, let's just loop back
           this.activeGroupIndex = 0;
           this.activeExerciseIndex = 0;
       }
@@ -222,8 +226,6 @@ SECTION 5: SUBSTITUTION LOGIC
   _showSubstitutionModal(exerciseToSubstitute) {
     if (!this.workoutEngine || !this.userData) return;
     
-    // ** THE FIX IS HERE **
-    // First, find the complete exercise details from our master database.
     const allExercises = Object.values(exerciseDatabase).flat();
     const fullExerciseDetails = allExercises.find(ex => ex.name === exerciseToSubstitute.name);
 
@@ -236,11 +238,9 @@ SECTION 5: SUBSTITUTION LOGIC
         return;
     }
     
-    // Store the original exercise from the workout plan (with its index)
     this.exerciseToSubstitute = exerciseToSubstitute;
     const availableEquipment = this.userData.availableEquipment || [];
     
-    // Now, pass the *complete* details to the engine
     this.substitutions = this.workoutEngine.getExerciseSubstitutions(
       fullExerciseDetails,
       availableEquipment
@@ -252,16 +252,14 @@ SECTION 5: SUBSTITUTION LOGIC
   _handleSubstituteSelection(newExercise) {
     const originalExerciseIndex = this.exerciseToSubstitute.originalIndex;
     
-    // Create a new exercise object from the substitution
     const substitutedExercise = {
-      ...this.workout.exercises[originalExerciseIndex], // Retains sets, reps, rir etc.
+      ...this.workout.exercises[originalExerciseIndex],
       name: newExercise.name,
       muscleGroup: newExercise.muscleGroup,
       movementPattern: newExercise.movementPattern,
       equipment: newExercise.equipment
     };
     
-    // Replace the old exercise with the new one
     this.workout.exercises[originalExerciseIndex] = substitutedExercise;
     
     this._closeSubstitutionModal();
@@ -313,14 +311,21 @@ SECTION 6: HELPER METHODS
   _getExerciseMuscleGroup(exerciseName) {
     const name = exerciseName.toLowerCase();
     
-    if (name.includes('bench') || name.includes('chest') || name.includes('fly') || name.includes('press-around')) return 'chest';
-    if (name.includes('squat') || name.includes('quad') || name.includes('leg extension')) return 'quads';
-    if (name.includes('deadlift') || name.includes('row') || name.includes('pull') || name.includes('lat') || name.includes('shrug')) return 'back';
-    if (name.includes('curl') && !name.includes('leg curl')) return 'biceps';
-    if (name.includes('tricep') || name.includes('pushdown') || name.includes('skullcrusher') || name.includes('dip')) return 'triceps';
-    if (name.includes('shoulder') || name.includes('lateral') || name.includes('arnold') || (name.includes('press') && !name.includes('bench') && !name.includes('leg'))) return 'shoulders';
-    if (name.includes('leg curl') || name.includes('hamstring') || name.includes('rdl') || name.includes('romanian')) return 'hamstrings';
-    if (name.includes('hip thrust') || name.includes('glute') || name.includes('lunge')) return 'glutes';
+    for (const group in exerciseDatabase) {
+      if (exerciseDatabase[group].some(ex => ex.name.toLowerCase() === name)) {
+        return group;
+      }
+    }
+    
+    // Fallback logic
+    if (name.includes('bench') || name.includes('chest') || name.includes('fly')) return 'chest';
+    if (name.includes('squat') || name.includes('leg extension')) return 'quads';
+    if (name.includes('deadlift') || name.includes('row') || name.includes('pull') || name.includes('lat')) return 'back';
+    if (name.includes('curl')) return 'biceps';
+    if (name.includes('tricep') || name.includes('pushdown') || name.includes('skullcrusher')) return 'triceps';
+    if (name.includes('shoulder') || name.includes('lateral') || name.includes('press')) return 'shoulders';
+    if (name.includes('leg curl') || name.includes('hamstring') || name.includes('rdl')) return 'hamstrings';
+    if (name.includes('glute') || name.includes('lunge')) return 'glutes';
     if (name.includes('calf')) return 'calves';
     
     return 'general';
@@ -512,7 +517,7 @@ _renderSubstitutionModal() {
                                     <h4>${sub.name}</h4>
                                     <p>Equipment: ${sub.equipment.join(', ')}</p>
                                 </div>
-                                <div class="substitute-score">Score: ${sub.score.toFixed(1)}</div>
+                                <div class="substitute-score">Match: ${sub.matchPercentage.toFixed(0)}%</div>
                             </button>
                         `)}
                     </div>
