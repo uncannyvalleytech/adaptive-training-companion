@@ -19,6 +19,7 @@ import "./workout-templates.js";
 import "./analytics-dashboard.js";
 import "./goals-view.js";
 import "./readiness-modal.js";
+import "./equipment-settings-modal.js";
 
 /*
 ===============================================
@@ -75,6 +76,8 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     this.addEventListener('edit-routine', this._handleEditRoutine);
     this.addEventListener('delete-routine', this._handleDeleteRoutine);
     this.addEventListener('routine-saved', this._handleRoutineSaved);
+    this.addEventListener('equipment-updated', this.loadUserData);
+
 
   }
 
@@ -96,6 +99,7 @@ SECTION 3: LIFECYCLE AND INITIALIZATION METHODS
     this.removeEventListener('edit-routine', this._handleEditRoutine);
     this.removeEventListener('delete-routine', this._handleDeleteRoutine);
     this.removeEventListener('routine-saved', this._handleRoutineSaved);
+    this.removeEventListener('equipment-updated', this.loadUserData);
 
   }
 
@@ -313,7 +317,7 @@ SECTION 6: VIEW RENDERING LOGIC
        case 'goals':
         return html`<goals-view></goals-view>`;
       case 'workout':
-        return html`<workout-session .workout=${this.currentWorkout}></workout-session>`;
+        return html`<workout-session .workout=${this.currentWorkout} .userData=${this.userData}></workout-session>`;
       case 'summary':
         return html`<workout-summary .workoutData=${this.lastCompletedWorkout} .userData=${this.userData}></workout-summary>`;
       default:
