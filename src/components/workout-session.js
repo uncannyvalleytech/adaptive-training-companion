@@ -18,6 +18,7 @@ SECTION 2: WORKOUT-SESSION COMPONENT DEFINITION
 class WorkoutSession extends LitElement {
   static properties = {
     workout: { type: Object },
+    userData: { type: Object },
     isSaving: { type: Boolean },
     units: { type: String },
     workoutStartTime: { type: Number },
@@ -27,18 +28,16 @@ class WorkoutSession extends LitElement {
     activeExerciseIndex: { type: Number },
     showFeedbackModal: { type: Boolean },
     feedbackExerciseIndex: { type: Number },
-    // Properties for Substitution Engine
     showSubstitutionModal: { type: Boolean },
-    substitutingExerciseInfo: { type: Object },
-    substitutionSuggestions: { type: Array },
-    availableEquipment: { type: Array },
-    workoutEngine: { type: Object },
+    substitutions: { type: Array },
+    exerciseToSubstitute: { type: Object },
   };
 
 // 2.B: Constructor
   constructor() {
     super();
     this.workout = null;
+    this.userData = null;
     this.isSaving = false;
     this.units = localStorage.getItem('units') || 'lbs';
     this.workoutStartTime = Date.now();
@@ -48,19 +47,10 @@ class WorkoutSession extends LitElement {
     this.activeExerciseIndex = 0;
     this.showFeedbackModal = false;
     this.feedbackExerciseIndex = null;
-    
-    // Initialize properties for Substitution Engine
     this.showSubstitutionModal = false;
-    this.substitutingExerciseInfo = null;
-    this.substitutionSuggestions = [];
-    // This list can be managed in user settings in the future (Phase 4)
-    this.availableEquipment = [
-      'barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'bench', 
-      'adjustable_bench', 'decline_bench', 'pullup_bar', 'dip_station', 'rack', 
-      'plate', 'kettlebell', 'band', 'box'
-    ];
-    const userData = getDataLocally();
-    this.workoutEngine = new WorkoutEngine(userData);
+    this.substitutions = [];
+    this.exerciseToSubstitute = null;
+    this.workoutEngine = new WorkoutEngine(getDataLocally());
   }
 
 /*
@@ -72,6 +62,9 @@ SECTION 3: LIFECYCLE AND STOPWATCH METHODS
   connectedCallback() {
     super.connectedCallback();
     this.startStopwatch();
+    if (this.userData) {
+      this.workoutEngine = new WorkoutEngine(this.userData);
+    }
   }
 
 // 3.B: Disconnected Callback
@@ -105,8 +98,6 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
   _handleSetInput(exerciseIndex, setIndex, field, value) {
     const exercise = this.workout.exercises[exerciseIndex];
     if (exercise && exercise.sets[setIndex]) {
-      // SECTION 4.1: CORRECTED INPUT VALIDATION
-      // Ensure the input field value is limited to 3 digits.
       let processedValue = value;
       if (processedValue.length > 3) {
         processedValue = processedValue.slice(0, 3);
@@ -148,7 +139,6 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
           this.activeGroupIndex++;
           this.activeExerciseIndex = 0;
       } else {
-          // Optional: loop back to the start or show a completion message
           this.activeGroupIndex = 0;
           this.activeExerciseIndex = 0;
       }
@@ -161,7 +151,6 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
         this.stopStopwatch();
         const durationInSeconds = Math.floor((Date.now() - this.workoutStartTime) / 1000);
         
-        // Calculate total volume from completed sets only
         const totalVolume = this.workout.exercises.reduce((total, exercise) => {
             const exerciseVolume = (exercise.sets || []).reduce((sum, set) => {
                 const weight = parseFloat(set.weight) || 0;
@@ -174,7 +163,6 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
             return total + exerciseVolume;
         }, 0);
 
-        // Create properly structured workout data
         const workoutToSave = {
             id: Date.now().toString(),
             date: new Date().toISOString(),
@@ -193,10 +181,9 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
                 category: this._getExerciseCategory(ex.name),
                 muscleGroup: ex.muscleGroup || this._getExerciseMuscleGroup(ex.name)
             }))
-            .filter(ex => ex.completedSets.length > 0), // Only include exercises with completed sets
+            .filter(ex => ex.completedSets.length > 0),
         };
 
-        // Ensure we have at least one completed exercise
         if (workoutToSave.exercises.length === 0) {
             throw new Error("Please complete at least one set before finishing your workout.");
         }
@@ -225,50 +212,64 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
     }
   }
 
-// 4.E: Open Substitution Modal
-  _openSubstitutionModal(exercise, originalIndex) {
-    const suggestions = this.workoutEngine.getSubstitutions(exercise.name, this.availableEquipment);
-    this.substitutingExerciseInfo = { originalIndex, name: exercise.name };
-    this.substitutionSuggestions = suggestions;
+/*
+===============================================
+SECTION 5: SUBSTITUTION LOGIC
+===============================================
+*/
+// 5.A: Show Substitution Modal
+  _showSubstitutionModal(exerciseToSubstitute) {
+    if (!this.workoutEngine || !this.userData) return;
+    
+    this.exerciseToSubstitute = exerciseToSubstitute;
+    const availableEquipment = this.userData.availableEquipment || [];
+    
+    this.substitutions = this.workoutEngine.getExerciseSubstitutions(
+      exerciseToSubstitute,
+      availableEquipment
+    );
     this.showSubstitutionModal = true;
   }
 
-// 4.F: Close Substitution Modal
-  _closeSubstitutionModal() {
-    this.showSubstitutionModal = false;
-    this.substitutingExerciseInfo = null;
-    this.substitutionSuggestions = [];
-  }
-
-// 4.G: Handle Substitute Exercise Selection
-  _handleSubstitute(substituteExercise) {
-    const indexToReplace = this.substitutingExerciseInfo.originalIndex;
-    const originalExercise = this.workout.exercises[indexToReplace];
-
-    // Create a new exercise object to ensure LitElement detects the change
-    const newExercise = {
-        ...originalExercise,
-        name: substituteExercise.name,
-        muscleGroup: this.workoutEngine._getExerciseMuscleGroup(substituteExercise.name),
-        // You might want to reset target reps/rir based on the new exercise type
-        targetReps: substituteExercise.type === 'compound' ? '6-10' : '10-15',
-        targetRir: substituteExercise.type === 'compound' ? 2 : 3,
+// 5.B: Handle Substitute Selection
+  _handleSubstituteSelection(newExercise) {
+    const originalExerciseIndex = this.exerciseToSubstitute.originalIndex;
+    
+    // Create a new exercise object from the substitution
+    const substitutedExercise = {
+      ...this.workout.exercises[originalExerciseIndex], // ains sets, reps, rir etc.
+      name: newExercise.name,
+      muscleGroup: newExercise.muscleGroup,
+      movementPattern: newExercise.movementPattern,
+      equipment: newExercise.equipment
     };
     
-    // Create a new workout object with the updated exercises array
-    const updatedExercises = [...this.workout.exercises];
-    updatedExercises[indexToReplace] = newExercise;
-    this.workout = { ...this.workout, exercises: updatedExercises };
-
+    // Replace the old exercise with the new one
+    this.workout.exercises[originalExerciseIndex] = substitutedExercise;
+    
     this._closeSubstitutionModal();
+    this.requestUpdate();
+    
+    this.dispatchEvent(new CustomEvent('show-toast', { 
+        detail: { message: `${this.exerciseToSubstitute.name} replaced with ${newExercise.name}.`, type: 'success' }, 
+        bubbles: true, 
+        composed: true 
+    }));
+  }
+
+// 5.C: Close Substitution Modal
+  _closeSubstitutionModal() {
+    this.showSubstitutionModal = false;
+    this.substitutions = [];
+    this.exerciseToSubstitute = null;
   }
 
 /*
 ===============================================
-SECTION 5: HELPER METHODS
+SECTION 6: HELPER METHODS
 ===============================================
 */
-// 5.A: Get Rep Placeholder
+// 6.A: Get Rep Placeholder
   _getRepPlaceholder(exercise) {
     const reps = exercise.targetReps || '8-12';
     const rir = exercise.targetRir;
@@ -279,7 +280,7 @@ SECTION 5: HELPER METHODS
     return reps;
   }
 
-// 5.B: Get Exercise Category
+// 6.B: Get Exercise Category
   _getExerciseCategory(exerciseName) {
     const compoundExercises = [
       'squat', 'deadlift', 'bench press', 'pull-up', 'chin-up', 'row', 'press', 'lunge',
@@ -291,12 +292,24 @@ SECTION 5: HELPER METHODS
     return isCompound ? 'compound' : 'isolation';
   }
 
-// 5.C: Get Exercise Muscle Group
+// 6.C: Get Exercise Muscle Group
   _getExerciseMuscleGroup(exerciseName) {
-    return this.workoutEngine._getExerciseMuscleGroup(exerciseName);
+    const name = exerciseName.toLowerCase();
+    
+    if (name.includes('bench') || name.includes('chest') || name.includes('fly') || name.includes('press-around')) return 'chest';
+    if (name.includes('squat') || name.includes('quad') || name.includes('leg extension')) return 'quads';
+    if (name.includes('deadlift') || name.includes('row') || name.includes('pull') || name.includes('lat') || name.includes('shrug')) return 'back';
+    if (name.includes('curl') && !name.includes('leg curl')) return 'biceps';
+    if (name.includes('tricep') || name.includes('pushdown') || name.includes('skullcrusher') || name.includes('dip')) return 'triceps';
+    if (name.includes('shoulder') || name.includes('lateral') || name.includes('arnold') || (name.includes('press') && !name.includes('bench') && !name.includes('leg'))) return 'shoulders';
+    if (name.includes('leg curl') || name.includes('hamstring') || name.includes('rdl') || name.includes('romanian')) return 'hamstrings';
+    if (name.includes('hip thrust') || name.includes('glute') || name.includes('lunge')) return 'glutes';
+    if (name.includes('calf')) return 'calves';
+    
+    return 'general';
   }
 
-// 5.D: Get Grouped Exercises
+// 6.D: Get Grouped Exercises
   _getGroupedExercises() {
     if (!this.workout || !this.workout.exercises) {
       return {};
@@ -313,10 +326,10 @@ SECTION 5: HELPER METHODS
 
 /*
 ===============================================
-SECTION 6: RENDERING
+SECTION 7: RENDERING
 ===============================================
 */
-// 6.A: Main Render Method
+// 7.A: Main Render Method
   render() {
     if (!this.workout || !this.workout.exercises) {
       return html`<div class="container"><div class="skeleton skeleton-text">Loading workout...</div></div>`;
@@ -363,13 +376,12 @@ SECTION 6: RENDERING
                 ${this.isSaving ? html`<div class="spinner"></div>` : 'Complete Workout'}
             </button>
         </div>
+        ${this.showSubstitutionModal ? this._renderSubstitutionModal() : ''}
       </div>
-      
-      ${this.showSubstitutionModal ? this._renderSubstitutionModal() : ''}
     `;
   }
   
-// 6.B: Render Group Content
+// 7.B: Render Group Content
   _renderGroupContent(groupKeys, groupedExercises) {
     if (groupKeys.length === 0) return html`<p>No exercises in this workout.</p>`;
     
@@ -400,9 +412,9 @@ SECTION 6: RENDERING
     `;
   }
 
-// 6.C: Render Exercise Content
+// 7.C: Render Exercise Content
   _renderExerciseContent(activeGroup) {
-      if (!activeGroup || activeGroup.length === 0) return html``;
+      if (activeGroup.length === 0) return html``;
       
       const exercise = activeGroup[this.activeExerciseIndex];
       if (!exercise) return html``;
@@ -415,11 +427,11 @@ SECTION 6: RENDERING
                 <p>${exercise.targetReps || '8-12'} reps</p> 
               </div>
               <div class="exercise-log-actions">
-                <button class="btn-icon-sm" @click=${() => this._openSubstitutionModal(exercise, exercise.originalIndex)} aria-label="Substitute Exercise">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+                 <button class="btn-icon-sm" @click=${() => this._showSubstitutionModal(exercise)} aria-label="Substitute Exercise">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
                 <button class="btn-icon-sm" aria-label="Exercise Info">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 </button>
               </div>
             </div>
@@ -464,44 +476,46 @@ SECTION 6: RENDERING
         </div>
       `;
   }
-  
-// 6.D: Render Substitution Modal
-  _renderSubstitutionModal() {
+
+// 7.D: Render Substitution Modal
+_renderSubstitutionModal() {
     return html`
         <div class="modal-overlay" @click=${this._closeSubstitutionModal}>
-            <div class="modal-content card" @click=${e => e.stopPropagation()}>
+            <div class="modal-content card" @click=${(e) => e.stopPropagation()}>
                 <div class="modal-header">
-                    <h2 id="modal-title">Substitute for ${this.substitutingExerciseInfo?.name}</h2>
-                    <button class="close-button" @click=${this._closeSubstitutionModal} aria-label="Close modal">✖</button>
+                    <h3>Substitute for ${this.exerciseToSubstitute?.name}</h3>
+                    <button class="close-button" @click=${this._closeSubstitutionModal}>×</button>
                 </div>
-                <p class="modal-subtitle">Select an alternative based on your available equipment and the same movement pattern.</p>
-                <div class="substitution-list">
-                    ${this.substitutionSuggestions.length > 0
-                        ? this.substitutionSuggestions.map(sub => html`
-                            <button class="substitution-item" @click=${() => this._handleSubstitute(sub)}>
-                                <div class="substitution-info">
-                                    <span class="substitution-name">${sub.name}</span>
-                                    <span class="substitution-reason">${sub.movementPattern.replace('_', ' ')} pattern</span>
+                ${this.substitutions.length > 0 ? html`
+                    <p class="modal-subtitle">Based on your available equipment and similar movement patterns.</p>
+                    <div class="substitution-list">
+                        ${this.substitutions.map(sub => html`
+                            <button class="card-interactive substitute-option" @click=${() => this._handleSubstituteSelection(sub)}>
+                                <div class="substitute-info">
+                                    <h4>${sub.name}</h4>
+                                    <p>Equipment: ${sub.equipment.join(', ')}</p>
                                 </div>
-                                <span class="substitution-score">Match: ${sub.score}</span>
+                                <div class="substitute-score">Score: ${sub.score.toFixed(1)}</div>
                             </button>
-                        `)
-                        : html`<p class="no-substitutes">No suitable substitutes found with your available equipment.</p>`
-                    }
-                </div>
+                        `)}
+                    </div>
+                ` : html`
+                    <p>No suitable substitutions found with your current equipment.</p>
+                `}
             </div>
         </div>
     `;
-  }
+}
 
 /*
 ===============================================
-SECTION 7: STYLES AND ELEMENT DEFINITION
+SECTION 8: STYLES AND ELEMENT DEFINITION
 ===============================================
 */
-// 7.A: Create Render Root
+// 8.A: Create Render Root
   createRenderRoot() {
     return this;
   }
 }
 customElements.define("workout-session", WorkoutSession);
+
