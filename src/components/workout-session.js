@@ -5,6 +5,7 @@ SECTION 1: COMPONENT AND SERVICE IMPORTS
 */
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
+import { WorkoutEngine } from "../services/workout-engine.js";
 import "./motivational-elements.js";
 import "./workout-feedback-modal.js";
 
@@ -26,6 +27,12 @@ class WorkoutSession extends LitElement {
     activeExerciseIndex: { type: Number },
     showFeedbackModal: { type: Boolean },
     feedbackExerciseIndex: { type: Number },
+    // Properties for Substitution Engine
+    showSubstitutionModal: { type: Boolean },
+    substitutingExerciseInfo: { type: Object },
+    substitutionSuggestions: { type: Array },
+    availableEquipment: { type: Array },
+    workoutEngine: { type: Object },
   };
 
 // 2.B: Constructor
@@ -41,6 +48,19 @@ class WorkoutSession extends LitElement {
     this.activeExerciseIndex = 0;
     this.showFeedbackModal = false;
     this.feedbackExerciseIndex = null;
+    
+    // Initialize properties for Substitution Engine
+    this.showSubstitutionModal = false;
+    this.substitutingExerciseInfo = null;
+    this.substitutionSuggestions = [];
+    // This list can be managed in user settings in the future (Phase 4)
+    this.availableEquipment = [
+      'barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'bench', 
+      'adjustable_bench', 'decline_bench', 'pullup_bar', 'dip_station', 'rack', 
+      'plate', 'kettlebell', 'band', 'box'
+    ];
+    const userData = getDataLocally();
+    this.workoutEngine = new WorkoutEngine(userData);
   }
 
 /*
@@ -128,6 +148,7 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
           this.activeGroupIndex++;
           this.activeExerciseIndex = 0;
       } else {
+          // Optional: loop back to the start or show a completion message
           this.activeGroupIndex = 0;
           this.activeExerciseIndex = 0;
       }
@@ -204,6 +225,44 @@ SECTION 4: EVENT HANDLERS AND WORKOUT LOGIC
     }
   }
 
+// 4.E: Open Substitution Modal
+  _openSubstitutionModal(exercise, originalIndex) {
+    const suggestions = this.workoutEngine.getSubstitutions(exercise.name, this.availableEquipment);
+    this.substitutingExerciseInfo = { originalIndex, name: exercise.name };
+    this.substitutionSuggestions = suggestions;
+    this.showSubstitutionModal = true;
+  }
+
+// 4.F: Close Substitution Modal
+  _closeSubstitutionModal() {
+    this.showSubstitutionModal = false;
+    this.substitutingExerciseInfo = null;
+    this.substitutionSuggestions = [];
+  }
+
+// 4.G: Handle Substitute Exercise Selection
+  _handleSubstitute(substituteExercise) {
+    const indexToReplace = this.substitutingExerciseInfo.originalIndex;
+    const originalExercise = this.workout.exercises[indexToReplace];
+
+    // Create a new exercise object to ensure LitElement detects the change
+    const newExercise = {
+        ...originalExercise,
+        name: substituteExercise.name,
+        muscleGroup: this.workoutEngine._getExerciseMuscleGroup(substituteExercise.name),
+        // You might want to reset target reps/rir based on the new exercise type
+        targetReps: substituteExercise.type === 'compound' ? '6-10' : '10-15',
+        targetRir: substituteExercise.type === 'compound' ? 2 : 3,
+    };
+    
+    // Create a new workout object with the updated exercises array
+    const updatedExercises = [...this.workout.exercises];
+    updatedExercises[indexToReplace] = newExercise;
+    this.workout = { ...this.workout, exercises: updatedExercises };
+
+    this._closeSubstitutionModal();
+  }
+
 /*
 ===============================================
 SECTION 5: HELPER METHODS
@@ -234,19 +293,7 @@ SECTION 5: HELPER METHODS
 
 // 5.C: Get Exercise Muscle Group
   _getExerciseMuscleGroup(exerciseName) {
-    const name = exerciseName.toLowerCase();
-    
-    if (name.includes('bench') || name.includes('chest') || name.includes('fly') || name.includes('press-around')) return 'chest';
-    if (name.includes('squat') || name.includes('quad') || name.includes('leg extension')) return 'quads';
-    if (name.includes('deadlift') || name.includes('row') || name.includes('pull') || name.includes('lat') || name.includes('shrug')) return 'back';
-    if (name.includes('curl') && !name.includes('leg curl')) return 'biceps';
-    if (name.includes('tricep') || name.includes('pushdown') || name.includes('skullcrusher') || name.includes('dip')) return 'triceps';
-    if (name.includes('shoulder') || name.includes('lateral') || name.includes('arnold') || (name.includes('press') && !name.includes('bench') && !name.includes('leg'))) return 'shoulders';
-    if (name.includes('leg curl') || name.includes('hamstring') || name.includes('rdl') || name.includes('romanian')) return 'hamstrings';
-    if (name.includes('hip thrust') || name.includes('glute') || name.includes('lunge')) return 'glutes';
-    if (name.includes('calf')) return 'calves';
-    
-    return 'general';
+    return this.workoutEngine._getExerciseMuscleGroup(exerciseName);
   }
 
 // 5.D: Get Grouped Exercises
@@ -317,6 +364,8 @@ SECTION 6: RENDERING
             </button>
         </div>
       </div>
+      
+      ${this.showSubstitutionModal ? this._renderSubstitutionModal() : ''}
     `;
   }
   
@@ -353,7 +402,7 @@ SECTION 6: RENDERING
 
 // 6.C: Render Exercise Content
   _renderExerciseContent(activeGroup) {
-      if (activeGroup.length === 0) return html``;
+      if (!activeGroup || activeGroup.length === 0) return html``;
       
       const exercise = activeGroup[this.activeExerciseIndex];
       if (!exercise) return html``;
@@ -366,6 +415,9 @@ SECTION 6: RENDERING
                 <p>${exercise.targetReps || '8-12'} reps</p> 
               </div>
               <div class="exercise-log-actions">
+                <button class="btn-icon-sm" @click=${() => this._openSubstitutionModal(exercise, exercise.originalIndex)} aria-label="Substitute Exercise">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3L4 7l4 4"/><path d="M4 7h16"/><path d="M16 21l4-4-4-4"/><path d="M20 17H4"/></svg>
+                </button>
                 <button class="btn-icon-sm" aria-label="Exercise Info">
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
                 </button>
@@ -411,6 +463,35 @@ SECTION 6: RENDERING
             `)}
         </div>
       `;
+  }
+  
+// 6.D: Render Substitution Modal
+  _renderSubstitutionModal() {
+    return html`
+        <div class="modal-overlay" @click=${this._closeSubstitutionModal}>
+            <div class="modal-content card" @click=${e => e.stopPropagation()}>
+                <div class="modal-header">
+                    <h2 id="modal-title">Substitute for ${this.substitutingExerciseInfo?.name}</h2>
+                    <button class="close-button" @click=${this._closeSubstitutionModal} aria-label="Close modal">✖</button>
+                </div>
+                <p class="modal-subtitle">Select an alternative based on your available equipment and the same movement pattern.</p>
+                <div class="substitution-list">
+                    ${this.substitutionSuggestions.length > 0
+                        ? this.substitutionSuggestions.map(sub => html`
+                            <button class="substitution-item" @click=${() => this._handleSubstitute(sub)}>
+                                <div class="substitution-info">
+                                    <span class="substitution-name">${sub.name}</span>
+                                    <span class="substitution-reason">${sub.movementPattern.replace('_', ' ')} pattern</span>
+                                </div>
+                                <span class="substitution-score">Match: ${sub.score}</span>
+                            </button>
+                        `)
+                        : html`<p class="no-substitutes">No suitable substitutes found with your available equipment.</p>`
+                    }
+                </div>
+            </div>
+        </div>
+    `;
   }
 
 /*
