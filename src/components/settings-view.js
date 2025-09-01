@@ -4,10 +4,12 @@
  * @file settings-view.js
  * This component handles the user settings and customization options,
  * such as theme, units, data management, and account actions.
+ * UPDATED: Includes equipment management.
  */
 
 import { LitElement, html } from "lit";
 import { getDataLocally } from "../services/local-storage.js";
+import "./equipment-settings-modal.js"; // Import the new modal
 
 class SettingsView extends LitElement {
   static properties = {
@@ -15,6 +17,7 @@ class SettingsView extends LitElement {
     units: { type: String },
     showDeleteConfirm: { type: Boolean },
     userData: { type: Object },
+    showEquipmentModal: { type: Boolean },
   };
 
   constructor() {
@@ -23,6 +26,7 @@ class SettingsView extends LitElement {
     this.units = localStorage.getItem('units') || 'lbs';
     this.showDeleteConfirm = false;
     this.userData = getDataLocally();
+    this.showEquipmentModal = false;
   }
 
   // Helper to dispatch events up to the app-shell
@@ -92,6 +96,10 @@ class SettingsView extends LitElement {
               <button class="toggle-btn ${this.units === 'kg' ? 'active' : ''}" @click=${() => this._handleUnitsChange('kg')}>Kilograms (kg)</button>
             </div>
           </div>
+          <div class="setting-item">
+            <label>My Equipment</label>
+            <button class="btn btn-secondary" @click=${() => this.showEquipmentModal = true}>Manage</button>
+          </div>
         </div>
 
         <div class="card settings-group">
@@ -136,6 +144,9 @@ class SettingsView extends LitElement {
         </div>
 
         ${this.showDeleteConfirm ? this.renderDeleteConfirmModal() : ''}
+        ${this.showEquipmentModal ? html`
+            <equipment-settings-modal .onClose=${() => this.showEquipmentModal = false}></equipment-settings-modal>
+        ` : ''}
       </div>
     `;
   }
