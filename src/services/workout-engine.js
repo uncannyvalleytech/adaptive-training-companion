@@ -472,11 +472,9 @@ SECTION 9: LONG-TERM PROGRESSION AND WORKOUT GENERATION
                 ? (userGender === 'male' ? "6-8" : "8-10")
                 : "10-15";
             
-            // ** THE FIX IS HERE **
-            // Ensure every generated exercise has a 'sets' array.
             return {
                 ...ex,
-                sets: Array(Math.max(1, setsForThisEx)).fill({}), // Default sets
+                sets: Array(Math.max(1, setsForThisEx)).fill({}),
                 targetReps: targetReps,
                 muscleGroup: muscle,
                 category: ex.type || 'strength',
@@ -495,46 +493,28 @@ SECTION 9: LONG-TERM PROGRESSION AND WORKOUT GENERATION
 SECTION 10: EXERCISE SUBSTITUTION ENGINE
 ===============================================
 */
-  /**
-   * Finds suitable substitutions for a given exercise based on available equipment.
-   * @param {object} originalExercise - The full exercise object from the database.
-   * @param {string[]} availableEquipment - A list of equipment the user has.
-   * @returns {object[]} A ranked list of substitution options.
-   */
   getExerciseSubstitutions(originalExercise, availableEquipment) {
     const allExercises = Object.values(this.exerciseDatabase).flat();
+    const maxScore = 17; // The max possible score (10+5+2)
 
     const potentialSubstitutions = allExercises.filter(ex => {
-      // Rule 1: Don't suggest the same exercise
-      if (ex.name === originalExercise.name) {
-        return false;
-      }
-
-      // Rule 2: Check if user has the required equipment
-      const hasEquipment = ex.equipment.every(equip => availableEquipment.includes(equip));
-      return hasEquipment;
+      if (ex.name === originalExercise.name) return false;
+      return ex.equipment.every(equip => availableEquipment.includes(equip));
     });
     
-    // Rank the filtered substitutions
     const rankedSubstitutions = potentialSubstitutions.map(sub => {
       let score = 0;
-      // High score for same movement pattern
-      if (sub.movementPattern === originalExercise.movementPattern) {
-        score += 10;
-      }
-      // Medium score for same muscle group (if pattern differs)
-      if (sub.muscleGroup === originalExercise.muscleGroup) {
-        score += 5;
-      }
-      // Small score for same exercise type (compound/isolation)
-      if (sub.type === originalExercise.type) {
-        score += 2;
-      }
-      return { ...sub, score };
+      if (sub.movementPattern === originalExercise.movementPattern) score += 10;
+      if (sub.muscleGroup === originalExercise.muscleGroup) score += 5;
+      if (sub.type === originalExercise.type) score += 2;
+      
+      // Convert the score to a percentage
+      const matchPercentage = (score / maxScore) * 100;
+      
+      return { ...sub, matchPercentage };
     });
 
-    // Sort by score (descending) and return top 5
-    return rankedSubstitutions.sort((a, b) => b.score - a.score).slice(0, 5);
+    return rankedSubstitutions.sort((a, b) => b.matchPercentage - a.matchPercentage).slice(0, 5);
   }
 }
 
