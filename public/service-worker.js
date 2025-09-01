@@ -9,28 +9,28 @@ const DYNAMIC_CACHE_NAME = 'dynamic-cache-v4';
 
 // Core files that are essential for the app to function
 const CORE_FILES = [
-  './',
-  './index.html',
-  './src/style.css',
-  './src/main.js'
+  './adaptive-training-companion/',
+  './adaptive-training-companion/index.html',
+  './adaptive-training-companion/src/style.css',
+  './adaptive-training-companion/src/main.js'
 ];
 
 // Additional files to cache when available
 const ADDITIONAL_FILES = [
-  './src/services/api.js',
-  './src/services/google-auth.js',
-  './src/services/workout-engine.js',
-  './src/services/exercise-database.js',
-  './src/components/app-shell.js',
-  './src/components/history-view.js',
-  './src/components/onboarding-flow.js',
-  './src/components/settings-view.js',
-  './src/components/workout-feedback-modal.js',
-  './src/components/workout-session.js',
-  './src/components/workout-templates.js',
-  './src/components/achievements-view.js',
-  './src/components/readiness-modal.js',
-  './src/components/motivational-elements.js'
+  './adaptive-training-companion/src/services/api.js',
+  './adaptive-training-companion/src/services/google-auth.js',
+  './adaptive-training-companion/src/services/workout-engine.js',
+  './adaptive-training-companion/src/services/exercise-database.js',
+  './adaptive-training-companion/src/components/app-shell.js',
+  './adaptive-training-companion/src/components/history-view.js',
+  './adaptive-training-companion/src/components/onboarding-flow.js',
+  './adaptive-training-companion/src/components/settings-view.js',
+  './adaptive-training-companion/src/components/workout-feedback-modal.js',
+  './adaptive-training-companion/src/components/workout-session.js',
+  './adaptive-training-companion/src/components/workout-templates.js',
+  './adaptive-training-companion/src/components/achievements-view.js',
+  './adaptive-training-companion/src/components/readiness-modal.js',
+  './adaptive-training-companion/src/components/motivational-elements.js'
 ];
 
 // URLs that should never be cached
@@ -162,7 +162,7 @@ async function handleNavigationRequest(request) {
     }
     
     // Fallback to index.html for SPA routing
-    const indexResponse = await caches.match('./index.html');
+    const indexResponse = await caches.match('./adaptive-training-companion/index.html');
     if (indexResponse) {
       return indexResponse;
     }
