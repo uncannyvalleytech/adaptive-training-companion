@@ -10,6 +10,7 @@ SECTION 1: CLASS DEFINITION AND CONSTRUCTOR
  * It's responsible for all calculations related to user profiling, volume landmarks,
  * progression, intensity, and autoregulation.
  */
+import { exerciseDatabase } from './exercise-database.js';
 
 export class WorkoutEngine {
   constructor(userProfile) {
@@ -43,68 +44,7 @@ export class WorkoutEngine {
       "neck & traps": 0.1,
     };
     
-    this.exerciseDatabase = {
-      chest: [
-        { name: 'Barbell Bench Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Dumbbell Bench Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Incline Dumbbell Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Machine Chest Press', type: 'compound', recoveryCost: 'low' },
-        { name: 'Cable Crossover', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Push-ups', type: 'compound', recoveryCost: 'low' },
-        { name: 'Incline Barbell Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Decline Bench Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Chest Dip', type: 'compound', recoveryCost: 'medium' }
-      ],
-      back: [
-        { name: 'Deadlift', type: 'compound', recoveryCost: 'high' },
-        { name: 'Pull-ups', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Barbell Row', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Lat Pulldown', type: 'compound', recoveryCost: 'low' },
-        { name: 'Seated Cable Row', type: 'compound', recoveryCost: 'low' },
-        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' },
-        { name: 'T-Bar Row', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Dumbbell Row', type: 'compound', recoveryCost: 'medium' }
-      ],
-      biceps: [
-        { name: 'Barbell Curl', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Dumbbell Hammer Curl', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Preacher Curl', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Incline Dumbbell Curl', type: 'isolation', recoveryCost: 'low' }
-      ],
-      triceps: [
-        { name: 'Tricep Pushdown', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Skull Crushers', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Overhead Tricep Extension', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Close Grip Bench Press', type: 'compound', recoveryCost: 'medium' }
-      ],
-      quads: [
-        { name: 'Barbell Squat', type: 'compound', recoveryCost: 'high' },
-        { name: 'Leg Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Leg Extensions', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Hack Squat', type: 'compound', recoveryCost: 'high' }
-      ],
-      hamstrings: [
-        { name: 'Romanian Deadlift', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Hamstring Curls', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Good Mornings', type: 'compound', recoveryCost: 'medium' }
-      ],
-      glutes: [
-        { name: 'Hip Thrust', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Glute Kickback', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Bulgarian Split Squat', type: 'compound', recoveryCost: 'high' }
-      ],
-      calves: [
-        { name: 'Calf Raises', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Seated Calf Raises', type: 'isolation', recoveryCost: 'low' }
-      ],
-      shoulders: [
-        { name: 'Overhead Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Dumbbell Shoulder Press', type: 'compound', recoveryCost: 'medium' },
-        { name: 'Lateral Raises', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Front Raises', type: 'isolation', recoveryCost: 'low' },
-        { name: 'Face Pulls', type: 'isolation', recoveryCost: 'low' }
-      ]
-    };
+    this.exerciseDatabase = exerciseDatabase;
   }
 
 /*
@@ -557,5 +497,92 @@ SECTION 9: LONG-TERM PROGRESSION AND WORKOUT GENERATION
         name: `Dynamic Workout - ${muscleGroupsForDay.join(', ')}`,
         exercises: exercises,
     };
+  }
+
+/*
+===============================================
+SECTION 10: EXERCISE SUBSTITUTION ENGINE
+===============================================
+*/
+
+  /**
+   * Finds a specific exercise in the entire database by its name.
+   * @param {string} exerciseName - The name of the exercise to find.
+   * @returns {object | null} The exercise object or null if not found.
+   */
+  _findExerciseInDatabase(exerciseName) {
+      for (const muscleGroup in this.exerciseDatabase) {
+          const foundExercise = this.exerciseDatabase[muscleGroup].find(ex => ex.name === exerciseName);
+          if (foundExercise) {
+              return { ...foundExercise, muscleGroup }; // Add muscleGroup to the object for context
+          }
+      }
+      return null;
+  }
+
+  /**
+   * Gets a list of suitable exercise substitutions.
+   * @param {string} exerciseNameToReplace - The name of the exercise to be replaced.
+   * @param {string[]} availableEquipment - A list of equipment the user has.
+   * @returns {object[]} A ranked list of substitution exercises.
+   */
+  getSubstitutions(exerciseNameToReplace, availableEquipment = []) {
+      const originalExercise = this._findExerciseInDatabase(exerciseNameToReplace);
+      if (!originalExercise) {
+          console.error(`Exercise "${exerciseNameToReplace}" not found in database.`);
+          return [];
+      }
+
+      const allExercises = Object.values(this.exerciseDatabase).flat();
+
+      const potentialSubstitutes = allExercises.filter(ex => {
+          // Must not be the same exercise
+          if (ex.id === originalExercise.id) return false;
+
+          // Must target the same muscle group
+          const exMuscleGroup = this._getExerciseMuscleGroup(ex.name);
+          if (exMuscleGroup !== originalExercise.muscleGroup) return false;
+
+          // Must be doable with available equipment. 'bodyweight' is always available.
+          const hasRequiredEquipment = ex.equipment.every(eq => availableEquipment.includes(eq) || eq === 'bodyweight');
+          return hasRequiredEquipment;
+      });
+
+      const rankedSubstitutes = this._rankAlternatives(potentialSubstitutes, originalExercise);
+
+      return rankedSubstitutes.slice(0, 5); // Return top 5
+  }
+
+  /**
+   * Ranks potential substitutes based on similarity to the original exercise.
+   * @param {object[]} alternatives - An array of potential substitute exercises.
+   * @param {object} originalExercise - The original exercise object.
+   * @returns {object[]} A sorted array of substitutes with their scores.
+   */
+  _rankAlternatives(alternatives, originalExercise) {
+      return alternatives.map(alt => {
+          let score = 0;
+
+          // 1. Movement Pattern Match (Highest Weight)
+          if (alt.movementPattern === originalExercise.movementPattern) {
+              score += 10;
+          }
+
+          // 2. Exercise Type Match (Medium Weight)
+          if (alt.type === originalExercise.type) {
+              score += 5;
+          }
+
+          // 3. Recovery Cost Match (Lower Weight)
+          if (alt.recoveryCost === originalExercise.recoveryCost) {
+              score += 2;
+          } else if (Math.abs(['low', 'medium', 'high'].indexOf(alt.recoveryCost) - ['low', 'medium', 'high'].indexOf(originalExercise.recoveryCost)) === 1) {
+              score += 1; // adjacent recovery cost
+          }
+
+          return { ...alt, score };
+      })
+      .filter(alt => alt.score > 0) // Only return exercises with some similarity
+      .sort((a, b) => b.score - a.score);
   }
 }
