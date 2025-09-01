@@ -6,6 +6,7 @@ SECTION 1: COMPONENT AND SERVICE IMPORTS
 import { LitElement, html } from "lit";
 import { saveDataLocally, getDataLocally } from "../services/local-storage.js";
 import { WorkoutEngine } from "../services/workout-engine.js";
+import { exerciseDatabase } from "../services/exercise-database.js"; // Import the master database
 import "./motivational-elements.js";
 import "./workout-feedback-modal.js";
 
@@ -221,11 +222,27 @@ SECTION 5: SUBSTITUTION LOGIC
   _showSubstitutionModal(exerciseToSubstitute) {
     if (!this.workoutEngine || !this.userData) return;
     
+    // ** THE FIX IS HERE **
+    // First, find the complete exercise details from our master database.
+    const allExercises = Object.values(exerciseDatabase).flat();
+    const fullExerciseDetails = allExercises.find(ex => ex.name === exerciseToSubstitute.name);
+
+    if (!fullExerciseDetails) {
+        this.dispatchEvent(new CustomEvent('show-toast', { 
+            detail: { message: "Could not find exercise details for substitution.", type: 'error' }, 
+            bubbles: true, 
+            composed: true 
+        }));
+        return;
+    }
+    
+    // Store the original exercise from the workout plan (with its index)
     this.exerciseToSubstitute = exerciseToSubstitute;
     const availableEquipment = this.userData.availableEquipment || [];
     
+    // Now, pass the *complete* details to the engine
     this.substitutions = this.workoutEngine.getExerciseSubstitutions(
-      exerciseToSubstitute,
+      fullExerciseDetails,
       availableEquipment
     );
     this.showSubstitutionModal = true;
@@ -237,7 +254,7 @@ SECTION 5: SUBSTITUTION LOGIC
     
     // Create a new exercise object from the substitution
     const substitutedExercise = {
-      ...this.workout.exercises[originalExerciseIndex], // ains sets, reps, rir etc.
+      ...this.workout.exercises[originalExerciseIndex], // Retains sets, reps, rir etc.
       name: newExercise.name,
       muscleGroup: newExercise.muscleGroup,
       movementPattern: newExercise.movementPattern,
